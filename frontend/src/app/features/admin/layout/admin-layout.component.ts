@@ -49,13 +49,13 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
     menuItems = [
         { icon: LayoutDashboard, label: 'Dashboard', route: 'dashboard', active: true },
-        { icon: Building2, label: 'Escolas', route: 'schools', active: false },
-        { icon: Wallet, label: 'Carteira', route: 'wallet', active: false },
-        { icon: Package, label: 'Produtos', route: 'products', active: false },
-        { icon: CalendarDays, label: 'Eventos', route: 'events', active: false },
-        { icon: Users, label: 'Usuários', route: 'users', active: false },
-        { icon: BarChart3, label: 'Relatórios', route: 'reports', active: false },
-        { icon: UserCircle, label: 'Perfil', route: 'profile', active: false },
+        { icon: Building2, label: 'Escolas', route: 'escolas', active: false },
+        { icon: Wallet, label: 'Carteira', route: 'carteira', active: false },
+        { icon: Package, label: 'Produtos', route: 'produtos', active: false },
+        { icon: CalendarDays, label: 'Eventos', route: 'eventos', active: false },
+        { icon: Users, label: 'Usuários', route: 'usuarios', active: false },
+        { icon: BarChart3, label: 'Relatórios', route: 'relatorios', active: false },
+        { icon: UserCircle, label: 'Perfil', route: 'perfil', active: false },
     ];
 
     constructor(

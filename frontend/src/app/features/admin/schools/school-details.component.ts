@@ -34,6 +34,12 @@ export class SchoolDetailsComponent implements OnInit {
     schoolForm: FormGroup;
     showSuccessModal = false;
 
+    seriesOptions = [
+        { label: 'Fundamental 1', value: 'Fundamental 1' },
+        { label: 'Fundamental 2', value: 'Fundamental 2' },
+        { label: 'Ensino Médio', value: 'Ensino Médio' }
+    ];
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -44,10 +50,25 @@ export class SchoolDetailsComponent implements OnInit {
             nome: ['', Validators.required],
             cnpj: ['', Validators.required],
             razao_social: ['', Validators.required],
-            modelo_contratacao: ['', Validators.required],
+            modelo_contratacao: ['Full', Validators.required],
+            dias_repasse: [3, Validators.required],
+            possui_equipamentos: [true, Validators.required],
+            quantidade_equipamentos: [0],
+            valor_unitario_equipamento: [0],
+            cobra_transacoes: [true, Validators.required],
+            valor_unitario_transacao: [0],
             serie: ['', Validators.required],
+            nome_direcao: ['', Validators.required],
+            nome_secretariado: ['', Validators.required],
             email: ['', [Validators.required, Validators.email]],
+            email_secretaria_admin: ['', [Validators.required, Validators.email]],
             telefone: ['', Validators.required],
+            whatsapp: ['', Validators.required],
+            cep: ['', Validators.required],
+            complemento: [''],
+            endereco_completo: ['', Validators.required],
+            valor_carteira: [0, Validators.required],
+            valor_transferencia: [0, Validators.required],
             status: ['active', Validators.required]
         });
     }
@@ -87,6 +108,6 @@ export class SchoolDetailsComponent implements OnInit {
     }
 
     onBack() {
-        this.router.navigate(['/admin/schools']);
+        this.router.navigate(['/admin/escolas']);
     }
 }

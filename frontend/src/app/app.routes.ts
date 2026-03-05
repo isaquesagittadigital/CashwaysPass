@@ -18,39 +18,39 @@ export const routes: Routes = [
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             { path: 'dashboard', component: AdminDashboardComponent },
             {
-                path: 'schools',
+                path: 'escolas',
                 loadComponent: () => import('./features/admin/schools/schools-list.component').then(m => m.SchoolsListComponent)
-            },
-            {
-                path: 'schools/:id',
-                loadComponent: () => import('./features/admin/schools/school-details.component').then(m => m.SchoolDetailsComponent)
             },
             {
                 path: 'escolas/cadastro',
                 loadComponent: () => import('./features/admin/school-registration/school-registration.component').then(m => m.SchoolRegistrationComponent)
             },
             {
-                path: 'wallet',
+                path: 'escolas/:id',
+                loadComponent: () => import('./features/admin/schools/school-details.component').then(m => m.SchoolDetailsComponent)
+            },
+            {
+                path: 'carteira',
                 loadComponent: () => import('./features/admin/wallet/wallet.component').then(m => m.WalletComponent)
             },
             {
-                path: 'products',
+                path: 'produtos',
                 loadComponent: () => import('./features/admin/products/products.component').then(m => m.ProductsComponent)
             },
             {
-                path: 'events',
+                path: 'eventos',
                 loadComponent: () => import('./features/admin/events/events.component').then(m => m.EventsComponent)
             },
             {
-                path: 'users',
+                path: 'usuarios',
                 loadComponent: () => import('./features/admin/users/user-management.component').then(m => m.UserManagementComponent)
             },
             {
-                path: 'reports',
+                path: 'relatorios',
                 loadComponent: () => import('./features/admin/reports/reports.component').then(m => m.ReportsComponent)
             },
             {
-                path: 'profile',
+                path: 'perfil',
                 loadComponent: () => import('./features/admin/profile/perfil.component').then(m => m.PerfilComponent)
             },
         ]
@@ -68,19 +68,19 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/escola/cadastro/cadastro.component').then(m => m.CadastroComponent)
             },
             {
-                path: 'wallet',
+                path: 'carteira',
                 loadComponent: () => import('./features/escola/wallet/wallet.component').then(m => m.EscolaWalletComponent)
             },
             {
-                path: 'products',
+                path: 'produtos',
                 loadComponent: () => import('./features/escola/products/products.component').then(m => m.EscolaProductsComponent)
             },
             {
-                path: 'events',
+                path: 'eventos',
                 loadComponent: () => import('./features/escola/events/events.component').then(m => m.EscolaEventsComponent)
             },
             {
-                path: 'profile',
+                path: 'perfil',
                 loadComponent: () => import('./features/escola/profile/perfil.component').then(m => m.EscolaPerfilComponent)
             },
         ]
