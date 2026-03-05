@@ -9,13 +9,31 @@ select.form-input {
 }
 
 input[type="radio"] {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.15rem;
+    height: 1.15rem;
     border-color: #D1D5DB;
     color: #005E9E;
+    margin: 0;
+    transition: all 0.2s;
+}
+
+label.group {
+    display: flex;
+    align-items: center;
+    line-height: 1;
 }
 
 input[type="radio"]:focus {
     outline: 2px solid #005E9E;
     outline-offset: 2px;
+}
+
+.currency-input {
+    padding-left: 2.7rem !important;
+}
+
+.form-group label {
+    font-size: 0.8rem;
+    color: #4b5563;
+    font-weight: 600;
 }

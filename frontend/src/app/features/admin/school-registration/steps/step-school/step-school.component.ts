@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { SchoolRegistrationService } from '../../registration.service';
 import { LucideAngularModule } from 'lucide-angular';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-step-school',
@@ -22,7 +23,8 @@ export class StepSchoolComponent implements OnInit {
 
     constructor(
         private fb: FormBuilder,
-        private registrationService: SchoolRegistrationService
+        private registrationService: SchoolRegistrationService,
+        private router: Router
     ) {
         this.schoolForm = this.fb.group({
             nome: ['', Validators.required],
@@ -103,13 +105,35 @@ export class StepSchoolComponent implements OnInit {
         this.schoolForm.get('cep')?.setValue(masked, { emitEvent: false });
     }
 
+    onCurrencyKeydown(event: KeyboardEvent) {
+        // Block minus sign and other non-numeric chars except navigation/delete
+        if (event.key === '-' || event.key === 'e' || event.key === 'E' || event.key === '+') {
+            event.preventDefault();
+        }
+    }
+
     applyCurrencyMask(field: string, event: any) {
+        // Get only digits
         let val = event.target.value.replace(/\D/g, '');
+
+        // Convert to number (handling decimals by dividing by 100)
         const amount = val ? parseInt(val) / 100 : 0;
+
+        // Update form control
         this.schoolForm.get(field)?.setValue(amount, { emitEvent: false });
+
+        // Explicitly update input value to match the formatted number if needed,
+        // although keeping it as number type might be better for some browsers.
+        // However, for better UX with the R$ prefix, we want to ensure no weird chars stay.
+        event.target.value = amount.toFixed(2).replace('.', ',');
     }
 
     formatBrl(value: number): string {
         return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+    }
+
+    onCancel() {
+        this.registrationService.reset();
+        this.router.navigate(['/admin/dashboard']);
     }
 }

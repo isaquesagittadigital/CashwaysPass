@@ -58,12 +58,13 @@ export class EventsComponent implements OnInit, OnDestroy {
         nome: '',
         descricao_curta: '',
         data_evento: '',
-        turma_id: '',
+        turma_ids: [] as string[], // Changed to array for multi-select
         ativo: true,
         capa_url: '',
         lojistas_convidados: [] as string[]
     };
     newLojistaEmail = '';
+    selectedTurmaId = ''; // Helper for select dropdown
 
     // Delete Modal
     showDeleteModal = false;
@@ -168,7 +169,7 @@ export class EventsComponent implements OnInit, OnDestroy {
             nome: event.nome,
             descricao_curta: event.descricao_curta || '',
             data_evento: event.data_evento || '',
-            turma_id: event.turma_id || '',
+            turma_ids: event.turma_ids || (event.turma_id ? [event.turma_id] : []), // Handle migration from single to multi
             ativo: event.ativo,
             capa_url: event.capa_url || '',
             lojistas_convidados: [...(event.lojistas_convidados || [])]
@@ -183,7 +184,7 @@ export class EventsComponent implements OnInit, OnDestroy {
             nome: '',
             descricao_curta: '',
             data_evento: '',
-            turma_id: '',
+            turma_ids: [],
             ativo: true,
             capa_url: '',
             lojistas_convidados: []
@@ -191,6 +192,7 @@ export class EventsComponent implements OnInit, OnDestroy {
         this.imagePreview = '';
         this.imageFile = null;
         this.newLojistaEmail = '';
+        this.selectedTurmaId = '';
     }
 
     closeFormModal() {
@@ -218,6 +220,17 @@ export class EventsComponent implements OnInit, OnDestroy {
 
     removeLojista(email: string) {
         this.form.lojistas_convidados = this.form.lojistas_convidados.filter(e => e !== email);
+    }
+
+    addTurma() {
+        if (this.selectedTurmaId && !this.form.turma_ids.includes(this.selectedTurmaId)) {
+            this.form.turma_ids.push(this.selectedTurmaId);
+        }
+        this.selectedTurmaId = '';
+    }
+
+    removeTurma(id: string) {
+        this.form.turma_ids = this.form.turma_ids.filter(t => t !== id);
     }
 
     async submitForm() {

@@ -58,12 +58,13 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
         nome: '',
         descricao_curta: '',
         data_evento: '',
-        turma_id: '',
+        turma_ids: [] as string[],
         ativo: true,
         capa_url: '',
         lojistas_convidados: [] as string[]
     };
     newLojistaEmail = '';
+    selectedTurmaId = '';
 
     // Delete Modal
     showDeleteModal = false;
@@ -171,7 +172,7 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
             nome: event.nome,
             descricao_curta: event.descricao_curta || '',
             data_evento: event.data_evento || '',
-            turma_id: event.turma_id || '',
+            turma_ids: event.turma_ids || (event.turma_id ? [event.turma_id] : []),
             ativo: event.ativo,
             capa_url: event.capa_url || '',
             lojistas_convidados: [...(event.lojistas_convidados || [])]
@@ -186,7 +187,7 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
             nome: '',
             descricao_curta: '',
             data_evento: '',
-            turma_id: '',
+            turma_ids: [],
             ativo: true,
             capa_url: '',
             lojistas_convidados: []
@@ -194,6 +195,7 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
         this.imagePreview = '';
         this.imageFile = null;
         this.newLojistaEmail = '';
+        this.selectedTurmaId = '';
     }
 
     closeFormModal() {
@@ -221,6 +223,17 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
 
     removeLojista(email: string) {
         this.form.lojistas_convidados = this.form.lojistas_convidados.filter(e => e !== email);
+    }
+
+    addTurma() {
+        if (this.selectedTurmaId && !this.form.turma_ids.includes(this.selectedTurmaId)) {
+            this.form.turma_ids.push(this.selectedTurmaId);
+        }
+        this.selectedTurmaId = '';
+    }
+
+    removeTurma(id: string) {
+        this.form.turma_ids = this.form.turma_ids.filter(t => t !== id);
     }
 
     async submitForm() {

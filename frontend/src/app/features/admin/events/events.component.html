@@ -20,102 +20,95 @@
                 <lucide-icon [img]="icons.Search"
                     class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
                 <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearch()" placeholder="Buscar evento"
-                    class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5] focus:border-transparent transition-all">
+                    class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#005bb5]">
             </div>
             <!-- Status Filter -->
-            <div class="relative">
-                <select [(ngModel)]="statusFilter" (change)="onStatusChange()"
-                    class="appearance-none pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#005bb5] cursor-pointer min-w-[160px]">
-                    <option value="">Filtrar por status</option>
-                    <option value="Agendado">Agendado</option>
-                    <option value="Realizado">Realizado</option>
-                </select>
-                <lucide-icon [img]="icons.ChevronDown"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
-            </div>
+            <select [(ngModel)]="statusFilter" (change)="onStatusChange()"
+                class="px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 bg-white focus:outline-none focus:border-[#005bb5] cursor-pointer min-w-[160px]">
+                <option value="">Filtrar por status</option>
+                <option value="Agendado">Agendado</option>
+                <option value="Realizado">Realizado</option>
+            </select>
         </div>
         <!-- Action Button -->
         <button (click)="openCreateModal()"
-            class="flex items-center gap-2 px-6 py-2.5 bg-[#005bb5] text-white rounded-lg hover:bg-[#004a98] transition-all font-medium text-sm shadow-sm active:scale-95">
+            class="flex items-center gap-2 px-5 py-2.5 bg-[#005bb5] text-white rounded-lg hover:bg-[#004a98] transition font-medium text-sm">
             <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
             Cadastrar evento
         </button>
     </div>
 
     <!-- Loading State -->
-    <div *ngIf="loading" class="flex flex-col items-center justify-center py-20 animate-pulse">
-        <div class="w-12 h-12 border-4 border-[#005bb5] border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-gray-500 font-medium">Carregando eventos...</p>
-    </div>
+    <div *ngIf="loading" class="text-center py-16 text-gray-400">Carregando...</div>
 
     <!-- Empty State -->
-    <div *ngIf="!loading && eventos.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
-        <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-            <lucide-icon [img]="icons.CalendarDays" class="w-10 h-10 text-gray-300"></lucide-icon>
+    <div *ngIf="!loading && eventos.length === 0" class="flex flex-col items-center justify-center py-20">
+        <div class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <lucide-icon [img]="icons.CalendarDays" class="w-10 h-10 text-gray-400"></lucide-icon>
         </div>
-        <h3 class="text-lg font-semibold text-gray-800">Nenhum evento encontrado</h3>
-        <p class="text-gray-500 max-w-sm mt-1">Não há eventos cadastrados no momento ou nenhum corresponde à sua busca.
+        <h3 class="text-lg font-semibold text-gray-700 mb-1">Nenhum evento encontrado</h3>
+        <p class="text-gray-400 text-sm text-center max-w-xs mb-6">
+            Cadastre novos eventos clicando em "Cadastrar evento". Após o cadastro, eles aparecerão aqui.
         </p>
-        <button *ngIf="!searchTerm && !statusFilter" (click)="openCreateModal()"
-            class="mt-6 text-[#005bb5] font-semibold hover:underline">
-            Comece cadastrando seu primeiro evento
+        <button (click)="openCreateModal()"
+            class="flex items-center gap-2 px-5 py-2.5 bg-[#005bb5] text-white rounded-lg hover:bg-[#004a98] transition font-medium text-sm">
+            <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
+            Cadastrar evento
         </button>
     </div>
 
     <!-- Events Grid -->
     <div *ngIf="!loading && eventos.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div *ngFor="let ev of eventos"
-            class="group border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 bg-white flex flex-col h-full">
+            class="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition group bg-white flex flex-col">
             <!-- Capa -->
             <div class="relative h-48 bg-gray-100 overflow-hidden">
-                <img *ngIf="ev.capa_url" [src]="ev.capa_url" alt="Capa"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                <img *ngIf="ev.capa_url" [src]="ev.capa_url" alt="Capa" class="w-full h-full object-cover">
                 <div *ngIf="!ev.capa_url" class="w-full h-full flex items-center justify-center">
                     <lucide-icon [img]="icons.CalendarDays" class="w-12 h-12 text-gray-300"></lucide-icon>
                 </div>
                 <!-- Status Badge -->
-                <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold shadow-sm"
+                <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium"
                     [ngClass]="getEventStatus(ev.data_evento).class">
                     {{ getEventStatus(ev.data_evento).label }}
                 </span>
             </div>
 
             <!-- Content -->
-            <div class="p-5 flex flex-col flex-1">
-                <h3
-                    class="font-bold text-gray-900 text-lg mb-1 leading-tight group-hover:text-[#005bb5] transition-colors">
-                    {{ ev.nome }}</h3>
-                <p class="text-gray-500 text-sm line-clamp-2 mb-4 leading-relaxed">{{ ev.descricao_curta }}</p>
+            <div class="p-4 flex flex-col flex-1">
+                <h3 class="font-semibold text-gray-900 text-base mb-1">{{ ev.nome }}</h3>
+                <p class="text-gray-500 text-sm line-clamp-2 mb-4">{{ ev.descricao_curta }}</p>
 
                 <!-- Info List -->
-                <div class="space-y-3 mt-auto pt-4 border-t border-gray-50">
-                    <div class="flex items-center gap-3 text-gray-600">
-                        <lucide-icon [img]="icons.CalendarDays" class="w-4 h-4 text-[#005bb5]"></lucide-icon>
-                        <span class="text-xs font-medium">{{ formatDate(ev.data_evento) }}</span>
+                <div class="mt-auto space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs text-gray-500">
+                        <lucide-icon [img]="icons.CalendarDays" class="w-3.5 h-3.5 text-gray-400"></lucide-icon>
+                        {{ formatDate(ev.data_evento) }}
                     </div>
-                    <div class="flex items-center gap-3 text-gray-600">
-                        <lucide-icon [img]="icons.Users" class="w-4 h-4 text-[#005bb5]"></lucide-icon>
-                        <span class="text-xs">{{ getTurmaName(ev.turma_id) }} vinculado</span>
+                    <div class="flex items-center gap-2 text-xs text-gray-500">
+                        <lucide-icon [img]="icons.Users" class="w-3.5 h-3.5 text-gray-400"></lucide-icon>
+                        {{ ev.turma_ids?.length || 0 }} turmas vinculadas
                     </div>
-                    <div class="flex items-center gap-3 text-gray-600">
-                        <lucide-icon [img]="icons.Mail" class="w-4 h-4 text-[#005bb5]"></lucide-icon>
-                        <span class="text-xs">{{ ev.lojistas_convidados?.length || 0 }} lojista(s) vinculado(s)</span>
+                    <div class="flex items-center gap-2 text-xs text-gray-500">
+                        <lucide-icon [img]="icons.Mail" class="w-3.5 h-3.5 text-gray-400"></lucide-icon>
+                        {{ ev.lojistas_convidados?.length || 0 }} lojistas convidados
                     </div>
                 </div>
 
                 <!-- Footer Actions -->
-                <div class="flex items-center gap-2 mt-6 pt-4 border-t border-gray-100">
+                <div class="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100">
                     <button (click)="openEditModal(ev)"
-                        class="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all">
+                        class="flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition">
                         <lucide-icon [img]="icons.Eye" class="w-4 h-4"></lucide-icon>
                         Ver evento
                     </button>
+                    <div class="flex-1"></div>
                     <button (click)="openEditModal(ev)"
-                        class="p-2 border border-gray-200 rounded-lg text-gray-500 hover:bg-[#005bb5]/10 hover:text-[#005bb5] hover:border-[#005bb5]/30 transition-all">
+                        class="p-2 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition">
                         <lucide-icon [img]="icons.Pencil" class="w-4 h-4"></lucide-icon>
                     </button>
                     <button (click)="openDeleteModal(ev.id)"
-                        class="p-2 border border-gray-200 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all">
+                        class="p-2 border border-gray-200 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-500 transition">
                         <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon>
                     </button>
                 </div>
@@ -125,190 +118,194 @@
 </div>
 
 <!-- ===================== MODAL: CADASTRO / EDIÇÃO ===================== -->
-<div *ngIf="showFormModal"
-    class="fixed inset-0 z-[60] flex items-center justify-start sm:justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
+<div *ngIf="showFormModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
     <div
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-auto sm:mx-4 overflow-hidden animate-slide-in-right sm:animate-scale-up">
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto flex flex-col animate-scale-up">
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h2 class="text-lg font-bold text-gray-900">{{ isEditing ? 'Editar evento' : 'Cadastrar novo evento' }}</h2>
-            <button (click)="closeFormModal()" class="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-                <lucide-icon [img]="icons.X" class="w-5 h-5 text-gray-400"></lucide-icon>
+        <div class="flex items-center justify-between px-8 py-6 border-b border-gray-100">
+            <h2 class="text-xl font-bold text-gray-900">
+                {{ isEditing ? 'Editar evento' : 'Cadastrar novo evento' }}
+            </h2>
+            <button (click)="closeFormModal()" class="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+                <lucide-icon [img]="icons.X" class="w-6 h-6 text-gray-400"></lucide-icon>
             </button>
         </div>
 
-        <!-- Form Scroll Area -->
-        <div class="p-6 overflow-y-auto max-h-[calc(100vh-160px)] space-y-5">
-
-            <!-- Capa Upload -->
-            <div class="relative">
-                <div (click)="fileInput.click()"
-                    class="group relative h-40 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-[#005bb5] hover:bg-[#005bb5]/5 transition-all overflow-hidden">
-                    <input #fileInput type="file" (change)="onImageSelected($event)" accept="image/*" class="hidden">
-
-                    <img *ngIf="imagePreview" [src]="imagePreview" class="w-full h-full object-cover shadow-inner">
-
-                    <div class="flex flex-col items-center justify-center text-center p-4 bg-white/10 backdrop-blur-none"
-                        [class.absolute]="imagePreview">
-                        <div
-                            class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                            <lucide-icon [img]="icons.Upload" class="w-5 h-5 text-[#005bb5]"></lucide-icon>
-                        </div>
-                        <p class="text-xs font-bold text-gray-700 mb-1 group-hover:text-[#005bb5]">Enviar imagem de capa
-                        </p>
-                        <p class="text-[10px] text-gray-400">PNG, JPG até 5MB</p>
+        <!-- Form Body -->
+        <div class="px-8 py-6 space-y-6 overflow-y-auto flex-1">
+            <!-- Capa Preview & Upload -->
+            <div class="space-y-4">
+                <div
+                    class="aspect-video w-full bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden flex items-center justify-center relative group">
+                    <img *ngIf="imagePreview" [src]="imagePreview" class="w-full h-full object-cover">
+                    <div *ngIf="!imagePreview" class="flex flex-col items-center text-gray-300">
+                        <lucide-icon [img]="icons.CalendarDays" class="w-16 h-16 mb-2"></lucide-icon>
                     </div>
                 </div>
+
+                <button (click)="fileInput.click()"
+                    class="w-full py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98]">
+                    <lucide-icon [img]="icons.Upload" class="w-4 h-4 text-gray-400"></lucide-icon>
+                    Enviar imagem de capa
+                </button>
+                <input #fileInput type="file" (change)="onImageSelected($event)" accept="image/*" class="hidden">
             </div>
 
-            <!-- Status Toggle -->
+            <!-- Status -->
             <div class="flex items-center justify-between">
-                <span class="text-sm font-bold text-gray-800 flex items-center gap-2">
-                    Status <span class="text-red-500">*</span>
-                </span>
+                <label class="text-sm font-semibold text-gray-700">Status <span class="text-[#005bb5]">*</span></label>
                 <div class="flex items-center gap-3">
-                    <span class="text-xs text-gray-400">Inativo</span>
+                    <span class="text-xs text-gray-400 uppercase tracking-wider font-bold">Inativo</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" [(ngModel)]="form.ativo" class="sr-only peer">
                         <div
-                            class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-[#005bb5] after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all">
+                            class="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-[#005bb5] after:content-[''] after:absolute after:top-1 after:left-[4px] after:bg-white after:rounded-full after:h-5 after:w-7 after:transition-all">
                         </div>
                     </label>
-                    <span class="text-xs text-[#005bb5] font-bold">Ativo</span>
+                    <span class="text-xs text-[#005bb5] uppercase tracking-wider font-bold">Ativo</span>
                 </div>
             </div>
 
             <!-- Nome do Evento -->
-            <div>
-                <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Nome do evento
-                    <span class="text-red-500">*</span></label>
+            <div class="space-y-2">
+                <label class="block text-sm font-semibold text-gray-700">Nome do evento <span
+                        class="text-[#005bb5]">*</span></label>
                 <input type="text" [(ngModel)]="form.nome" placeholder="Nome do evento"
-                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5] transition-all">
+                    class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] transition-all">
             </div>
 
             <!-- Descrição Curta -->
-            <div>
-                <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Descrição curta
-                    <span class="text-red-500">*</span></label>
+            <div class="space-y-2">
+                <label class="block text-sm font-semibold text-gray-700">Descrição curta <span
+                        class="text-[#005bb5]">*</span></label>
                 <textarea [(ngModel)]="form.descricao_curta" rows="2" placeholder="Insira uma breve descrição do evento"
-                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5] transition-all resize-none"></textarea>
+                    class="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] transition-all resize-none"></textarea>
             </div>
 
-            <!-- Data e Turma -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Data do evento
-                        <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <input type="date" [(ngModel)]="form.data_evento"
-                            class="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5] transition-all">
-                        <lucide-icon [img]="icons.CalendarDays"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Vincular à
-                        turma <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <select [(ngModel)]="form.turma_id"
-                            class="w-full appearance-none pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5] cursor-pointer">
-                            <option value="">Selecione a turma</option>
-                            <option *ngFor="let t of turmas" [value]="t.id">{{ t.nome }}</option>
-                        </select>
-                        <lucide-icon [img]="icons.ChevronDown"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
-                    </div>
+            <!-- Data do Evento -->
+            <div class="space-y-2">
+                <label class="block text-sm font-semibold text-gray-700">Data do evento <span
+                        class="text-[#005bb5]">*</span></label>
+                <div class="relative">
+                    <lucide-icon [img]="icons.CalendarDays"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></lucide-icon>
+                    <input type="date" [(ngModel)]="form.data_evento"
+                        class="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] transition-all">
                 </div>
             </div>
 
-            <!-- Lojistas Convidados -->
-            <div>
-                <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Vincular
-                    lojista(s)</label>
+            <!-- Vincular Lojistas -->
+            <div class="space-y-2">
+                <label class="block text-sm font-semibold text-gray-700">Vincular lojista(s) <span
+                        class="text-[#005bb5]">*</span></label>
                 <div class="flex gap-2">
-                    <div class="relative flex-1">
-                        <input type="email" [(ngModel)]="newLojistaEmail" placeholder="lojista@exemplo.com"
-                            class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5] transition-all">
-                    </div>
+                    <input type="email" [(ngModel)]="newLojistaEmail" placeholder="lojista@exemplo.com"
+                        class="flex-1 px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] transition-all">
                     <button (click)="addLojista()"
-                        class="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 transition-all">
-                        <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
+                        class="px-6 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-2 shadow-sm transition-all active:scale-95">
+                        <lucide-icon [img]="icons.Plus" class="w-4 h-4 text-gray-400"></lucide-icon>
                         Adicionar
                     </button>
                 </div>
-                <!-- Badge List of Lojistas -->
-                <div class="flex flex-wrap gap-2 mt-3" *ngIf="form.lojistas_convidados.length > 0">
-                    <span *ngFor="let email of form.lojistas_convidados"
-                        class="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-[#005bb5] rounded-full text-[10px] font-bold border border-blue-100">
+                <p class="text-xs text-gray-400">Os lojistas convidados receberão acesso automático ao evento.</p>
+            </div>
+
+            <!-- Vincular Turma -->
+            <div class="space-y-2">
+                <label class="block text-sm font-semibold text-gray-700">Vincular à turma <span
+                        class="text-[#005bb5]">*</span></label>
+                <div class="relative">
+                    <select [(ngModel)]="selectedTurmaId" (change)="addTurma()"
+                        class="w-full appearance-none px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] cursor-pointer transition-all">
+                        <option value="">Selecione a turma</option>
+                        <option *ngFor="let t of turmas" [value]="t.id">{{ t.nome }}</option>
+                    </select>
+                    <lucide-icon [img]="icons.ChevronDown"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"></lucide-icon>
+                </div>
+
+                <!-- Turma Badges -->
+                <div class="flex flex-wrap gap-2 mt-2" *ngIf="form.turma_ids.length > 0">
+                    <div *ngFor="let id of form.turma_ids"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 shadow-sm animate-scale-up">
+                        {{ getTurmaName(id) }}
+                        <button (click)="removeTurma(id)" class="p-0.5 hover:bg-gray-100 rounded-md transition-colors">
+                            <lucide-icon [img]="icons.X" class="w-3.5 h-3.5 text-gray-400 font-bold"></lucide-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lojistas Badges Section -->
+            <div class="space-y-3 pt-2" *ngIf="form.lojistas_convidados.length > 0">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ form.lojistas_convidados.length
+                    }} lojista(s) adicionado(s)</h4>
+                <div class="p-4 bg-gray-50/50 border border-gray-100 rounded-2xl flex flex-wrap gap-2">
+                    <div *ngFor="let email of form.lojistas_convidados"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 shadow-sm animate-scale-up">
                         {{ email }}
                         <button (click)="removeLojista(email)"
-                            class="p-0.5 hover:bg-blue-100 rounded-full transition-colors">
-                            <lucide-icon [img]="icons.X" class="w-3 h-3 text-[#005bb5]"></lucide-icon>
+                            class="p-0.5 hover:bg-gray-100 rounded-md transition-colors">
+                            <lucide-icon [img]="icons.X" class="w-3.5 h-3.5 text-gray-400 font-bold"></lucide-icon>
                         </button>
-                    </span>
+                    </div>
                 </div>
-                <p class="text-[10px] text-gray-400 mt-2">Os lojistas convidados receberão acesso automático ao evento.
-                </p>
             </div>
         </div>
 
-        <!-- Actions -->
-        <div class="p-6 border-t border-gray-100 flex items-center gap-3">
+        <!-- Footer -->
+        <div class="px-8 py-6 border-t border-gray-100 flex gap-4 bg-gray-50/30">
             <button (click)="closeFormModal()"
-                class="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all">
+                class="flex-1 py-4 border border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:bg-white hover:border-gray-300 transition-all shadow-sm active:scale-95">
                 Cancelar
             </button>
             <button (click)="submitForm()" [disabled]="formLoading || !form.nome"
-                class="flex-1 py-3 bg-[#005bb5] text-white rounded-xl text-sm font-bold hover:bg-[#004a98] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md active:scale-95 flex items-center justify-center gap-2">
+                class="flex-1 py-4 bg-[#005bb5] text-white rounded-xl text-sm font-bold hover:bg-[#004a98] transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                 <span *ngIf="formLoading"
                     class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                {{ formLoading ? 'Processando...' : (isEditing ? 'Atualizar evento' : 'Cadastrar') }}
+                {{ formLoading ? 'Processando...' : (isEditing ? 'Salvar alterações' : 'Cadastrar') }}
             </button>
         </div>
     </div>
 </div>
 
+
 <!-- ===================== MODAL: SUCESSO ===================== -->
-<div *ngIf="showSuccessToast"
-    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-    <div
-        class="bg-white rounded-3xl shadow-2xl w-full max-w-[320px] mx-4 p-8 flex flex-col items-center text-center animate-scale-up">
-        <div
-            class="w-20 h-20 rounded-full bg-gradient-to-br from-[#005bb5] to-[#0088ff] flex items-center justify-center mb-6 shadow-lg transform rotate-[-5deg]">
-            <lucide-icon [img]="icons.CheckCircle2" class="w-10 h-10 text-white"></lucide-icon>
-        </div>
-        <h3 class="text-xl font-bold text-gray-900 mb-2">{{ successTitle }}</h3>
-        <p class="text-sm text-gray-500 mb-8 leading-relaxed">{{ successMessage }}</p>
+<div *ngIf="showSuccessToast" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs mx-4 p-6 text-center relative">
         <button (click)="closeSuccessToast()"
-            class="w-full py-3.5 border border-gray-100 bg-white rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-200 transition-all active:scale-95">
+            class="absolute top-3 right-3 p-1 hover:bg-gray-100 rounded-lg transition">
+            <lucide-icon [img]="icons.X" class="w-4 h-4 text-gray-400"></lucide-icon>
+        </button>
+        <div class="w-14 h-14 rounded-full bg-[#005bb5] flex items-center justify-center mx-auto mb-4">
+            <lucide-icon [img]="icons.CheckCircle2" class="w-7 h-7 text-white"></lucide-icon>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-1">{{ successTitle }}</h3>
+        <p class="text-sm text-gray-500 mb-5">{{ successMessage }}</p>
+        <button (click)="closeSuccessToast()"
+            class="w-full py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
             Fechar
         </button>
     </div>
 </div>
 
 <!-- ===================== MODAL: EXCLUSÃO ===================== -->
-<div *ngIf="showDeleteModal"
-    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-    <div
-        class="bg-white rounded-3xl shadow-2xl w-full max-w-[320px] mx-4 p-8 flex flex-col items-center text-center animate-scale-up">
-        <div
-            class="w-20 h-20 rounded-full bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center mb-6 shadow-sm">
-            <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-sm">
-                <lucide-icon [img]="icons.Trash2" class="w-7 h-7 text-red-500"></lucide-icon>
-            </div>
+<div *ngIf="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 text-center">
+        <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+            <lucide-icon [img]="icons.Trash2" class="w-7 h-7 text-red-500"></lucide-icon>
         </div>
-        <h3 class="text-xl font-bold text-gray-900 mb-2">Deseja realmente excluir o evento?</h3>
-        <p class="text-sm text-gray-500 mb-8 leading-relaxed">A ação não poderá ser desfeita.</p>
-        <div class="w-full space-y-3">
-            <button (click)="confirmDelete()" [disabled]="deleteLoading"
-                class="w-full py-3.5 bg-[#005bb5] text-white rounded-xl text-sm font-bold hover:bg-[#004a98] transition-all active:scale-95 shadow-md flex items-center justify-center gap-2">
-                <span *ngIf="deleteLoading"
-                    class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                Sim, excluir evento
-            </button>
+        <h3 class="text-lg font-bold text-gray-900 mb-1">Excluir evento?</h3>
+        <p class="text-sm text-gray-500 mb-6">Esta ação não pode ser desfeita. O evento será removido permanentemente.
+        </p>
+        <div class="flex gap-3">
             <button (click)="showDeleteModal = false"
-                class="w-full py-3.5 border border-gray-100 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95">
+                class="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition">
                 Cancelar
+            </button>
+            <button (click)="confirmDelete()" [disabled]="deleteLoading"
+                class="flex-1 py-2.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition disabled:opacity-50">
+                {{ deleteLoading ? 'Excluindo...' : 'Excluir' }}
             </button>
         </div>
     </div>

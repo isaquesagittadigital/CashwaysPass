@@ -151,7 +151,7 @@ export class SchoolRegistrationService {
             const { data: schoolResp, error: schoolError } = await supabase
                 .from('escola')
                 .insert({
-                    nome: school.nome,
+                    nome_fantasia: school.nome,
                     cnpj: school.cnpj,
                     razao_social: school.razaoSocial,
                     modelo_contratacao: school.modeloContratacao,
@@ -161,21 +161,20 @@ export class SchoolRegistrationService {
                     valor_unitario_equipamento: school.valorUnitarioEquipamento,
                     cobra_transacoes: school.cobraTransacoes,
                     valor_unitario_transacao: school.valorUnitarioTransacao,
-                    serie: school.serie,
-                    nome_direcao: school.nomeDirecao,
+                    tipo_escola: school.serie,
+                    responsavel_direcao: school.nomeDirecao,
                     nome_secretariado: school.nomeSecretariado,
-                    email: school.emailEscola,
+                    email_contato: school.emailEscola,
                     email_secretaria_admin: school.emailSecretariaAdmin,
-                    telefone: school.telefone,
+                    telefone_contato: school.telefone,
                     whatsapp: school.whatsapp,
                     cep: school.cep,
                     complemento: school.complemento,
-                    endereco_completo: school.enderecoCompleto,
+                    endereco: school.enderecoCompleto,
                     valor_carteira: school.valorCarteira,
-                    valor_transferencia: school.valorTransferencia,
-                    status: 'active'
+                    valor_transferencia: school.valorTransferencia
                 })
-                .select()
+                .select('id')
                 .single();
 
             if (schoolError) throw schoolError;
@@ -186,8 +185,9 @@ export class SchoolRegistrationService {
             if (profs.length > 0) {
                 const professorInserts = profs.map(p => ({
                     nome_completo: p.nome,
+                    nome: p.nome,
                     email: p.email,
-                    tipo_user: 'Professor',
+                    tipo_acesso: 'Professor',
                     status: 'active',
                     escola_id: schoolId
                 }));
@@ -211,13 +211,14 @@ export class SchoolRegistrationService {
                     const turmaInserts = turmas.map(t => ({
                         nome: t.nome,
                         estagio: t.estagio,
-                        periodo: t.periodo,
+                        Periodos: t.periodo,
                         serie: t.serie,
-                        professor_id: profIdMap.get(t.professorId),
+                        professor: profs.find(p => p.id === t.professorId)?.nome || '',
                         quantidade_alunos: t.quantidadeAlunos,
                         data_inicio: t.dataEntrada,
+                        data_entrada: t.dataEntrada,
                         escola_id: schoolId,
-                        status: 'active'
+                        status: true
                     }));
 
                     const { data: turmasResp, error: turmasError } = await supabase
@@ -238,8 +239,9 @@ export class SchoolRegistrationService {
                     if (students.length > 0) {
                         const studentUserInserts = students.map(s => ({
                             nome_completo: s.nome,
+                            nome: s.nome,
                             email: s.emailResponsavel,
-                            tipo_user: 'Aluno',
+                            tipo_acesso: 'Aluno',
                             status: 'active',
                             escola_id: schoolId,
                             turmaID: turmaIdMap.get(s.turmaId)
@@ -253,12 +255,11 @@ export class SchoolRegistrationService {
                         if (studentsUserError) throw studentsUserError;
 
                         const alunoInserts = students.map((s, i) => ({
-                            user_id: studentsUserResp[i].id,
+                            usuario_id: studentsUserResp[i].id,
                             escola_id: schoolId,
+                            turma_id: turmaIdMap.get(s.turmaId),
                             nome: s.nome,
-                            responsavel: s.responsavel,
-                            email_responsavel: s.emailResponsavel,
-                            numero_carteira: s.numeroCarteira
+                            email: s.emailResponsavel
                         }));
 
                         const { error: alunoError } = await supabase
@@ -266,6 +267,20 @@ export class SchoolRegistrationService {
                             .insert(alunoInserts);
 
                         if (alunoError) throw alunoError;
+
+                        // 5. Insert Wallet (Carteira)
+                        const carteiraInserts = students.map((s, i) => ({
+                            Usuario: studentsUserResp[i].id,
+                            carteira_code: s.numeroCarteira,
+                            turmaID: turmaIdMap.get(s.turmaId),
+                            escola_id: schoolId
+                        }));
+
+                        const { error: carteiraError } = await supabase
+                            .from('Carteira')
+                            .insert(carteiraInserts);
+
+                        if (carteiraError) throw carteiraError;
                     }
                 }
             }

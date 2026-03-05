@@ -9,7 +9,8 @@ export interface Evento {
     data_evento: string;
     capa_url: string;
     ativo: boolean;
-    turma_id: string;
+    turma_id?: string; // Optional for backward compatibility
+    turma_ids?: string[]; // New field for multiple turmas
     lojistas_convidados: string[];
     created_at?: string;
     updated_at?: string;

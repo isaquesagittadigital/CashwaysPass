@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SchoolRegistrationService } from './registration.service';
 import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { StepSchoolComponent } from './steps/step-school/step-school.component';
 import { StepProfessorComponent } from './steps/step-professor/step-professor.component';
 import { StepTurmaComponent } from './steps/step-turma/step-turma.component';
@@ -22,10 +23,11 @@ import { StepAlunoComponent } from './steps/step-aluno/step-aluno.component';
     templateUrl: './school-registration.component.html',
     styleUrls: ['./school-registration.component.css']
 })
-export class SchoolRegistrationComponent implements OnInit {
+export class SchoolRegistrationComponent implements OnInit, OnDestroy {
     currentStep$ = this.registrationService.currentStep$;
     isSchoolConfirmed$ = this.registrationService.isSchoolConfirmed$;
     icons = { ArrowLeft };
+    private stepSub?: Subscription;
 
     steps = [
         { number: 1, label: 'Cadastrar escola' },
@@ -42,6 +44,15 @@ export class SchoolRegistrationComponent implements OnInit {
     ngOnInit(): void {
         // Reset registration when entering
         this.registrationService.reset();
+
+        // Scroll to top on every step change
+        this.stepSub = this.currentStep$.subscribe(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    ngOnDestroy(): void {
+        this.stepSub?.unsubscribe();
     }
 
     setStep(step: number) {
@@ -49,6 +60,7 @@ export class SchoolRegistrationComponent implements OnInit {
             return;
         }
         this.registrationService.setStep(step);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     onBack() {
