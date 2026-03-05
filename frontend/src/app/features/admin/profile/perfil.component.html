@@ -1,0 +1,227 @@
+<!-- Header -->
+<div class="mb-6 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+        <button (click)="goBack()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors group">
+            <lucide-icon [img]="icons.ArrowLeft" class="w-5 h-5 text-gray-500 group-hover:text-gray-900"></lucide-icon>
+            <span class="ml-2 text-sm font-bold text-gray-500">Voltar</span>
+        </button>
+    </div>
+    <div class="flex items-center gap-4">
+        <div
+            class="bg-gray-100 px-3 py-1 rounded-full text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+            <span>Admin</span>
+            <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+            <span>Painel administrativo</span>
+        </div>
+    </div>
+</div>
+
+<div class="mb-8">
+    <h1 class="text-2xl font-bold text-gray-900">Perfil</h1>
+    <p class="text-gray-500 text-sm mt-0.5">Altere as suas informações pessoais</p>
+</div>
+
+<!-- Profile Card -->
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-12">
+    <!-- Section Header -->
+    <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
+        <h2 class="text-lg font-bold text-gray-900">Informações pessoais</h2>
+        <div class="flex items-center gap-3">
+            <button (click)="goBack()"
+                class="px-5 py-2 text-sm font-bold text-gray-400 hover:text-gray-600 transition-all border border-gray-100 rounded-lg">
+                Cancelar
+            </button>
+            <button (click)="saveProfile()" [disabled]="profileForm.invalid || loading"
+                class="px-8 py-2 bg-blue-50 text-blue-400 font-bold text-sm rounded-lg cursor-not-allowed border border-blue-100 transition-all">
+                Salvar
+            </button>
+        </div>
+    </div>
+
+    <div class="p-8">
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="space-y-8">
+            <!-- Name Input -->
+            <div class="flex items-center gap-12 border-b border-gray-50 pb-8">
+                <label class="w-64 text-sm font-bold text-gray-800">Nome <span
+                        class="text-blue-500 font-normal">*</span></label>
+                <div class="flex-1">
+                    <input type="text" formControlName="nome_completo"
+                        class="w-full px-4 py-3 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
+                        placeholder="Nome completo">
+                </div>
+            </div>
+
+            <!-- Email Input -->
+            <div class="flex items-center gap-12 border-b border-gray-50 pb-8">
+                <label class="w-64 text-sm font-bold text-gray-800">Email <span
+                        class="text-blue-500 font-normal">*</span></label>
+                <div class="flex-1 relative">
+                    <lucide-icon [img]="icons.Mail"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+                    <input type="email" formControlName="email"
+                        class="w-full pl-12 pr-4 py-3 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
+                        placeholder="admin@exemplo.com">
+                </div>
+            </div>
+
+            <!-- Avatar Upload -->
+            <div class="flex items-start gap-12 border-b border-gray-50 pb-8">
+                <div class="w-64">
+                    <div class="flex items-center gap-1 mb-1">
+                        <label class="text-sm font-bold text-gray-800">Foto de perfil <span
+                                class="text-blue-500 font-normal">*</span></label>
+                        <lucide-icon [img]="icons.HelpCircle" class="w-3.5 h-3.5 text-gray-300"></lucide-icon>
+                    </div>
+                    <p class="text-xs text-gray-400 leading-relaxed">Essa foto aparecerá como imagem de perfil.</p>
+                </div>
+
+                <div class="flex items-center gap-8">
+                    <!-- Current Avatar Preview -->
+                    <div class="relative group">
+                        <div
+                            class="w-16 h-16 rounded-full overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center">
+                            <img *ngIf="previewUrl" [src]="previewUrl" class="w-full h-full object-cover">
+                            <div *ngIf="!previewUrl"
+                                class="w-full h-full bg-gradient-to-br from-[#005bb5] to-blue-400 flex items-center justify-center">
+                                <span class="text-white text-xl font-bold">E</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Area -->
+                    <div class="relative">
+                        <input type="file" (change)="onFileSelected($event)" accept="image/*" id="avatarUpload"
+                            class="hidden">
+                        <label for="avatarUpload"
+                            class="flex flex-col items-center justify-center w-[380px] h-28 border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/30 hover:bg-gray-50 hover:border-blue-400 transition-all cursor-pointer group">
+                            <div
+                                class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-2 group-hover:scale-110 transition-transform border border-gray-50">
+                                <lucide-icon [img]="icons.UploadCloud" class="w-5 h-5 text-gray-400"></lucide-icon>
+                            </div>
+                            <p class="text-xs font-medium text-gray-600">
+                                <span class="text-blue-700 font-bold">Clique para fazer upload</span> ou arraste e solte
+                                aqui
+                            </p>
+                            <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-bold">PNG ou JPG
+                                (max. 02 MB)</p>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passwords Section -->
+            <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()" class="space-y-8">
+                <!-- Current Password -->
+                <div class="flex items-center gap-12">
+                    <label class="w-64 text-sm font-bold text-gray-800">Senha atual <span
+                            class="text-blue-500 font-normal">*</span></label>
+                    <div class="flex-1 relative">
+                        <lucide-icon [img]="icons.Lock"
+                            class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+                        <input type="password" formControlName="current_password"
+                            class="w-full pl-12 pr-4 py-3 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
+                            placeholder="••••••••">
+                    </div>
+                </div>
+
+                <!-- New Password -->
+                <div class="flex items-center gap-12">
+                    <label class="w-64 text-sm font-bold text-gray-800">Nova senha <span
+                            class="text-blue-500 font-normal">*</span></label>
+                    <div class="flex-1 relative">
+                        <lucide-icon [img]="icons.Lock"
+                            class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+                        <input type="password" formControlName="new_password"
+                            class="w-full pl-12 pr-4 py-3 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
+                            placeholder="••••••••">
+                    </div>
+                </div>
+
+                <!-- Confirm New Password -->
+                <div class="flex items-center gap-12 border-b border-gray-50 pb-8">
+                    <label class="w-64 text-sm font-bold text-gray-800">Confirmar nova senha <span
+                            class="text-blue-500 font-normal">*</span></label>
+                    <div class="flex-1 relative">
+                        <lucide-icon [img]="icons.Lock"
+                            class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+                        <input type="password" formControlName="confirm_password"
+                            class="w-full pl-12 pr-4 py-3 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
+                            placeholder="••••••••">
+                    </div>
+                </div>
+
+                <!-- Change Password Button -->
+                <div class="flex justify-end pt-2">
+                    <button type="submit" [disabled]="passwordForm.invalid || loading"
+                        class="px-8 py-3 bg-gray-50 text-gray-400 font-bold text-sm rounded-xl border border-gray-100 hover:bg-gray-100 hover:text-gray-600 transition-all">
+                        Salvar nova senha
+                    </button>
+                </div>
+            </form>
+        </form>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div *ngIf="loading" class="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div
+        class="bg-white rounded-[24px] shadow-2xl p-12 flex flex-col items-center max-w-[320px] w-full border border-gray-50">
+        <div class="w-16 h-16 relative mb-8">
+            <div class="absolute inset-0 rounded-full border-4 border-gray-100"></div>
+            <div class="absolute inset-0 rounded-full border-4 border-t-[#005bb5] animate-spin"></div>
+        </div>
+        <h3 class="text-xl font-bold text-[#344054] mb-2 text-center">Aguarde um momento</h3>
+    </div>
+</div>
+
+<!-- Success Modal (Profile) -->
+<div *ngIf="showSuccessModal"
+    class="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div
+        class="bg-white rounded-[32px] shadow-2xl p-10 flex flex-col items-center max-w-[400px] w-full relative animate-in zoom-in duration-300">
+        <button (click)="closeModals()" class="absolute right-6 top-6 p-2 text-gray-400 hover:text-gray-600">
+            <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+        </button>
+
+        <div
+            class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-[#005bb5] flex items-center justify-center mb-6 shadow-xl shadow-blue-100">
+            <lucide-icon [img]="icons.CheckCircle2" class="w-10 h-10 text-white"></lucide-icon>
+        </div>
+
+        <h3 class="text-xl font-black text-[#1D2939] mb-3 text-center">Alterações realizadas com sucesso!</h3>
+        <p class="text-gray-500 text-center text-sm leading-relaxed mb-8 px-4">
+            As alterações nos seus dados foram efetuadas com sucesso.
+        </p>
+
+        <button (click)="closeModals()"
+            class="w-full py-4 px-6 border border-gray-200 rounded-2xl text-gray-700 font-bold text-lg hover:bg-gray-50 transition-all">
+            Fechar
+        </button>
+    </div>
+</div>
+
+<!-- Success Modal (Password) -->
+<div *ngIf="showPasswordSuccessModal"
+    class="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div
+        class="bg-white rounded-[32px] shadow-2xl p-10 flex flex-col items-center max-w-[400px] w-full relative animate-in zoom-in duration-300">
+        <button (click)="closeModals()" class="absolute right-6 top-6 p-2 text-gray-400 hover:text-gray-600">
+            <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+        </button>
+
+        <div
+            class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-[#005bb5] flex items-center justify-center mb-6 shadow-xl shadow-blue-100">
+            <lucide-icon [img]="icons.CheckCircle2" class="w-10 h-10 text-white"></lucide-icon>
+        </div>
+
+        <h3 class="text-xl font-black text-[#1D2939] mb-3 text-center text-wrap">Senha alterada com sucesso!</h3>
+        <p class="text-gray-500 text-center text-sm leading-relaxed mb-8 px-4">
+            A sua senha foi alterada.
+        </p>
+
+        <button (click)="closeModals()"
+            class="w-full py-4 px-6 border border-gray-200 rounded-2xl text-gray-700 font-bold text-lg hover:bg-gray-50 transition-all">
+            Fechar
+        </button>
+    </div>
+</div>

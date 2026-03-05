@@ -1,0 +1,96 @@
+<div class="flex h-screen bg-gray-50 overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside [ngClass]="sidebarOpen ? 'w-[260px]' : 'w-[72px]'"
+        class="bg-white border-r border-gray-100 flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 shadow-sm">
+
+        <!-- Logo area -->
+        <div class="h-16 flex items-center px-4 border-b border-gray-100">
+            <div *ngIf="sidebarOpen" class="flex items-center gap-2">
+                <app-logo className="w-36" [light]="false"></app-logo>
+            </div>
+            <div *ngIf="!sidebarOpen" class="flex items-center justify-center w-full">
+                <div
+                    class="w-9 h-9 bg-gradient-to-br from-[#005bb5] to-[#1a73e8] rounded-lg flex items-center justify-center">
+                    <span class="text-white font-bold text-sm">CP</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu label -->
+        <div *ngIf="sidebarOpen" class="px-5 pt-6 pb-2">
+            <p class="text-[10px] font-semibold text-gray-300 uppercase tracking-widest">Menu da escola</p>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 px-3 space-y-1 overflow-y-auto" [ngClass]="{ 'pt-4': !sidebarOpen }">
+            <a *ngFor="let item of menuItems" [routerLink]="['/escola', item.route]"
+                routerLinkActive="bg-gradient-to-r from-[#005bb5]/10 to-[#1a73e8]/5 text-[#005bb5] border-l-[3px] border-[#005bb5]"
+                [routerLinkActiveOptions]="{exact: true}"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-r-lg text-sm font-medium text-gray-400 hover:bg-gray-50 hover:text-gray-600 border-l-[3px] border-transparent transition-all duration-200 group">
+                <lucide-icon [img]="item.icon"
+                    class="w-[18px] h-[18px] flex-shrink-0 text-gray-300 group-hover:text-gray-500"
+                    routerLinkActive="text-[#005bb5]" [routerLinkActiveOptions]="{exact: true}"></lucide-icon>
+                <span *ngIf="sidebarOpen" class="truncate">{{ item.label }}</span>
+            </a>
+        </nav>
+
+        <!-- Sidebar footer -->
+        <div class="p-3 border-t border-gray-100">
+            <button (click)="logout()"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-50 hover:text-red-500 transition-all duration-200">
+                <lucide-icon [img]="icons.LogOut" class="w-[18px] h-[18px] flex-shrink-0"></lucide-icon>
+                <span *ngIf="sidebarOpen">Sair</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+
+        <!-- Header -->
+        <header
+            class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 flex-shrink-0 shadow-sm">
+            <div class="flex items-center gap-4">
+                <button (click)="toggleSidebar()"
+                    class="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all">
+                    <lucide-icon [img]="sidebarOpen ? icons.X : icons.Menu" class="w-5 h-5"></lucide-icon>
+                </button>
+
+                <!-- Search bar -->
+                <div class="relative hidden md:block">
+                    <lucide-icon [img]="icons.Search"
+                        class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300"></lucide-icon>
+                    <input type="text" placeholder="Buscar alunos, eventos..."
+                        class="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-600 placeholder-gray-300 focus:outline-none focus:border-[#005bb5] focus:ring-2 focus:ring-[#005bb5]/10 w-72 transition-all" />
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Notifications -->
+                <button
+                    class="relative p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all">
+                    <lucide-icon [img]="icons.Bell" class="w-5 h-5"></lucide-icon>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+
+                <!-- User avatar -->
+                <div class="flex items-center gap-3 pl-3 border-l border-gray-100">
+                    <div
+                        class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
+                        <span class="text-white text-xs font-semibold">E</span>
+                    </div>
+                    <div class="hidden sm:block">
+                        <p class="text-sm font-semibold text-gray-700 leading-none">Escola</p>
+                        <p class="text-[11px] text-gray-400 mt-0.5">Gestor Escolar</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page content -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <router-outlet></router-outlet>
+        </main>
+    </div>
+</div>

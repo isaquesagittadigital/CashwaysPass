@@ -1,0 +1,40 @@
+:host {
+    display: block;
+}
+
+.form-group label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    background-color: #F9FAFB;
+    border: 1px solid #F3F4F6;
+    border-radius: 0.75rem;
+    font-size: 0.8rem;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #00609b;
+    background-color: white;
+}
+
+.btn-secondary {
+    background-color: white;
+    color: #6B7280;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: #F9FAFB;
+    color: #4B5563;
+}

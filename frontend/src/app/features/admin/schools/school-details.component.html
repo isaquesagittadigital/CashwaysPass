@@ -1,0 +1,117 @@
+<div class="p-8 space-y-8 animate-in fade-in duration-500">
+    <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-20 gap-4">
+        <div class="w-10 h-10 border-4 border-[#00609b]/20 border-t-[#00609b] rounded-full animate-spin"></div>
+        <p class="text-sm text-gray-400 font-medium">Carregando detalhes da escola...</p>
+    </div>
+
+    <div *ngIf="!isLoading && school" class="space-y-8">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <button (click)="onBack()"
+                    class="p-2 hover:bg-gray-100 rounded-lg transition-all text-gray-400 hover:text-gray-600">
+                    <lucide-icon [img]="icons.ArrowLeft" class="w-6 h-6"></lucide-icon>
+                </button>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 tracking-tight font-primary">{{ school.nome_fantasia }}
+                    </h1>
+                    <p class="text-sm text-gray-500 mt-1">Gerenciamento completo da unidade escolar.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <span [class]="school.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'"
+                    class="px-4 py-1.5 text-xs font-bold rounded-full uppercase border border-white shadow-sm">
+                    {{ school.status === 'active' ? 'Ativo' : 'Inativo' }}
+                </span>
+            </div>
+        </header>
+
+        <!-- Tabs Nav -->
+        <div class="flex border-b border-gray-100 gap-8">
+            <button (click)="activeTab = 'details'" [class.active-tab]="activeTab === 'details'" class="tab-btn">Dados
+                da Escola</button>
+            <button (click)="activeTab = 'turmas'" [class.active-tab]="activeTab === 'turmas'"
+                class="tab-btn">Turmas</button>
+            <button (click)="activeTab = 'professors'" [class.active-tab]="activeTab === 'professors'"
+                class="tab-btn">Professores</button>
+            <button (click)="activeTab = 'students'" [class.active-tab]="activeTab === 'students'"
+                class="tab-btn">Alunos</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div [ngSwitch]="activeTab">
+            <!-- Details Tab -->
+            <div *ngSwitchCase="'details'"
+                class="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 max-w-4xl animate-in slide-in-from-bottom-4 duration-300">
+                <form [formGroup]="schoolForm" (ngSubmit)="onSubmit()" class="space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label>Nome da Escola</label>
+                            <input type="text" formControlName="nome" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>CNPJ</label>
+                            <input type="text" formControlName="cnpj" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Razão Social</label>
+                            <input type="text" formControlName="razao_social" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Modelo de Contratação</label>
+                            <select formControlName="modelo_contratacao" class="form-input">
+                                <option value="Full">Full</option>
+                                <option value="Light">Light</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>E-mail Principal</label>
+                            <input type="email" formControlName="email" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Telefone</label>
+                            <input type="text" formControlName="telefone" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Série / Segmento</label>
+                            <input type="text" formControlName="serie" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select formControlName="status" class="form-input">
+                                <option value="active">Ativo</option>
+                                <option value="inactive">Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-6 border-t border-gray-50">
+                        <button type="submit" class="btn-primary flex items-center gap-2">
+                            <lucide-icon [img]="icons.Save" class="w-5 h-5"></lucide-icon>
+                            Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Turmas Tab -->
+            <div *ngSwitchCase="'turmas'" class="animate-in slide-in-from-bottom-4 duration-300">
+                <app-turma-management [schoolId]="schoolId!"></app-turma-management>
+            </div>
+
+            <!-- Professors Tab -->
+            <div *ngSwitchCase="'professors'" class="animate-in slide-in-from-bottom-4 duration-300">
+                <app-professor-management [schoolId]="schoolId!"></app-professor-management>
+            </div>
+
+            <!-- Students Tab -->
+            <div *ngSwitchCase="'students'" class="animate-in slide-in-from-bottom-4 duration-300">
+                <app-student-management [schoolId]="schoolId!"></app-student-management>
+            </div>
+        </div>
+    </div>
+
+    <app-feedback-modal *ngIf="showSuccessModal" title="Alterações salvas!"
+        message="Os dados da escola foram atualizados com sucesso."
+        (confirm)="showSuccessModal = false"></app-feedback-modal>
+</div>

@@ -1,0 +1,127 @@
+<div class="space-y-8">
+    <!-- Register New Class -->
+    <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
+        <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary">Cadastrar nova turma</h3>
+
+        <form [formGroup]="turmaForm" (ngSubmit)="addTurma()" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+            <div class="form-group">
+                <label>Nome da turma *</label>
+                <input type="text" formControlName="nome" class="form-input" placeholder="Ex.: Turma A">
+            </div>
+
+            <div class="form-group">
+                <label>Estágio *</label>
+                <select formControlName="estagio" class="form-input">
+                    <option value="">Selecione o estágio</option>
+                    <option *ngFor="let option of estagioOptions" [value]="option.value">{{ option.label }}</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Período *</label>
+                <select formControlName="periodo" class="form-input">
+                    <option value="">Selecione o período</option>
+                    <option *ngFor="let option of periodoOptions" [value]="option.value">{{ option.label }}</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Série *</label>
+                <input type="text" formControlName="serie" class="form-input" placeholder="Ex.: 5º A">
+            </div>
+
+            <div class="form-group">
+                <label>Professor *</label>
+                <select formControlName="professorId" class="form-input">
+                    <option value="">Selecione o professor</option>
+                    <option *ngFor="let prof of professors$ | async" [value]="prof.id">{{ prof.nome }}</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Quantidade de alunos *</label>
+                <input type="number" formControlName="quantidadeAlunos" class="form-input" placeholder="0">
+            </div>
+
+            <div class="form-group">
+                <label>Data de entrada *</label>
+                <input type="date" formControlName="dataEntrada" class="form-input">
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button type="submit" class="btn-secondary h-[46px] w-full flex items-center justify-center gap-2">
+                    <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
+                    Cadastrar turma
+                </button>
+            </div>
+        </form>
+        <div class="text-sm text-gray-400 mt-4">Preencha os campos para realizar um novo cadastro.</div>
+    </div>
+
+    <!-- Classes List -->
+    <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
+        <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary">Turmas cadastradas</h3>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                        <th class="py-4">Série e turma</th>
+                        <th class="py-4 text-center">Estágio</th>
+                        <th class="py-4">Professor</th>
+                        <th class="py-4 text-center">Qtd. alunos</th>
+                        <th class="py-4 text-center">Período</th>
+                        <th class="py-4">Entrada</th>
+                        <th class="py-4 text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    <tr *ngFor="let turma of turmas$ | async" class="group">
+                        <td class="py-4 font-bold text-gray-700">{{ turma.serie }} {{ turma.nome }}</td>
+                        <td class="py-4 text-center">
+                            <span
+                                class="px-3 py-1 bg-gray-50 text-gray-500 text-[10px] font-bold rounded-full uppercase">
+                                {{ turma.estagio }}
+                            </span>
+                        </td>
+                        <td class="py-4 text-gray-600">{{ getProfessorName(turma.professorId, (professors$ | async)) }}
+                        </td>
+                        <td class="py-4 text-center text-gray-600">{{ turma.quantidadeAlunos }}</td>
+                        <td class="py-4 text-center text-gray-600">{{ turma.periodo }}</td>
+                        <td class="py-4 text-gray-500 ">{{ turma.dataEntrada | date:'dd/MM/yyyy' }}</td>
+                        <td class="py-4">
+                            <div class="flex items-center justify-center gap-3">
+                                <button (click)="removeTurma(turma.id!)"
+                                    class="p-2 text-red-100 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                                    <lucide-icon [img]="icons.Trash2" class="w-5 h-5"></lucide-icon>
+                                </button>
+                                <button
+                                    class="p-2 text-gray-300 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-all border border-gray-100">
+                                    <lucide-icon [img]="icons.Edit" class="w-5 h-5"></lucide-icon>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr *ngIf="(turmas$ | async)?.length === 0">
+                        <td colspan="7" class="py-8 text-center text-gray-400">Nenhuma turma cadastrada.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex items-center justify-between mt-8 text-sm">
+            <span class="text-gray-400">Página 1 de 1</span>
+            <div class="flex gap-2">
+                <button
+                    class="btn-secondary py-2 px-4 text-xs font-bold opacity-50 cursor-not-allowed">Anterior</button>
+                <button class="btn-secondary py-2 px-4 text-xs font-bold opacity-50 cursor-not-allowed">Próximo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-4 pt-8 border-t border-gray-100">
+        <button (click)="onBack()" type="button" class="btn-secondary px-12">Voltar</button>
+        <button (click)="onNext()" type="button" class="btn-primary px-12">Prosseguir</button>
+    </div>
+</div>

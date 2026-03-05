@@ -1,0 +1,157 @@
+<div class="space-y-6 animate-in fade-in duration-500">
+    <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold text-gray-900 font-primary">Turmas da Unidade</h3>
+        <button (click)="openAddModal()" class="btn-primary py-2 px-6 flex items-center gap-2 text-xs">
+            <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
+            Nova Turma
+        </button>
+    </div>
+
+    <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-12 gap-4">
+        <div class="w-8 h-8 border-4 border-[#00609b]/10 border-t-[#00609b] rounded-full animate-spin"></div>
+        <p class="text-xs text-gray-400 font-medium tracking-tight">Carregando turmas...</p>
+    </div>
+
+    <div *ngIf="!isLoading && turmas.length > 0"
+        class="overflow-x-auto no-scrollbar bg-white rounded-3xl border border-gray-100 shadow-sm">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="bg-gray-50/50 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                    <th class="px-6 py-4">Nome</th>
+                    <th class="px-6 py-4">Estágio / Período</th>
+                    <th class="px-6 py-4 text-center">Alunos</th>
+                    <th class="px-6 py-4">Professor</th>
+                    <th class="px-6 py-4 text-center">Status</th>
+                    <th class="px-6 py-4 text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                <tr *ngFor="let turma of turmas" class="hover:bg-gray-50/30 transition-all group">
+                    <td class="px-6 py-4 font-bold text-gray-700 text-sm">{{ turma.nome }}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col">
+                            <span class="text-xs text-gray-600 font-medium">{{ turma.estagio }}</span>
+                            <span class="text-[10px] text-gray-400">{{ turma.periodo }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span
+                            class="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-bold rounded-lg border border-gray-200">
+                            {{ turma.quantidade_alunos }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-500">{{ turma.professor?.nome_completo || 'Não atribuído' }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex justify-center">
+                            <span
+                                [class]="turma.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'"
+                                class="px-3 py-1 text-[10px] font-bold rounded-full uppercase">
+                                {{ turma.status === 'active' ? 'Ativo' : 'Inativo' }}
+                            </span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center justify-center gap-2">
+                            <button (click)="openEditModal(turma)"
+                                class="p-2 text-blue-400 hover:bg-blue-50 rounded-lg transition-all">
+                                <lucide-icon [img]="icons.Edit" class="w-4 h-4"></lucide-icon>
+                            </button>
+                            <button (click)="onDelete(turma.id)"
+                                class="p-2 text-red-100 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                                <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && turmas.length === 0"
+        class="p-12 text-center bg-white rounded-3xl border border-dashed border-gray-200 flex flex-col items-center gap-4">
+        <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center">
+            <lucide-icon [img]="icons.Users" class="w-6 h-6 text-gray-300"></lucide-icon>
+        </div>
+        <div>
+            <h4 class="font-bold text-gray-700">Nenhuma turma cadastrada</h4>
+            <p class="text-xs text-gray-400">Comece adicionando a primeira turma desta escola.</p>
+        </div>
+        <button (click)="openAddModal()" class="btn-primary py-2 px-6 text-xs">Criar Turma</button>
+    </div>
+
+    <!-- Modal -->
+    <div *ngIf="showModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in duration-300">
+            <header class="p-6 bg-[#00609b] text-white flex items-center justify-between">
+                <h3 class="text-xl font-bold font-primary">{{ isEditing ? 'Editar Turma' : 'Nova Turma' }}</h3>
+                <button (click)="showModal = false" class="p-2 hover:bg-white/10 rounded-lg transition-all">
+                    <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+                </button>
+            </header>
+
+            <form [formGroup]="turmaForm" (ngSubmit)="onSubmit()" class="p-8 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label>Nome da Turma</label>
+                        <input type="text" formControlName="nome" class="form-input" placeholder="Ex: Turma A">
+                    </div>
+                    <div class="form-group">
+                        <label>Série</label>
+                        <input type="text" formControlName="serie" class="form-input" placeholder="Ex: 1º Ano">
+                    </div>
+                    <div class="form-group">
+                        <label>Estágio</label>
+                        <select formControlName="estagio" class="form-input">
+                            <option value="Fundamental">Fundamental</option>
+                            <option value="Infantil">Infantil</option>
+                            <option value="Médio">Médio</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Período</label>
+                        <select formControlName="periodo" class="form-input">
+                            <option value="Matutino">Matutino</option>
+                            <option value="Vespertino">Vespertino</option>
+                            <option value="Noturno">Noturno</option>
+                            <option value="Integral">Integral</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Professor Responsável</label>
+                        <select formControlName="professor_id" class="form-input">
+                            <option value="">Selecione um professor</option>
+                            <option *ngFor="let prof of professors" [value]="prof.id">{{ prof.nome_completo }}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Qtd. Alunos Estimada</label>
+                        <input type="number" formControlName="quantidade_alunos" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Data de Início</label>
+                        <input type="date" formControlName="data_inicio" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select formControlName="status" class="form-input">
+                            <option value="active">Ativo</option>
+                            <option value="inactive">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-6 border-t border-gray-50">
+                    <button type="button" (click)="showModal = false"
+                        class="px-6 py-2.5 text-gray-400 font-bold hover:text-gray-600 transition-colors">Cancelar</button>
+                    <button type="submit" class="btn-primary py-2.5 px-8 flex items-center gap-2">
+                        <lucide-icon [img]="isEditing ? icons.Save : icons.Plus" class="w-5 h-5"></lucide-icon>
+                        {{ isEditing ? 'Salvar Alterações' : 'Criar Turma' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,91 @@
+<div
+    class="min-h-screen bg-[#009ee2] flex items-center justify-center p-4 font-sans bg-gradient-to-b from-[#00b4eb] to-[#004a98]">
+
+    <div
+        class="bg-white rounded-2xl p-8 w-full max-w-[440px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex flex-col items-center">
+
+        <!-- Tab Switcher -->
+        <div
+            class="bg-[#f8f9fa] p-1 rounded-full mb-10 flex items-center justify-center border border-gray-100 w-fit mx-auto">
+            <button type="button" (click)="setRole('school')"
+                [ngClass]="role === 'school' ? 'bg-white text-gray-800 shadow-sm border-gray-200' : 'text-gray-400 hover:text-gray-600'"
+                class="px-5 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 border border-transparent">
+                Escola
+            </button>
+            <button type="button" (click)="setRole('admin')"
+                [ngClass]="role === 'admin' ? 'bg-white text-gray-800 shadow-sm border-gray-200' : 'text-gray-400 hover:text-gray-600'"
+                class="px-5 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 border border-transparent">
+                Painel administrativo
+            </button>
+        </div>
+
+        <!-- Logo -->
+        <div class="mb-10 flex justify-center w-full">
+            <app-logo className="w-52" [light]="false"></app-logo>
+        </div>
+
+        <!-- Form -->
+        <form class="w-full space-y-5" (submit)="onLogin($event)" novalidate>
+            <!-- Email Field -->
+            <div class="space-y-1.5">
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <lucide-icon [img]="icons.User"
+                            [class]="submitted && !isEmailValid() ? 'text-red-400' : 'text-gray-300' "
+                            class="h-4 w-4 transition-colors"></lucide-icon>
+                    </div>
+                    <input type="email" required [(ngModel)]="email" name="email" #emailInput="ngModel"
+                        [class]="submitted && !isEmailValid() ? 'border-red-300 bg-red-50/30' : 'border-gray-200 focus:border-[#005bb5]' "
+                        class="block w-full pl-11 pr-4 py-3 bg-white border rounded-lg text-gray-700 placeholder-gray-300 text-sm outline-none transition-all"
+                        placeholder="Ex.: user@gmail.com" />
+                </div>
+                <p class="text-[10px] text-red-500 font-medium pl-1 animate-in fade-in slide-in-from-top-1"
+                    *ngIf="submitted && !isEmailValid()">
+                    Por favor, insira um e-mail válido.
+                </p>
+            </div>
+
+            <!-- Password Field -->
+            <div class="space-y-1.5">
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <lucide-icon [img]="icons.Key"
+                            [class]="submitted && !isPasswordValid() ? 'text-red-400' : 'text-gray-300' "
+                            class="h-4 w-4 transition-colors"></lucide-icon>
+                    </div>
+                    <input [type]="showPassword ? 'text' : 'password'" required [(ngModel)]="password" name="password"
+                        #passInput="ngModel"
+                        [class]="submitted && !isPasswordValid() ? 'border-red-300 bg-red-50/30' : 'border-gray-200 focus:border-[#005bb5]' "
+                        class="block w-full pl-11 pr-11 py-3 bg-white border rounded-lg text-gray-700 placeholder-gray-300 text-sm outline-none transition-all"
+                        placeholder="Informe a sua senha" />
+                    <button type="button" (click)="togglePasswordVisibility()"
+                        class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-300 hover:text-gray-400">
+                        <lucide-icon [img]="showPassword ? icons.EyeOff : icons.Eye" class="h-4 w-4"></lucide-icon>
+                    </button>
+                </div>
+                <p class="text-[10px] text-red-500 font-medium pl-1 animate-in fade-in slide-in-from-top-1"
+                    *ngIf="submitted && !isPasswordValid()">
+                    A senha deve ter pelo menos 6 caracteres.
+                </p>
+            </div>
+
+            <div class="flex items-center gap-2 pt-1">
+                <input type="checkbox" id="remember" [(ngModel)]="rememberMe" name="remember"
+                    class="w-4 h-4 text-[#00609b] border-gray-300 rounded focus:ring-[#00609b] cursor-pointer accent-[#00609b]" />
+                <label for="remember"
+                    class="text-xs font-bold text-gray-500 cursor-pointer select-none">Lembrar-me</label>
+            </div>
+
+            <button type="submit" [disabled]="isLoading"
+                class="w-full py-3.5 px-4 bg-[#00609b] text-white rounded-lg text-sm font-bold hover:bg-[#004a7a] transition-all mt-4 shadow-md disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none flex items-center justify-center gap-2">
+                <span *ngIf="!isLoading">Acessar conta</span>
+                <svg *ngIf="isLoading" class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+            </button>
+        </form>
+    </div>
+</div>
