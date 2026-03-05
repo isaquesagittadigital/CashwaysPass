@@ -36,18 +36,20 @@
                 <tr *ngFor="let student of students" class="hover:bg-gray-50/30 transition-all group">
                     <td class="px-6 py-4">
                         <div class="flex flex-col">
-                            <span class="text-sm font-bold text-gray-700">{{ student.nome_completo }}</span>
+                            <span class="text-sm font-bold text-gray-700">{{ student.nome || student.nome_completo
+                                }}</span>
                             <span class="text-[10px] text-gray-400 truncate max-w-[150px]">{{ student.email }}</span>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-xs text-gray-500">{{ student.aluno?.[0]?.responsavel || 'N/A' }}</td>
+                    <td class="px-6 py-4 text-xs text-gray-500">{{ student.nome_mae || student.responsavel || 'N/A' }}
+                    </td>
                     <td class="px-6 py-4 text-xs text-gray-600 font-medium">
                         <span class="px-2 py-0.5 bg-gray-50 rounded-lg border border-gray-100">
-                            {{ student.turma?.serie }} {{ student.turma?.nome }}
+                            {{ student.turma?.serie || '' }} {{ student.turma?.nome || 'Sem turma' }}
                         </span>
                     </td>
                     <td class="px-6 py-4 text-center font-mono text-[10px] text-gray-500">{{
-                        student.aluno?.[0]?.numero_carteira || '---' }}</td>
+                        student.ra || student.numero_carteira || '---' }}</td>
                     <td class="px-6 py-4">
                         <div class="flex items-center justify-center gap-2">
                             <button (click)="onSendEmail(student)" [disabled]="isSendingEmail[student.id]"

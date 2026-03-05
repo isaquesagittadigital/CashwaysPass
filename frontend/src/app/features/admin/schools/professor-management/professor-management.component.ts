@@ -73,7 +73,7 @@ export class ProfessorManagementComponent implements OnInit {
             const data = {
                 ...this.professorForm.value,
                 escola_id: this.schoolId,
-                tipo_user: 'Professor'
+                tipo_acesso: 'Professor'
             };
 
             const obs = this.isEditing

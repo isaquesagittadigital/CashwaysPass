@@ -1,39 +1,42 @@
 <!-- Header -->
 <div class="mb-6 flex items-center justify-between">
     <div class="flex items-center gap-4">
-        <button (click)="goBack()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors group">
-            <lucide-icon [img]="icons.ArrowLeft" class="w-5 h-5 text-gray-500 group-hover:text-gray-900"></lucide-icon>
-            <span class="ml-2 text-sm font-bold text-gray-500">Voltar</span>
+        <button (click)="goBack()" class="p-2 hover:bg-gray-100 rounded-lg transition-all group flex items-center">
+            <lucide-icon [img]="icons.ArrowLeft" class="w-5 h-5 text-gray-400 group-hover:text-gray-900"></lucide-icon>
+            <span class="ml-2 text-sm font-bold text-gray-400 group-hover:text-gray-900">Voltar</span>
         </button>
     </div>
     <div class="flex items-center gap-4">
         <div
-            class="bg-gray-100 px-3 py-1 rounded-full text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
-            <span>Admin</span>
+            class="bg-gray-50 px-4 py-1.5 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 border border-gray-100 shadow-sm">
+            <span>{{ isAdmin ? 'Admin' : 'Escola' }}</span>
             <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-            <span>Painel administrativo</span>
+            <span>Painel {{ isAdmin ? 'administrativo' : 'da escola' }}</span>
         </div>
     </div>
 </div>
 
 <div class="mb-8">
-    <h1 class="text-2xl font-bold text-gray-900">Perfil</h1>
-    <p class="text-gray-500 text-sm mt-0.5">Altere as suas informações pessoais</p>
+    <h1 class="text-3xl font-black text-gray-900 tracking-tight">Perfil</h1>
+    <p class="text-gray-500 text-sm mt-1">Gerencie suas informações e segurança da conta.</p>
 </div>
 
 <!-- Profile Card -->
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-12">
+<div class="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden mb-12">
     <!-- Section Header -->
-    <div class="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
-        <h2 class="text-lg font-bold text-gray-900">Informações pessoais</h2>
+    <div class="px-8 py-6 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-lg font-bold text-gray-900">Informações pessoais</h2>
+            <p class="text-xs text-gray-400">Atualize seus dados de contato e foto.</p>
+        </div>
         <div class="flex items-center gap-3">
             <button (click)="goBack()"
-                class="px-5 py-2 text-sm font-bold text-gray-400 hover:text-gray-600 transition-all border border-gray-100 rounded-lg">
+                class="px-5 py-2 text-sm font-bold text-gray-400 hover:text-gray-600 transition-all border border-gray-100 rounded-xl hover:bg-gray-50">
                 Cancelar
             </button>
-            <button (click)="saveProfile()" [disabled]="profileForm.invalid || loading"
-                class="px-8 py-2 bg-blue-50 text-blue-400 font-bold text-sm rounded-lg cursor-not-allowed border border-blue-100 transition-all">
-                Salvar
+            <button (click)="saveProfile()" [disabled]="!canSaveProfile"
+                class="px-8 py-2 bg-[#00609b] text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-blue-900/10 hover:bg-[#004a7a] disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none disabled:cursor-not-allowed">
+                Salvar alterações
             </button>
         </div>
     </div>
@@ -41,65 +44,65 @@
     <div class="p-8">
         <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="space-y-8">
             <!-- Name Input -->
-            <div class="flex items-center gap-12 border-b border-gray-50 pb-8">
-                <label class="w-64 text-sm font-bold text-gray-800">Nome <span
-                        class="text-blue-500 font-normal">*</span></label>
+            <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-12 border-b border-gray-50 pb-8">
+                <label class="md:w-64 text-sm font-bold text-gray-800">Nome <span class="text-blue-500">*</span></label>
                 <div class="flex-1">
                     <input type="text" formControlName="nome_completo"
-                        class="w-full px-4 py-3 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
+                        class="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
                         placeholder="Nome completo">
                 </div>
             </div>
 
             <!-- Email Input -->
-            <div class="flex items-center gap-12 border-b border-gray-50 pb-8">
-                <label class="w-64 text-sm font-bold text-gray-800">Email <span
-                        class="text-blue-500 font-normal">*</span></label>
+            <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-12 border-b border-gray-50 pb-8">
+                <label class="md:w-64 text-sm font-bold text-gray-800">Email <span
+                        class="text-blue-500">*</span></label>
                 <div class="flex-1 relative">
                     <lucide-icon [img]="icons.Mail"
-                        class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+                        class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
                     <input type="email" formControlName="email"
-                        class="w-full pl-12 pr-4 py-3 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
+                        class="w-full pl-14 pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
                         placeholder="admin@exemplo.com">
                 </div>
             </div>
 
             <!-- Avatar Upload -->
-            <div class="flex items-start gap-12 border-b border-gray-50 pb-8">
-                <div class="w-64">
-                    <div class="flex items-center gap-1 mb-1">
-                        <label class="text-sm font-bold text-gray-800">Foto de perfil <span
-                                class="text-blue-500 font-normal">*</span></label>
+            <div class="flex flex-col md:flex-row md:items-start gap-4 md:gap-12 border-b border-gray-50 pb-8">
+                <div class="md:w-64">
+                    <div class="flex items-center gap-2 mb-1">
+                        <label class="text-sm font-bold text-gray-800">Foto de perfil</label>
                         <lucide-icon [img]="icons.HelpCircle" class="w-3.5 h-3.5 text-gray-300"></lucide-icon>
                     </div>
                     <p class="text-xs text-gray-400 leading-relaxed">Essa foto aparecerá como imagem de perfil.</p>
                 </div>
 
-                <div class="flex items-center gap-8">
+                <div class="flex flex-col sm:flex-row items-center gap-8 w-full md:w-auto">
                     <!-- Current Avatar Preview -->
                     <div class="relative group">
                         <div
-                            class="w-16 h-16 rounded-full overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center">
+                            class="w-20 h-20 rounded-full overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center ring-4 ring-gray-50">
                             <img *ngIf="previewUrl" [src]="previewUrl" class="w-full h-full object-cover">
                             <div *ngIf="!previewUrl"
                                 class="w-full h-full bg-gradient-to-br from-[#005bb5] to-blue-400 flex items-center justify-center">
-                                <span class="text-white text-xl font-bold">E</span>
+                                <span class="text-white text-2xl font-bold uppercase">{{
+                                    profileForm.get('nome_completo')?.value?.charAt(0) || 'U' }}</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Upload Area -->
-                    <div class="relative">
+                    <div class="relative w-full sm:w-auto">
                         <input type="file" (change)="onFileSelected($event)" accept="image/*" id="avatarUpload"
                             class="hidden">
                         <label for="avatarUpload"
-                            class="flex flex-col items-center justify-center w-[380px] h-28 border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/30 hover:bg-gray-50 hover:border-blue-400 transition-all cursor-pointer group">
+                            class="flex flex-col items-center justify-center w-full sm:w-[380px] h-32 border-2 border-dashed border-gray-100 rounded-[20px] bg-gray-50/30 hover:bg-gray-50 hover:border-blue-400 transition-all cursor-pointer group">
                             <div
                                 class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-2 group-hover:scale-110 transition-transform border border-gray-50">
-                                <lucide-icon [img]="icons.UploadCloud" class="w-5 h-5 text-gray-400"></lucide-icon>
+                                <lucide-icon [img]="icons.UploadCloud" class="w-5 h-5 text-blue-500"></lucide-icon>
                             </div>
                             <p class="text-xs font-medium text-gray-600">
-                                <span class="text-blue-700 font-bold">Clique para fazer upload</span> ou arraste e solte
+                                <span class="text-[#005bb5] font-bold">Clique para fazer upload</span> ou arraste e
+                                solte
                                 aqui
                             </p>
                             <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-bold">PNG ou JPG
@@ -108,56 +111,61 @@
                     </div>
                 </div>
             </div>
+        </form>
 
-            <!-- Passwords Section -->
-            <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()" class="space-y-8">
-                <!-- Current Password -->
-                <div class="flex items-center gap-12">
-                    <label class="w-64 text-sm font-bold text-gray-800">Senha atual <span
-                            class="text-blue-500 font-normal">*</span></label>
-                    <div class="flex-1 relative">
-                        <lucide-icon [img]="icons.Lock"
-                            class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
-                        <input type="password" formControlName="current_password"
-                            class="w-full pl-12 pr-4 py-3 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
-                            placeholder="••••••••">
-                    </div>
-                </div>
+        <!-- Passwords Section -->
+        <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()"
+            class="space-y-8 mt-12 animate-in slide-in-from-bottom-4 duration-500">
+            <div class="md:w-full">
+                <h3 class="text-lg font-bold text-gray-900 mb-6">Alterar senha</h3>
+            </div>
 
-                <!-- New Password -->
-                <div class="flex items-center gap-12">
-                    <label class="w-64 text-sm font-bold text-gray-800">Nova senha <span
-                            class="text-blue-500 font-normal">*</span></label>
-                    <div class="flex-1 relative">
-                        <lucide-icon [img]="icons.Lock"
-                            class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
-                        <input type="password" formControlName="new_password"
-                            class="w-full pl-12 pr-4 py-3 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
-                            placeholder="••••••••">
-                    </div>
+            <!-- Current Password -->
+            <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-12 pb-2">
+                <label class="md:w-64 text-sm font-bold text-gray-800">Senha atual <span
+                        class="text-blue-500">*</span></label>
+                <div class="flex-1 relative">
+                    <lucide-icon [img]="icons.Lock"
+                        class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+                    <input type="password" formControlName="current_password"
+                        class="w-full pl-14 pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-mono"
+                        placeholder="••••••••">
                 </div>
+            </div>
 
-                <!-- Confirm New Password -->
-                <div class="flex items-center gap-12 border-b border-gray-50 pb-8">
-                    <label class="w-64 text-sm font-bold text-gray-800">Confirmar nova senha <span
-                            class="text-blue-500 font-normal">*</span></label>
-                    <div class="flex-1 relative">
-                        <lucide-icon [img]="icons.Lock"
-                            class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
-                        <input type="password" formControlName="confirm_password"
-                            class="w-full pl-12 pr-4 py-3 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
-                            placeholder="••••••••">
-                    </div>
+            <!-- New Password -->
+            <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-12 pb-2">
+                <label class="md:w-64 text-sm font-bold text-gray-800">Nova senha <span
+                        class="text-blue-500">*</span></label>
+                <div class="flex-1 relative">
+                    <lucide-icon [img]="icons.Lock"
+                        class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+                    <input type="password" formControlName="new_password"
+                        class="w-full pl-14 pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-mono"
+                        placeholder="••••••••">
                 </div>
+            </div>
 
-                <!-- Change Password Button -->
-                <div class="flex justify-end pt-2">
-                    <button type="submit" [disabled]="passwordForm.invalid || loading"
-                        class="px-8 py-3 bg-gray-50 text-gray-400 font-bold text-sm rounded-xl border border-gray-100 hover:bg-gray-100 hover:text-gray-600 transition-all">
-                        Salvar nova senha
-                    </button>
+            <!-- Confirm New Password -->
+            <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-12 pb-8 border-b border-gray-50">
+                <label class="md:w-64 text-sm font-bold text-gray-800">Confirmar nova senha <span
+                        class="text-blue-500">*</span></label>
+                <div class="flex-1 relative">
+                    <lucide-icon [img]="icons.Lock"
+                        class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+                    <input type="password" formControlName="confirm_password"
+                        class="w-full pl-14 pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-mono"
+                        placeholder="••••••••">
                 </div>
-            </form>
+            </div>
+
+            <!-- Change Password Button -->
+            <div class="flex justify-end pt-4">
+                <button type="submit" [disabled]="!canUpdatePassword"
+                    class="px-10 py-4 bg-gray-50 text-gray-400 font-bold text-sm rounded-2xl border border-gray-100 hover:bg-blue-50 hover:text-[#00609b] hover:border-[#00609b]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    Salvar nova senha
+                </button>
+            </div>
         </form>
     </div>
 </div>

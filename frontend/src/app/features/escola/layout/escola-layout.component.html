@@ -1,8 +1,14 @@
 <div class="flex h-screen bg-gray-50 overflow-hidden">
 
+    <!-- Mobile Backdrop -->
+    <div *ngIf="sidebarOpen" (click)="toggleSidebar()"
+        class="fixed inset-0 bg-black/50 z-40 md:hidden animate-in fade-in duration-200"></div>
+
     <!-- Sidebar -->
-    <aside [ngClass]="sidebarOpen ? 'w-[260px]' : 'w-[72px]'"
-        class="bg-white border-r border-gray-100 flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 shadow-sm">
+    <aside [ngClass]="[
+            sidebarOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full md:translate-x-0 w-[72px]',
+            'fixed md:relative z-50 h-full bg-white border-r border-gray-100 flex flex-col transition-all duration-300 ease-in-out shadow-sm'
+        ]">
 
         <!-- Logo area -->
         <div class="h-16 flex items-center px-4 border-b border-gray-100">
@@ -48,12 +54,15 @@
     <!-- Main content -->
     <div class="flex-1 flex flex-col overflow-hidden">
 
-        <!-- Header -->
         <header
-            class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 flex-shrink-0 shadow-sm">
-            <div class="flex items-center gap-4">
+            class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 md:px-6 flex-shrink-0 shadow-sm">
+            <div class="flex items-center gap-2 md:gap-4">
                 <button (click)="toggleSidebar()"
-                    class="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all">
+                    class="p-2 -ml-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all md:hidden">
+                    <lucide-icon [img]="sidebarOpen ? icons.X : icons.Menu" class="w-5 h-5"></lucide-icon>
+                </button>
+                <button (click)="toggleSidebar()"
+                    class="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all hidden md:block">
                     <lucide-icon [img]="sidebarOpen ? icons.X : icons.Menu" class="w-5 h-5"></lucide-icon>
                 </button>
 

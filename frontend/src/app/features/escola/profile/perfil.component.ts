@@ -37,6 +37,7 @@ export class EscolaPerfilComponent implements OnInit {
     profile?: UserProfile;
     previewUrl?: string;
     selectedFile?: File;
+    isAdmin = false;
 
     constructor(
         private fb: FormBuilder,
@@ -53,6 +54,14 @@ export class EscolaPerfilComponent implements OnInit {
             new_password: ['', [Validators.required, Validators.minLength(6)]],
             confirm_password: ['', Validators.required]
         }, { validator: this.passwordMatchValidator });
+    }
+
+    get canSaveProfile() {
+        return (this.profileForm.valid || this.selectedFile) && !this.loading;
+    }
+
+    get canUpdatePassword() {
+        return this.passwordForm.valid && !this.loading;
     }
 
     async ngOnInit() {

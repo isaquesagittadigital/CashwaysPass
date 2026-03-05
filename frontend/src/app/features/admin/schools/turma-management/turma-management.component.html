@@ -40,7 +40,8 @@
                             {{ turma.quantidade_alunos }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-500">{{ turma.professor?.nome_completo || 'Não atribuído' }}
+                    <td class="px-6 py-4 text-sm text-gray-500">
+                        {{ (turma.professor?.nome_completo || turma.professor) || 'Não atribuído' }}
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex justify-center">

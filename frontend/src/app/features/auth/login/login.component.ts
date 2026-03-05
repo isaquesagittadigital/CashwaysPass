@@ -64,7 +64,7 @@ export class LoginComponent {
 
       const { data, error } = await supabase
         .from('usuarios')
-        .select('email, senha, tipo_acesso')
+        .select('id, email, senha, tipo_acesso')
         .eq('email', this.email.trim())
         .eq('senha', this.password)
         .single();
@@ -85,11 +85,14 @@ export class LoginComponent {
         return;
       }
 
+      // Store current user to be used by ProfileService
+      localStorage.setItem('currentUser', JSON.stringify(data));
+
       // Success - navigate to the appropriate dashboard
       if (this.role === 'admin') {
         this.router.navigate(['/admin']);
       } else {
-        this.router.navigate(['/school']);
+        this.router.navigate(['/escola']);
       }
     } catch (err) {
       console.error('Login error:', err);

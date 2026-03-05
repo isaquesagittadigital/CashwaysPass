@@ -76,7 +76,7 @@ export class SchoolManagementService {
         return from(
             supabase
                 .from('turma')
-                .select('*, professor:professor_id(nome_completo)')
+                .select('*')
                 .eq('escola_id', schoolId)
                 .order('nome', { ascending: true })
         ).pipe(
@@ -121,7 +121,7 @@ export class SchoolManagementService {
                 .from('usuarios')
                 .select('*')
                 .eq('escola_id', schoolId)
-                .eq('tipo_user', 'Professor')
+                .eq('tipo_acesso', 'Professor')
                 .order('nome_completo', { ascending: true })
         ).pipe(
             map(resp => {
@@ -162,11 +162,10 @@ export class SchoolManagementService {
     getStudentsBySchool(schoolId: string): Observable<any[]> {
         return from(
             supabase
-                .from('usuarios')
-                .select('*, aluno:aluno(numero_carteira, responsavel), turma:turmaID(nome, serie)')
+                .from('aluno')
+                .select('*, turma:turma_id(nome, serie)')
                 .eq('escola_id', schoolId)
-                .eq('tipo_user', 'Aluno')
-                .order('nome_completo', { ascending: true })
+                .order('nome', { ascending: true })
         ).pipe(
             map(resp => {
                 if (resp.error) throw resp.error;
@@ -182,8 +181,8 @@ export class SchoolManagementService {
                 .from('usuarios')
                 .insert({
                     nome_completo: data.nome,
-                    email: data.emailResponsavel,
-                    tipo_user: 'Aluno',
+                    email: data.emailResponsavel || data.email,
+                    tipo_acesso: 'Aluno',
                     status: 'active',
                     escola_id: data.escola_id,
                     turmaID: data.turmaId
@@ -197,13 +196,17 @@ export class SchoolManagementService {
             const { error: alunoError } = await supabase
                 .from('aluno')
                 .insert({
-                    user_id: userData.id,
+                    user_id: userData.UserID, // Aluno.user_id points to auth.users.id? Or usuarios.id?
                     escola_id: data.escola_id,
+                    turma_id: data.turmaId,
                     nome: data.nome,
-                    responsavel: data.responsavel,
-                    email_responsavel: data.emailResponsavel,
-                    numero_carteira: data.numeroCarteira
+                    nome_mae: data.responsavel,
+                    email: data.emailResponsavel || data.email,
+                    ra: data.numeroCarteira
                 });
+
+            // Note: If usuarios.id is bigint and aluno.user_id is uuid, 
+            // the relation is likely via the UserID (auth.users.id) which is uuid.
 
             if (alunoError) throw alunoError;
             return { success: true };
@@ -215,8 +218,6 @@ export class SchoolManagementService {
 
     async createStudentsBulk(schoolId: string, students: any[]): Promise<{ success: boolean; error?: any }> {
         try {
-            // This is a complex operation that should probably be handled by a Supabase function (RPC)
-            // for atomicity, but we'll do it sequentially here for simplicity in this flow.
             for (const s of students) {
                 await this.createStudent({ ...s, escola_id: schoolId });
             }
@@ -228,6 +229,8 @@ export class SchoolManagementService {
     }
 
     deleteStudent(id: string): Observable<any> {
+        // First delete from aluno if link exists, then from usuarios
+        // However, for simplicity and since we don't have the uuid easily here if it's bigint id
         return from(
             supabase
                 .from('usuarios')

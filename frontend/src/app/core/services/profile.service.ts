@@ -17,14 +17,29 @@ export interface UserProfile {
 })
 export class ProfileService {
     async getProfile(): Promise<UserProfile | null> {
+        // Try Supabase Auth first
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return null;
 
-        const { data: profile } = await supabase
-            .from('usuarios')
-            .select('id, nome_completo, email, foto_url, cpf, telefone, tipo_acesso')
-            .eq('UserID', user.id)
-            .single();
+        let profileQuery;
+        if (user) {
+            profileQuery = supabase
+                .from('usuarios')
+                .select('id, nome_completo, email, foto_url, cpf, telefone, tipo_acesso')
+                .eq('UserID', user.id)
+                .single();
+        } else {
+            // Fallback to localStorage (manual login)
+            const storedUser = localStorage.getItem('currentUser');
+            if (!storedUser) return null;
+            const userData = JSON.parse(storedUser);
+            profileQuery = supabase
+                .from('usuarios')
+                .select('id, nome_completo, email, foto_url, cpf, telefone, tipo_acesso')
+                .eq('id', userData.id)
+                .single();
+        }
+
+        const { data: profile } = await profileQuery;
 
         if (profile) {
             return {
@@ -36,8 +51,30 @@ export class ProfileService {
     }
 
     async updateProfile(data: Partial<UserProfile>): Promise<void> {
+        let userId;
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Usuário não autenticado');
+
+        if (user) {
+            userId = user.id;
+        } else {
+            const storedUser = localStorage.getItem('currentUser');
+            if (storedUser) {
+                const userData = JSON.parse(storedUser);
+                const { error } = await supabase
+                    .from('usuarios')
+                    .update({
+                        nome_completo: data.nome_completo,
+                        email: data.email,
+                        cpf: data.cpf,
+                        telefone: data.telefone
+                    })
+                    .eq('id', userData.id);
+                if (error) throw error;
+                return;
+            }
+        }
+
+        if (!userId) throw new Error('Usuário não autenticado');
 
         const { error } = await supabase
             .from('usuarios')
@@ -47,17 +84,27 @@ export class ProfileService {
                 cpf: data.cpf,
                 telefone: data.telefone
             })
-            .eq('UserID', user.id);
+            .eq('UserID', userId);
 
         if (error) throw error;
     }
 
     async updateAvatar(file: File): Promise<string> {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Usuário não autenticado');
+        let targetId;
+        let queryField: 'UserID' | 'id' = 'UserID';
+
+        if (user) {
+            targetId = user.id;
+        } else {
+            const storedUser = localStorage.getItem('currentUser');
+            if (!storedUser) throw new Error('Usuário não autenticado');
+            targetId = JSON.parse(storedUser).id;
+            queryField = 'id';
+        }
 
         const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+        const fileName = `${targetId}-${Math.random()}.${fileExt}`;
         const filePath = `avatars/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
@@ -73,7 +120,7 @@ export class ProfileService {
         const { error: updateError } = await supabase
             .from('usuarios')
             .update({ foto_url: publicUrl })
-            .eq('UserID', user.id);
+            .eq(queryField, targetId);
 
         if (updateError) throw updateError;
 
@@ -81,10 +128,23 @@ export class ProfileService {
     }
 
     async changePassword(newPassword: string): Promise<void> {
-        const { error } = await supabase.auth.updateUser({
-            password: newPassword
-        });
+        // In the current implementation, login is manual via 'senha' column in 'usuarios'
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+            const userData = JSON.parse(storedUser);
+            const { error } = await supabase
+                .from('usuarios')
+                .update({ senha: newPassword })
+                .eq('id', userData.id);
+            if (error) throw error;
+        }
 
-        if (error) throw error;
+        // Also update Supabase Auth if applicable
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            await supabase.auth.updateUser({
+                password: newPassword
+            });
+        }
     }
 }
