@@ -1,0 +1,72 @@
+================================================================================
+ANÁLISE DO FLUXO DE CADASTRO DE ALUNOS - SISTEMA PASS 2.0
+================================================================================
+
+Data da Análise: 05 de Março de 2026
+Objetivo: Documentar a lógica de cadastro individual e em massa de alunos.
+
+1. ESTRUTURA DE DADOS (BANCO DE DADOS - SUPABASE)
+--------------------------------------------------------------------------------
+O cadastro de um aluno envolve a inserção de dados em três tabelas principais, 
+mantendo a integridade referencial e o controle de acesso:
+
+A. Tabela `usuarios`:
+   - Armazena as credenciais de login e dados de perfil global.
+   - Campos principais: `id` (PK - bigint), `nome_completo`, `email`, 
+     `tipo_acesso` (deve ser 'Aluno'), `escola_id`, `turmaID`, `status` ('active').
+   - `UserID` (UUID): Vinculado ao auth.users do Supabase (para login).
+
+B. Tabela `aluno`:
+   - Armazena dados específicos da vida escolar.
+   - Campos principais: `user_id` (UUID - FK para auth.users), `escola_id`, 
+     `turma_id`, `nome`, `nome_mae` (Responsável), `ra` (Número da Carteira).
+
+C. Tabela `Carteira`:
+   - Armazena os dados físicos/digitais do cartão do aluno.
+   - Campos principais: `Usuario` (FK para usuarios.id), `escola_id`, `turmaID`, 
+     `carteira_code` (8 dígitos gerados aleatoriamente).
+
+2. LÓGICA DO FLUXO DE CADASTRO (FRONTEND -> SERVICE)
+--------------------------------------------------------------------------------
+O processo é gerenciado pelo `StudentManagementComponent` e o serviço 
+`SchoolManagementService`.
+
+Fluxo de Cadastro Individual:
+1. O usuário preenche o formulário (Turma, Nome, Responsável, Email, RA).
+2. O Frontend envia os dados para `schoolService.createStudent(data)`.
+3. O Service realiza duas operações assíncronas em sequência:
+   - Passo 1: Insere na tabela `usuarios`.
+   - Passo 2: Recupera o ID gerado e insere na tabela `aluno`.
+4. Importante: A criação da CARTEIRA agora é automática via TRIGGER no banco.
+
+Fluxo de Cadastro em Massa (CSV):
+1. O usuário faz o upload de um arquivo .csv.
+2. O sistema utiliza a biblioteca `PapaParse` para ler as colunas.
+   - Mapeamento: 'Nome' -> `nome`, 'Responsavel' -> `responsavel`, etc.
+3. O sistema percorre a lista e chama a criação individual para cada linha.
+
+3. AUTOMAÇÃO E REGRAS DE NEGÓCIO (BACKEND / DB)
+--------------------------------------------------------------------------------
+Para garantir que nenhum aluno fique sem acesso ou sem carteira, implementamos:
+
+A. Trigger `trg_auto_create_aluno_wallet`:
+   - Sempre que um novo registro entra na tabela `usuarios` com `tipo_acesso = 'Aluno'`, 
+     o banco dispara uma função PL/pgSQL que insere automaticamente uma linha 
+     na tabela `Carteira`.
+
+B. Trigger `trg_generate_carteira_code`:
+   - Ao criar a carteira, este trigger gera um código numérico de 8 dígitos 
+     aleatórios (Ex: 85930211) caso o código não tenha sido fornecido.
+
+4. PONTOS DE ATENÇÃO E MELHORIAS RECENTES
+--------------------------------------------------------------------------------
+- Unificação de Tabelas: Os alunos agora são refletidos na tabela `usuarios` 
+  para permitir login e consulta de saldo centralizada.
+- Mapeamento de Campos: O campo de interface "Responsável" é gravado na 
+  coluna `nome_mae` do banco para seguir o padrão legado.
+- RA / Carteira: O "Número da Carteira" informado no cadastro é gravado na 
+  coluna `ra` da tabela `aluno`.
+
+================================================================================
+FIM DO DOCUMENTO
+================================================================================

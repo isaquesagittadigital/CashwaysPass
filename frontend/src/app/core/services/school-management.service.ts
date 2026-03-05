@@ -163,7 +163,7 @@ export class SchoolManagementService {
         return from(
             supabase
                 .from('aluno')
-                .select('*, turma:turma_id(nome, serie)')
+                .select('*, turma:turma_id(nome, serie), user:usuario_id(id, email, ultimo_login)')
                 .eq('escola_id', schoolId)
                 .order('nome', { ascending: true })
         ).pipe(
@@ -176,27 +176,10 @@ export class SchoolManagementService {
 
     async createStudent(data: any): Promise<{ success: boolean; error?: any }> {
         try {
-            // 1. Create User entry
-            const { data: userData, error: userError } = await supabase
-                .from('usuarios')
-                .insert({
-                    nome_completo: data.nome,
-                    email: data.emailResponsavel || data.email,
-                    tipo_acesso: 'Aluno',
-                    status: 'active',
-                    escola_id: data.escola_id,
-                    turmaID: data.turmaId
-                })
-                .select()
-                .single();
-
-            if (userError) throw userError;
-
-            // 2. Create Aluno entry
+            // Only insert into 'aluno' table as per new requirement
             const { error: alunoError } = await supabase
                 .from('aluno')
                 .insert({
-                    user_id: userData.UserID, // Aluno.user_id points to auth.users.id? Or usuarios.id?
                     escola_id: data.escola_id,
                     turma_id: data.turmaId,
                     nome: data.nome,
@@ -204,9 +187,6 @@ export class SchoolManagementService {
                     email: data.emailResponsavel || data.email,
                     ra: data.numeroCarteira
                 });
-
-            // Note: If usuarios.id is bigint and aluno.user_id is uuid, 
-            // the relation is likely via the UserID (auth.users.id) which is uuid.
 
             if (alunoError) throw alunoError;
             return { success: true };

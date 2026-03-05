@@ -66,6 +66,9 @@ export class SchoolRegistrationService {
     private schoolData = new BehaviorSubject<SchoolData | null>(null);
     schoolData$ = this.schoolData.asObservable();
 
+    private isSchoolConfirmed = new BehaviorSubject<boolean>(false);
+    isSchoolConfirmed$ = this.isSchoolConfirmed.asObservable();
+
     private professors = new BehaviorSubject<ProfessorData[]>([]);
     professors$ = this.professors.asObservable();
 
@@ -85,8 +88,13 @@ export class SchoolRegistrationService {
         return this.currentStep.value;
     }
 
+    getCurrentStepConfirmed(): boolean {
+        return this.isSchoolConfirmed.value;
+    }
+
     updateSchoolData(data: SchoolData) {
         this.schoolData.next(data);
+        this.isSchoolConfirmed.next(true);
     }
 
     addProfessor(professor: ProfessorData) {
@@ -128,6 +136,7 @@ export class SchoolRegistrationService {
     reset() {
         this.currentStep.next(1);
         this.schoolData.next(null);
+        this.isSchoolConfirmed.next(false);
         this.professors.next([]);
         this.turmas.next([]);
         this.students.next([]);

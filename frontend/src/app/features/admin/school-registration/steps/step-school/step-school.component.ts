@@ -64,8 +64,52 @@ export class StepSchoolComponent implements OnInit {
             this.registrationService.updateSchoolData(this.schoolForm.value);
             this.registrationService.setStep(2);
         } else {
-            // Mark all as touched to show errors
             this.schoolForm.markAllAsTouched();
         }
+    }
+
+    applyCnpjMask(event: any) {
+        let val = event.target.value.replace(/\D/g, '');
+        if (val.length > 14) val = val.substring(0, 14);
+
+        let masked = val;
+        if (val.length > 2) masked = val.substring(0, 2) + '.' + val.substring(2);
+        if (val.length > 5) masked = masked.substring(0, 6) + '.' + masked.substring(6);
+        if (val.length > 8) masked = masked.substring(0, 10) + '/' + masked.substring(10);
+        if (val.length > 12) masked = masked.substring(0, 15) + '-' + masked.substring(15);
+
+        this.schoolForm.get('cnpj')?.setValue(masked, { emitEvent: false });
+    }
+
+    applyPhoneMask(field: string, event: any) {
+        let val = event.target.value.replace(/\D/g, '');
+        if (val.length > 11) val = val.substring(0, 11);
+
+        let masked = val;
+        if (val.length > 0) masked = '(' + val;
+        if (val.length > 2) masked = '(' + val.substring(0, 2) + ') ' + val.substring(2);
+        if (val.length > 7) masked = masked.substring(0, 10) + '-' + masked.substring(10);
+
+        this.schoolForm.get(field)?.setValue(masked, { emitEvent: false });
+    }
+
+    applyCepMask(event: any) {
+        let val = event.target.value.replace(/\D/g, '');
+        if (val.length > 8) val = val.substring(0, 8);
+
+        let masked = val;
+        if (val.length > 5) masked = val.substring(0, 5) + '-' + val.substring(5);
+
+        this.schoolForm.get('cep')?.setValue(masked, { emitEvent: false });
+    }
+
+    applyCurrencyMask(field: string, event: any) {
+        let val = event.target.value.replace(/\D/g, '');
+        const amount = val ? parseInt(val) / 100 : 0;
+        this.schoolForm.get(field)?.setValue(amount, { emitEvent: false });
+    }
+
+    formatBrl(value: number): string {
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
     }
 }

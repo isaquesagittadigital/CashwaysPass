@@ -17,6 +17,8 @@
         <div class="stepper-tabs flex border-b border-gray-200 mb-8 overflow-x-auto no-scrollbar">
             <button *ngFor="let step of steps" (click)="setStep(step.number)"
                 [class.active]="(currentStep$ | async) === step.number"
+                [class.opacity-50]="step.number > 1 && !(isSchoolConfirmed$ | async)"
+                [class.cursor-not-allowed]="step.number > 1 && !(isSchoolConfirmed$ | async)"
                 class="step-tab px-8 py-4 font-semibold text-sm transition-all relative whitespace-nowrap">
                 {{ step.label }}
                 <div class="active-indicator" *ngIf="(currentStep$ | async) === step.number"></div>

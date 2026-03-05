@@ -24,6 +24,7 @@ import { StepAlunoComponent } from './steps/step-aluno/step-aluno.component';
 })
 export class SchoolRegistrationComponent implements OnInit {
     currentStep$ = this.registrationService.currentStep$;
+    isSchoolConfirmed$ = this.registrationService.isSchoolConfirmed$;
     icons = { ArrowLeft };
 
     steps = [
@@ -44,6 +45,9 @@ export class SchoolRegistrationComponent implements OnInit {
     }
 
     setStep(step: number) {
+        if (step > 1 && !this.registrationService.getCurrentStepConfirmed()) {
+            return;
+        }
         this.registrationService.setStep(step);
     }
 

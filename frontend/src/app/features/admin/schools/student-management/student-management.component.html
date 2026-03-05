@@ -28,7 +28,8 @@
                     <th class="px-6 py-4">Nome do Aluno</th>
                     <th class="px-6 py-4">Responsável</th>
                     <th class="px-6 py-4">Turma</th>
-                    <th class="px-6 py-4 text-center">Nº Carteira</th>
+                    <th class="px-6 py-4 text-center">RA / Carteira</th>
+                    <th class="px-6 py-4 text-center">Status</th>
                     <th class="px-6 py-4 text-center">Ações</th>
                 </tr>
             </thead>
@@ -48,8 +49,25 @@
                             {{ student.turma?.serie || '' }} {{ student.turma?.nome || 'Sem turma' }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-center font-mono text-[10px] text-gray-500">{{
-                        student.ra || student.numero_carteira || '---' }}</td>
+                    <td class="px-6 py-4 text-center font-mono text-[10px] text-gray-500">
+                        {{ student.ra || student.numero_carteira || '---' }}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex justify-center">
+                            <span *ngIf="!student.user"
+                                class="px-2 py-0.5 bg-gray-100 text-gray-400 text-[10px] font-bold rounded-full uppercase border border-gray-200">
+                                Pendente
+                            </span>
+                            <span *ngIf="student.user && !student.user.ultimo_login"
+                                class="px-2 py-0.5 bg-blue-100 text-blue-600 text-[10px] font-bold rounded-full uppercase border border-blue-200">
+                                Primeiro Acesso
+                            </span>
+                            <span *ngIf="student.user && student.user.ultimo_login"
+                                class="px-2 py-0.5 bg-green-100 text-green-600 text-[10px] font-bold rounded-full uppercase border border-green-200">
+                                Ativo
+                            </span>
+                        </div>
+                    </td>
                     <td class="px-6 py-4">
                         <div class="flex items-center justify-center gap-2">
                             <button (click)="onSendEmail(student)" [disabled]="isSendingEmail[student.id]"
