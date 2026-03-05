@@ -1,0 +1,8 @@
+{
+    "name": "cashways-pass-root",
+    "private": true,
+    "workspaces": [
+        "frontend",
+        "backend-nest"
+    ]
+}
