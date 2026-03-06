@@ -37,7 +37,6 @@ export class SchoolManagementService {
             supabase
                 .from('escola')
                 .select('*')
-                .eq('deletado', false)
                 .order('nome_fantasia', { ascending: true })
         ).pipe(
             map(resp => {
@@ -76,7 +75,7 @@ export class SchoolManagementService {
         return from(
             supabase
                 .from('escola')
-                .update({ deletado: true })
+                .update({ deletado: true, status: 'inactive' })
                 .eq('id', id)
         );
     }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SchoolManagementService, School } from '../../../core/services/school-management.service';
 import { AdminDashboardService } from '../../../core/services/admin-dashboard.service';
+import { SchoolService as GlobalSchoolService } from '../../../core/services/school.service';
 import { LucideAngularModule, Plus, Search, Pencil, Trash2, Building2, ChevronLeft, ChevronRight } from 'lucide-angular';
 import { Router, RouterModule } from '@angular/router';
 import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
@@ -33,6 +34,7 @@ export class SchoolsListComponent implements OnInit {
     constructor(
         private schoolService: SchoolManagementService,
         private dashboardService: AdminDashboardService,
+        private globalSchoolService: GlobalSchoolService,
         private router: Router
     ) { }
 
@@ -70,7 +72,17 @@ export class SchoolsListComponent implements OnInit {
                 school.cnpj?.includes(this.searchTerm) ||
                 school.email_contato?.toLowerCase().includes(this.searchTerm.toLowerCase());
 
-            const matchesStatus = !this.statusFilter || school.status === this.statusFilter;
+            let matchesStatus = true;
+            if (!this.statusFilter) {
+                // "Todos" -> Mostrar ativos e inativos, ocultar deletados
+                matchesStatus = !school.deletado;
+            } else if (this.statusFilter === 'active') {
+                // "Ativo" -> Apenas ativos (nunca deletados)
+                matchesStatus = school.status === 'active' && !school.deletado;
+            } else if (this.statusFilter === 'inactive') {
+                // "Inativo" -> Inativos OU Deletados
+                matchesStatus = school.status === 'inactive' || school.deletado === true;
+            }
 
             return matchesSearch && matchesStatus;
         });
@@ -117,6 +129,7 @@ export class SchoolsListComponent implements OnInit {
                     this.showDeleteModal = false;
                     this.schoolToDeleteId = null;
                     this.loadSchools();
+                    this.globalSchoolService.loadSchools();
                 },
                 error: (err) => {
                     this.deleteLoading = false;
