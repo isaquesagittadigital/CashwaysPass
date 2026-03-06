@@ -33,9 +33,10 @@
                 <h2 class="text-xl font-bold text-gray-800 mb-6">{{selectedSchool.nome_fantasia}} - Turmas</h2>
 
                 <div class="relative mb-6">
-                    <lucide-icon name="search" class="absolute left-3 top-3 w-5 h-5 text-gray-400"></lucide-icon>
+                    <lucide-icon [img]="icons.Search"
+                        class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></lucide-icon>
                     <input type="text" placeholder="Buscar turma"
-                        class="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-3 focus:border-[#00609b] outline-none text-sm transition-all shadow-sm"
+                        class="w-full border border-gray-200 rounded-lg pl-11 pr-4 py-3 focus:border-[#00609b] outline-none text-sm transition-all shadow-sm"
                         [(ngModel)]="searchTermTurma" (input)="onSearchTurmaChange()">
                 </div>
 
@@ -52,9 +53,9 @@
 
                 <!-- List -->
                 <div class="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                    <div *ngFor="let turma of filteredTurmas"
-                        class="border rounded-xl p-5 cursor-pointer hover:border-blue-300 transition-colors shadow-sm bg-white"
-                        [ngClass]="selectedTurma?.id === turma.id ? 'border-[#00609b] shadow-md ring-1 ring-[#00609b]/10' : 'border-gray-200'">
+                    <div *ngFor="let turma of filteredTurmas" (click)="selectTurmaToEdit(turma)"
+                        class="border rounded-xl p-5 cursor-pointer hover:border-blue-300 transition-colors shadow-sm"
+                        [ngClass]="selectedTurma?.id === turma.id ? 'border-[#0069B3] bg-[#F3F9FC] shadow-md ring-1 ring-[#0069B3]/10' : 'border-gray-200 bg-white'">
                         <div class="flex items-center gap-3 font-bold mb-1.5 text-gray-800 text-[15px]">
                             <lucide-icon [img]="icons.Users" class="w-5 h-5"
                                 [ngClass]="selectedTurma?.id === turma.id ? 'text-[#00609b]' : 'text-[#00609b]'"></lucide-icon>
@@ -70,9 +71,8 @@
                                 (click)="deleteTurma(turma, $event)"><lucide-icon [img]="icons.Trash2"
                                     class="w-4 h-4"></lucide-icon> Excluir turma</button>
                             <button
-                                class="flex items-center gap-1.5 text-[#00609b] hover:text-blue-800 transition-colors"
-                                (click)="selectTurmaToEdit(turma)"><lucide-icon [img]="icons.Pencil"
-                                    class="w-4 h-4"></lucide-icon>
+                                class="flex items-center gap-1.5 text-[#00609b] hover:text-blue-800 transition-colors">
+                                <lucide-icon [img]="icons.Pencil" class="w-4 h-4"></lucide-icon>
                                 Editar turma</button>
                         </div>
                     </div>
@@ -93,9 +93,8 @@
                         <!-- Saldo livre -->
                         <div
                             class="bg-white border border-gray-100 rounded-xl p-6 flex items-center gap-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)]">
-                            <div
-                                class="w-12 h-12 rounded-full bg-[#00609b] text-white flex items-center justify-center shadow-lg shadow-blue-900/20">
-                                <lucide-icon [img]="icons.TrendingUp" class="w-6 h-6"></lucide-icon>
+                            <div class="w-12 h-12 flex items-center justify-center">
+                                <img src="assets/icons/saldo-livre.svg" alt="Saldo Livre" class="w-12 h-12" />
                             </div>
                             <div>
                                 <p class="text-2xl font-extrabold text-[#0e1726]">{{
@@ -106,9 +105,9 @@
                         <!-- Saldo proósitos -->
                         <div
                             class="bg-white border border-gray-100 rounded-xl p-6 flex items-center gap-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)]">
-                            <div
-                                class="w-12 h-12 rounded-full bg-[#00609b] text-white flex items-center justify-center shadow-lg shadow-blue-900/20">
-                                <lucide-icon [img]="icons.TrendingUp" class="w-6 h-6"></lucide-icon>
+                            <div class="w-12 h-12 flex items-center justify-center">
+                                <img src="assets/icons/saldo-propositos.svg" alt="Saldo em propósitos"
+                                    class="w-12 h-12" />
                             </div>
                             <div>
                                 <p class="text-2xl font-extrabold text-[#0e1726]">{{
@@ -170,8 +169,8 @@
                                                 <option value="Ensino Fundamental II">Ensino Fundamental II</option>
                                                 <option value="Ensino Médio">Ensino Médio</option>
                                             </select>
-                                            <lucide-icon name="chevron-down"
-                                                class="absolute right-3 top-3 w-4 h-4 pointer-events-none text-gray-400"></lucide-icon>
+                                            <lucide-icon [img]="icons.ChevronDown"
+                                                class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-gray-400"></lucide-icon>
                                         </div>
                                     </div>
                                     <!-- Período -->
@@ -187,8 +186,8 @@
                                                 <option value="Noite">Noite</option>
                                                 <option value="Integral">Integral</option>
                                             </select>
-                                            <lucide-icon name="chevron-down"
-                                                class="absolute right-3 top-3 w-4 h-4 pointer-events-none text-gray-400"></lucide-icon>
+                                            <lucide-icon [img]="icons.ChevronDown"
+                                                class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-gray-400"></lucide-icon>
                                         </div>
                                     </div>
                                     <!-- Série -->
@@ -229,12 +228,14 @@
 
                         <!-- TAB 2: PROFESSORES -->
                         <div *ngIf="currentTab === 'professors'" class="animate-in fade-in duration-300">
-                            <app-professor-management [schoolId]="selectedSchool.id"></app-professor-management>
+                            <app-professor-management [schoolId]="selectedSchool.id"
+                                [turmaId]="selectedTurma?.id"></app-professor-management>
                         </div>
 
                         <!-- TAB 3: ALUNOS -->
                         <div *ngIf="currentTab === 'students'" class="animate-in fade-in duration-300">
-                            <app-student-management [schoolId]="selectedSchool.id"></app-student-management>
+                            <app-student-management [schoolId]="selectedSchool.id"
+                                [turmaId]="selectedTurma?.id"></app-student-management>
                         </div>
                     </div> <!-- encerra DIV forms -->
                 </div> <!-- encerra card components -->
@@ -246,17 +247,22 @@
     Selecione uma escola no menu superior para gerenciar suas turmas e usuários.
 </div>
 
-<!-- Modal Delete -->
+<!-- Modal Delete School (Inactivate) -->
 <app-delete-confirm-modal [isVisible]="showDeleteModal" [isLoading]="deleteLoading"
     [entityName]="selectedSchool?.nome_fantasia || 'escola'" [actionType]="'inactivate'" [isReactivation]="false"
     (onConfirm)="confirmDeleteSchool()" (onCancel)="cancelDeleteSchool()">
+</app-delete-confirm-modal>
+
+<!-- Modal Delete Turma -->
+<app-delete-confirm-modal [isVisible]="showDeleteTurmaModal" [isLoading]="deleteTurmaLoading" entityName="turma"
+    entityArticle="a" actionType="delete" (onConfirm)="confirmDeleteTurma()" (onCancel)="cancelDeleteTurma()">
 </app-delete-confirm-modal>
 
 <!-- Toast Component -->
 <div *ngIf="showToast"
     class="fixed bottom-4 right-4 bg-[#10b981] text-white px-6 py-3.5 rounded-xl shadow-xl flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-300 z-50">
     <div class="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center">
-        <lucide-icon name="check" class="w-4 h-4"></lucide-icon>
+        <lucide-icon [img]="icons.Check" class="w-4 h-4"></lucide-icon>
     </div>
     <span class="font-bold whitespace-nowrap text-sm pr-2">{{ toastMessage }}</span>
 </div>

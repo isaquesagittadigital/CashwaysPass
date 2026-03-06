@@ -56,7 +56,8 @@ export class CarteiraService {
         statusFilter?: string,
         searchTerm?: string,
         page: number = 1,
-        pageSize: number = 8
+        pageSize: number = 8,
+        turmaId?: string
     ): Promise<{ students: WalletStudent[]; total: number }> {
         try {
             // 1. Query usuarios (Alunos) — no FK joins
@@ -67,6 +68,10 @@ export class CarteiraService {
 
             if (escolaId) {
                 query = query.eq('escola_id', escolaId);
+            }
+
+            if (turmaId) {
+                query = query.eq('turmaID', turmaId);
             }
 
             if (statusFilter && statusFilter !== 'Todos') {

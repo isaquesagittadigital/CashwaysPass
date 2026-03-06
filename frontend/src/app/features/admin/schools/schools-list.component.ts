@@ -58,6 +58,11 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
     showDeleteModal = false;
     deleteLoading = false;
 
+    // Delete Turma
+    showDeleteTurmaModal = false;
+    turmaToDelete: any = null;
+    deleteTurmaLoading = false;
+
     // Toast
     showToast = false;
     toastMessage = '';
@@ -140,11 +145,18 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
 
     filterTurmas() {
         if (!this.searchTermTurma) {
-            this.filteredTurmas = this.turmas;
+            this.filteredTurmas = [...this.turmas];
         } else {
             this.filteredTurmas = this.turmas.filter(t =>
                 t.nome?.toLowerCase().includes(this.searchTermTurma.toLowerCase())
             );
+        }
+
+        // Definir sempre a primeira turma como selecionada para edição
+        if (this.filteredTurmas.length > 0) {
+            this.selectTurmaToEdit(this.filteredTurmas[0]);
+        } else {
+            this.selectTurmaToEdit(null);
         }
     }
 
@@ -154,7 +166,10 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
 
     selectTurmaToEdit(turma: any | null) {
         this.selectedTurma = turma;
-        this.currentTab = 'dados';
+        // Keep current tab unless we are specifically wanting to go back to dados or it's a new turma
+        if (!turma) {
+            this.currentTab = 'dados';
+        }
         if (turma) {
             this.turmaForm.patchValue(turma);
         } else {
@@ -201,16 +216,38 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
 
     deleteTurma(turma: any, event: Event) {
         event.stopPropagation();
-        if (confirm(`Excluir a turma ${turma.nome}?`)) {
-            this.schoolService.deleteTurma(turma.id).subscribe({
-                next: () => {
-                    if (this.selectedTurma?.id === turma.id) {
-                        this.selectTurmaToEdit(null);
-                    }
-                    this.loadTurmas();
+        this.turmaToDelete = turma;
+        this.showDeleteTurmaModal = true;
+    }
+
+    confirmDeleteTurma() {
+        if (!this.turmaToDelete) return;
+        this.deleteTurmaLoading = true;
+        this.schoolService.deleteTurma(this.turmaToDelete.id).subscribe({
+            next: () => {
+                if (this.selectedTurma?.id === this.turmaToDelete.id) {
+                    this.selectTurmaToEdit(null);
                 }
-            });
-        }
+                this.loadTurmas();
+                this.deleteTurmaLoading = false;
+                this.showDeleteTurmaModal = false;
+                this.turmaToDelete = null;
+
+                const msg = 'Turma excluída com sucesso';
+                this.toastMessage = msg;
+                this.showToast = true;
+                setTimeout(() => this.showToast = false, 3000);
+            },
+            error: (err) => {
+                this.deleteTurmaLoading = false;
+                alert('Erro ao excluir turma: ' + err.message);
+            }
+        });
+    }
+
+    cancelDeleteTurma() {
+        this.showDeleteTurmaModal = false;
+        this.turmaToDelete = null;
     }
 
     onDeleteSchool() {

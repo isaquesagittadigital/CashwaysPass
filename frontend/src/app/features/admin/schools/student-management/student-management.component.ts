@@ -1,38 +1,58 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SchoolManagementService } from '../../../../core/services/school-management.service';
 import { DeleteConfirmModalComponent } from '../../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
-import { LucideAngularModule, Upload, UserPlus, Mail, Trash2, GraduationCap, X, FileSpreadsheet } from 'lucide-angular';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActionSuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { LucideAngularModule, Upload, UserPlus, Mail, Trash2, GraduationCap, X, FileSpreadsheet, Search, Check, ChevronDown, Edit, ArrowUpDown, Plus } from 'lucide-angular';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { Papa } from 'ngx-papaparse';
 import { EmailService } from '../../../../core/services/email.service';
-
 
 @Component({
     selector: 'app-student-management',
     standalone: true,
-    imports: [CommonModule, LucideAngularModule, ReactiveFormsModule, DeleteConfirmModalComponent],
+    imports: [CommonModule, LucideAngularModule, ReactiveFormsModule, FormsModule, DeleteConfirmModalComponent, ActionSuccessModalComponent],
     templateUrl: './student-management.component.html',
     styleUrls: ['./student-management.component.css'],
     providers: [Papa]
 })
-export class StudentManagementComponent implements OnInit {
-    icons = { Upload, UserPlus, Mail, Trash2, GraduationCap, X, FileSpreadsheet };
+export class StudentManagementComponent implements OnInit, OnChanges {
+    icons = { Upload, UserPlus, Mail, Trash2, GraduationCap, X, FileSpreadsheet, Search, Check, ChevronDown, Edit, ArrowUpDown, Plus };
+
     @Input() schoolId!: string;
-    students: any[] = [];
+    @Input() turmaId: string | null = null;
+
+    allStudents: any[] = [];
+    filteredStudents: any[] = [];
     isLoading = true;
     isSubmitting = false;
-    showToast = false;
-    toastMessage = '';
 
+    // Filters & Search
+    searchTerm: string = '';
+
+    // Pagination
+    currentPage: number = 1;
+    pageSize: number = 10;
+    protected Math = Math;
+
+    // Modals
     showDeleteModal = false;
     deleteId: string | null = null;
     deleteLoading = false;
 
+    showSuccessModal = false;
+    successModalTitle = '';
+    successModalMessage = '';
+
     showModal = false;
     isBulk = false;
+    isEditing = false;
+    editingId: string | null = null;
     studentForm: FormGroup;
     turmas: any[] = [];
+
+    // Email state
+    isSendingEmail: { [key: string]: boolean } = {};
 
     constructor(
         private schoolService: SchoolManagementService,
@@ -46,10 +66,16 @@ export class StudentManagementComponent implements OnInit {
             email: ['', [Validators.required, Validators.email]],
             telefone: [''],
             data_nascimento: [''],
-            responsavel: [''],
-            emailResponsavel: [''],
-            numeroCarteira: ['']
+            numeroCarteira: [''],
+            status: ['active']
         });
+    }
+
+    ngOnChanges(changes: any): void {
+        if ((changes.schoolId && !changes.schoolId.firstChange) || (changes.turmaId && !changes.turmaId.firstChange)) {
+            this.loadStudents();
+            this.loadTurmas();
+        }
     }
 
     ngOnInit(): void {
@@ -57,11 +83,24 @@ export class StudentManagementComponent implements OnInit {
         this.loadTurmas();
     }
 
+    get statusValue(): boolean {
+        return this.studentForm.get('status')?.value === 'active';
+    }
+
+    toggleStatus() {
+        const current = this.studentForm.get('status')?.value;
+        this.studentForm.patchValue({
+            status: current === 'active' ? 'inactive' : 'active'
+        });
+    }
+
     loadStudents() {
+        if (!this.schoolId) return;
         this.isLoading = true;
-        this.schoolService.getStudentsBySchool(this.schoolId).subscribe({
+        this.schoolService.getStudentsBySchool(this.schoolId, this.turmaId || undefined).subscribe({
             next: (data) => {
-                this.students = data;
+                this.allStudents = data;
+                this.applyFilters();
                 this.isLoading = false;
             },
             error: (err) => {
@@ -75,9 +114,57 @@ export class StudentManagementComponent implements OnInit {
         this.schoolService.getTurmasBySchool(this.schoolId).subscribe(data => this.turmas = data);
     }
 
+    applyFilters() {
+        this.filteredStudents = this.allStudents.filter(student => {
+            const search = this.searchTerm.toLowerCase();
+            return !this.searchTerm ||
+                (student.nome || student.nome_completo)?.toLowerCase().includes(search) ||
+                student.email?.toLowerCase().includes(search) ||
+                student.numeroCarteira?.toLowerCase().includes(search);
+        });
+        this.currentPage = 1;
+    }
+
+    get paginatedStudents() {
+        const start = (this.currentPage - 1) * this.pageSize;
+        return this.filteredStudents.slice(start, start + this.pageSize);
+    }
+
+    get totalPages() {
+        return Math.ceil(this.filteredStudents.length / this.pageSize);
+    }
+
+    nextPage() {
+        if (this.currentPage < this.totalPages) this.currentPage++;
+    }
+
+    prevPage() {
+        if (this.currentPage > 1) this.currentPage--;
+    }
+
+    closeModal() {
+        this.showModal = false;
+        this.isEditing = false;
+        this.isBulk = false;
+        this.editingId = null;
+        this.studentForm.reset({ turmaId: '', status: 'active' });
+    }
+
     openAddModal() {
         this.isBulk = false;
-        this.studentForm.reset({ turmaId: '' });
+        this.isEditing = false;
+        this.studentForm.reset({ turmaId: '', status: 'active' });
+        this.showModal = true;
+    }
+
+    openEditModal(student: any) {
+        this.isBulk = false;
+        this.isEditing = true;
+        this.editingId = student.id;
+        this.studentForm.patchValue({
+            ...student,
+            turmaId: student.turmaId || student.turma?.id || ''
+        });
         this.showModal = true;
     }
 
@@ -87,7 +174,7 @@ export class StudentManagementComponent implements OnInit {
     }
 
     downloadTemplate() {
-        const csvContent = "nome,email,telefone,data_nascimento,turma\nJoão Silva,joao@email.com,11999999999,2012-05-10,Turma A\nMaria Souza,maria@email.com,11988888888,2013-03-20,Turma A";
+        const csvContent = "nome,email,telefone,data_nascimento,turma,carteira\nJoão Silva,joao@email.com,11999999999,2012-05-10,Turma A,AA0001";
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
@@ -113,24 +200,22 @@ export class StudentManagementComponent implements OnInit {
                         email: row.email || '',
                         telefone: row.telefone || '',
                         data_nascimento: row.data_nascimento || '',
-                        responsavel: row.responsavel || '',
-                        emailResponsavel: row.email_responsavel || row.email || '',
                         numeroCarteira: row.carteira || ''
                     })).filter((s: any) => s.nome !== '');
 
                     if (mappedStudents.length > 0) {
                         const res = await this.schoolService.createStudentsBulk(this.schoolId, mappedStudents);
                         if (res.success) {
-                            this.toastMessage = 'Alunos importados com sucesso!';
-                            this.showToast = true;
-                            setTimeout(() => this.showToast = false, 3000);
+                            this.successModalTitle = 'Alunos importados';
+                            this.successModalMessage = 'A importação em massa foi concluída com sucesso!';
+                            this.showSuccessModal = true;
+                            this.closeModal();
                             this.loadStudents();
                         } else {
                             alert('Erro ao importar alunos.');
                         }
                     }
                     this.isSubmitting = false;
-                    this.showModal = false;
                 },
                 error: (err) => {
                     this.isSubmitting = false;
@@ -144,16 +229,24 @@ export class StudentManagementComponent implements OnInit {
         if (this.studentForm.valid) {
             this.isSubmitting = true;
             const data = { ...this.studentForm.value, escola_id: this.schoolId };
-            const result = await this.schoolService.createStudent(data);
 
-            if (result.success) {
-                this.showModal = false;
-                this.loadStudents();
-                this.toastMessage = 'Cadastro realizado com sucesso.';
-                this.showToast = true;
-                setTimeout(() => this.showToast = false, 3000);
+            let res: any;
+            if (this.isEditing) {
+                res = await this.schoolService.updateStudent(this.editingId!, data);
             } else {
-                alert('Erro ao cadastrar aluno: ' + (result.error?.message || 'Erro desconhecido'));
+                res = await this.schoolService.createStudent(data);
+            }
+
+            if (res.success) {
+                const wasEditing = this.isEditing;
+                this.closeModal();
+                this.loadStudents();
+
+                this.successModalTitle = wasEditing ? 'Alterações salvas!' : 'Aluno cadastrado';
+                this.successModalMessage = wasEditing ? 'As alterações foram salvas com sucesso.' : 'O aluno foi cadastrado com sucesso!';
+                this.showSuccessModal = true;
+            } else {
+                alert('Erro ao processar aluno: ' + (res.error?.message || 'Erro desconhecido'));
             }
             this.isSubmitting = false;
         } else {
@@ -175,6 +268,10 @@ export class StudentManagementComponent implements OnInit {
                 this.deleteLoading = false;
                 this.deleteId = null;
                 this.loadStudents();
+
+                this.successModalTitle = 'Aluno excluído!';
+                this.successModalMessage = 'O aluno foi removido com sucesso!';
+                this.showSuccessModal = true;
             },
             error: () => {
                 this.deleteLoading = false;
@@ -187,8 +284,6 @@ export class StudentManagementComponent implements OnInit {
         this.deleteId = null;
     }
 
-    isSendingEmail: { [key: string]: boolean } = {};
-
     onSendEmail(student: any) {
         if (!student.email) {
             alert('Este aluno não possui um email cadastrado.');
@@ -199,7 +294,9 @@ export class StudentManagementComponent implements OnInit {
         this.emailService.sendStudentWelcomeEmail(student.id, student.email).subscribe({
             next: () => {
                 this.isSendingEmail[student.id] = false;
-                alert('Email de boas-vindas enviado com sucesso!');
+                this.successModalTitle = 'E-mail enviado!';
+                this.successModalMessage = 'O e-mail de acesso foi enviado para o aluno.';
+                this.showSuccessModal = true;
             },
             error: () => {
                 this.isSendingEmail[student.id] = false;

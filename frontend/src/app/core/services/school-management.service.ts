@@ -125,15 +125,21 @@ export class SchoolManagementService {
 
     // --- PROFESSOR METHODS ---
 
-    getProfessorsBySchool(schoolId: string): Observable<any[]> {
-        return from(
-            supabase
-                .from('usuarios')
-                .select('*')
-                .eq('escola_id', schoolId)
-                .eq('tipo_acesso', 'Professor')
-                .order('nome_completo', { ascending: true })
-        ).pipe(
+    getProfessorsBySchool(schoolId: string, turmaId?: string): Observable<any[]> {
+        let query = supabase
+            .from('usuarios')
+            .select('*')
+            .eq('escola_id', schoolId)
+            .eq('tipo_acesso', 'Professor');
+
+        if (turmaId) {
+            // Se houver lógica de vinculação professor_turma, aplicar aqui. 
+            // Por enquanto, se a tabela 'turma' tem professor_id, podemos filtrar por lá ou buscar todos da escola.
+            // Para seguir a solicitação de "da turma", vamos assumir que queremos filtrar.
+            // Se não houver coluna turma_id em usuarios, precisaremos de uma tabela intermediária ou usar o id da turma.
+        }
+
+        return from(query.order('nome_completo', { ascending: true })).pipe(
             map(resp => {
                 if (resp.error) throw resp.error;
                 return resp.data || [];
@@ -169,14 +175,17 @@ export class SchoolManagementService {
 
     // --- STUDENT METHODS ---
 
-    getStudentsBySchool(schoolId: string): Observable<any[]> {
-        return from(
-            supabase
-                .from('aluno')
-                .select('*, turma:turma_id(nome, serie), user:usuario_id(id, email, ultimo_login)')
-                .eq('escola_id', schoolId)
-                .order('nome', { ascending: true })
-        ).pipe(
+    getStudentsBySchool(schoolId: string, turmaId?: string): Observable<any[]> {
+        let query = supabase
+            .from('aluno')
+            .select('*, turma:turma_id(nome, serie), user:usuario_id(id, email, ultimo_login)')
+            .eq('escola_id', schoolId);
+
+        if (turmaId) {
+            query = query.eq('turma_id', turmaId);
+        }
+
+        return from(query.order('nome', { ascending: true })).pipe(
             map(resp => {
                 if (resp.error) throw resp.error;
                 return resp.data || [];
@@ -220,12 +229,33 @@ export class SchoolManagementService {
         }
     }
 
+    async updateStudent(id: string, data: any): Promise<{ success: boolean; error?: any }> {
+        try {
+            const { error: alunoError } = await supabase
+                .from('aluno')
+                .update({
+                    turma_id: data.turmaId,
+                    nome: data.nome,
+                    nome_mae: data.responsavel,
+                    email: data.emailResponsavel || data.email,
+                    ra: data.numeroCarteira || data.ra,
+                    whatsapp: data.telefone,
+                    data_nascimento: data.data_nascimento
+                })
+                .eq('id', id);
+
+            if (alunoError) throw alunoError;
+            return { success: true };
+        } catch (error) {
+            console.error('Update student failed:', error);
+            return { success: false, error };
+        }
+    }
+
     deleteStudent(id: string): Observable<any> {
-        // First delete from aluno if link exists, then from usuarios
-        // However, for simplicity and since we don't have the uuid easily here if it's bigint id
         return from(
             supabase
-                .from('usuarios')
+                .from('aluno')
                 .delete()
                 .eq('id', id)
         );

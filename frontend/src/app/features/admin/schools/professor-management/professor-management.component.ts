@@ -2,19 +2,21 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SchoolManagementService } from '../../../../core/services/school-management.service';
 import { DeleteConfirmModalComponent } from '../../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
-import { LucideAngularModule, UserPlus, Edit, Trash2, Users, X, Plus, Save, Search, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-angular';
+import { LucideAngularModule, UserPlus, Edit, Trash2, Users, X, Plus, Save, Search, ChevronLeft, ChevronRight, RefreshCw, ChevronDown } from 'lucide-angular';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { ActionSuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 
 @Component({
     selector: 'app-professor-management',
     standalone: true,
-    imports: [CommonModule, LucideAngularModule, ReactiveFormsModule, FormsModule, DeleteConfirmModalComponent],
+    imports: [CommonModule, LucideAngularModule, ReactiveFormsModule, FormsModule, DeleteConfirmModalComponent, ActionSuccessModalComponent],
     templateUrl: './professor-management.component.html',
     styleUrls: ['./professor-management.component.css']
 })
 export class ProfessorManagementComponent implements OnInit {
-    icons = { UserPlus, Edit, Trash2, Users, X, Plus, Save, Search, ChevronLeft, ChevronRight, RefreshCw };
+    icons = { UserPlus, Edit, Trash2, Users, X, Plus, Save, Search, ChevronLeft, ChevronRight, RefreshCw, User: Users, ChevronDown };
     @Input() schoolId!: string;
+    @Input() turmaId: string | null = null;
     allProfessors: any[] = [];
     filteredProfessors: any[] = [];
     isLoading = true;
@@ -30,18 +32,19 @@ export class ProfessorManagementComponent implements OnInit {
     pageSize: number = 10;
     protected Math = Math;
 
+    // Modais
     showDeleteModal = false;
     deleteId: string | null = null;
     deleteLoading = false;
+
+    showSuccessModal = false;
+    successModalTitle = '';
+    successModalMessage = '';
 
     showModal = false;
     isEditing = false;
     editingId: string | null = null;
     professorForm: FormGroup;
-
-    // For toast feedback
-    showToast = false;
-    toastMessage = '';
 
     constructor(
         private schoolService: SchoolManagementService,
@@ -55,13 +58,29 @@ export class ProfessorManagementComponent implements OnInit {
         });
     }
 
+    ngOnChanges(): void {
+        this.loadProfessors();
+    }
+
     ngOnInit(): void {
         this.loadProfessors();
     }
 
+    get statusValue(): boolean {
+        return this.professorForm.get('status')?.value === 'active';
+    }
+
+    toggleStatus() {
+        const current = this.professorForm.get('status')?.value;
+        this.professorForm.patchValue({
+            status: current === 'active' ? 'inactive' : 'active'
+        });
+    }
+
     loadProfessors() {
+        if (!this.schoolId) return;
         this.isLoading = true;
-        this.schoolService.getProfessorsBySchool(this.schoolId).subscribe({
+        this.schoolService.getProfessorsBySchool(this.schoolId, this.turmaId || undefined).subscribe({
             next: (data) => {
                 this.allProfessors = data;
                 this.applyFilters();
@@ -105,20 +124,24 @@ export class ProfessorManagementComponent implements OnInit {
         if (this.currentPage > 1) this.currentPage--;
     }
 
+    closeModal() {
+        this.showModal = false;
+        this.isEditing = false;
+        this.editingId = null;
+    }
+
     openAddModal() {
         this.isEditing = false;
         this.editingId = null;
         this.professorForm.reset({ status: 'active' });
-        this.showModal = false; // We use in-page form now
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        this.showModal = true;
     }
 
     openEditModal(prof: any) {
         this.isEditing = true;
         this.editingId = prof.id;
         this.professorForm.patchValue(prof);
-        this.showModal = false; // We use in-page form now
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        this.showModal = true;
     }
 
     onSubmit() {
@@ -138,13 +161,15 @@ export class ProfessorManagementComponent implements OnInit {
                 next: () => {
                     this.isSubmitting = false;
                     const wasEditing = this.isEditing;
-                    this.isEditing = false;
-                    this.professorForm.reset({ status: 'active' });
-
-                    // Show success toast
-                    this.toastMessage = wasEditing ? 'Professor atualizado com sucesso.' : 'Cadastro realizado com sucesso.';
-                    this.showToast = true;
-                    setTimeout(() => this.showToast = false, 3000);
+                    // Show success modal according to image text
+                    if (wasEditing) {
+                        this.successModalTitle = 'Alterações salvas!';
+                        this.successModalMessage = 'As alterações foram salvas com sucesso.';
+                    } else {
+                        this.successModalTitle = 'Professor cadastrado';
+                        this.successModalMessage = 'O professor foi cadastrada com sucesso!'; // Following image typo intentionally if that's what was shown, but normally "cadastrado"
+                    }
+                    this.showSuccessModal = true;
 
                     this.loadProfessors();
                 },
@@ -172,6 +197,11 @@ export class ProfessorManagementComponent implements OnInit {
                 this.deleteLoading = false;
                 this.deleteId = null;
                 this.loadProfessors();
+
+                // Show success modal for deletion
+                this.successModalTitle = 'Professor excluído!';
+                this.successModalMessage = 'O professor foi excluído com sucesso!';
+                this.showSuccessModal = true;
             },
             error: () => {
                 this.deleteLoading = false;

@@ -1,217 +1,234 @@
 <div class="space-y-6 animate-in fade-in duration-500">
-    <div class="flex items-center justify-between">
-        <h3 class="text-xl font-bold text-gray-900 font-primary">Gestão de Alunos</h3>
-        <div class="flex gap-2">
-            <button (click)="openBulkModal()"
-                class="btn-secondary py-2 px-6 flex items-center gap-2 text-xs h-10 border border-gray-100 shadow-sm">
-                <lucide-icon [img]="icons.Upload" class="w-4 h-4"></lucide-icon>
-                Importar CSV
+    <!-- Header with Search and Bulk Actions -->
+    <div class="flex flex-col sm:flex-row items-center gap-4">
+        <div class="relative flex-1 w-full">
+            <lucide-icon [img]="icons.Search"
+                class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+            <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Buscar aluno"
+                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00609b] transition-all">
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button (click)="onDelete('bulk')"
+                class="p-3 text-red-500 border border-gray-100 rounded-xl hover:bg-red-50 transition-all bg-white shadow-sm"
+                title="Excluir selecionados">
+                <lucide-icon [img]="icons.Trash2" class="w-5 h-5"></lucide-icon>
             </button>
+
             <button (click)="openAddModal()"
-                class="btn-primary py-2 px-6 flex items-center gap-2 text-xs h-10 shadow-md">
-                <lucide-icon [img]="icons.UserPlus" class="w-4 h-4"></lucide-icon>
-                Novo Aluno
+                class="flex-1 sm:flex-none px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all shadow-sm whitespace-nowrap">
+                <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
+                Cadastrar
+            </button>
+
+            <button (click)="openBulkModal()"
+                class="flex-1 sm:flex-none px-6 py-3 bg-[#00609b] text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#004d7c] transition-all shadow-md shadow-blue-900/10 whitespace-nowrap">
+                <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
+                Cadastrar em massa
             </button>
         </div>
     </div>
 
-    <!-- Bulk Import Modal Header Info -->
-    <div *ngIf="showModal && isBulk"
-        class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 mb-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <lucide-icon [img]="icons.FileSpreadsheet" class="w-4 h-4 text-blue-600"></lucide-icon>
-            </div>
-            <div>
-                <p class="text-xs font-bold text-blue-900 tracking-tight text-left">Modelo de Importação</p>
-                <p class="text-[10px] text-blue-700 text-left">Baixe o arquivo padrão para importar seus alunos.</p>
-            </div>
-        </div>
-        <button (click)="downloadTemplate()"
-            class="text-xs font-bold text-[#00609b] hover:underline flex items-center gap-1">
-            Download do modelo
-        </button>
-    </div>
-
+    <!-- Table Section -->
     <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-12 gap-4">
         <div class="w-8 h-8 border-4 border-[#00609b]/10 border-t-[#00609b] rounded-full animate-spin"></div>
-        <p class="text-xs text-gray-400 font-medium tracking-tight">Carregando alunos...</p>
+        <p class="text-xs text-gray-400 font-medium italic">Buscando alunos...</p>
     </div>
 
-    <div *ngIf="!isLoading && students.length > 0"
-        class="overflow-x-auto no-scrollbar bg-white rounded-3xl border border-gray-100 shadow-sm">
-        <table class="w-full text-left">
+    <div *ngIf="!isLoading && filteredStudents.length > 0"
+        class="bg-white border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm">
+        <table class="w-full text-left border-collapse">
             <thead>
-                <tr class="bg-gray-50/50 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                    <th class="px-6 py-4">Nome do Aluno</th>
-                    <th class="px-6 py-4">Turma</th>
-                    <th class="px-6 py-4 text-center">Status</th>
-                    <th class="px-6 py-4 text-center">Ações</th>
+                <tr class="text-sm font-semibold text-gray-500 border-b border-gray-50">
+                    <th class="pl-8 pr-4 py-6 w-12 text-center">
+                        <input type="checkbox" class="rounded border-gray-200 text-[#00609b] focus:ring-[#00609b]">
+                    </th>
+                    <th class="px-4 py-6">Carteira</th>
+                    <th class="px-4 py-6">Nome do aluno</th>
+                    <th class="px-4 py-6">Turma</th>
+                    <th class="px-4 py-6 text-center">Ações <lucide-icon [img]="icons.ArrowUpDown"
+                            class="w-3 h-3 inline-block ml-1 opacity-50"></lucide-icon></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
-                <tr *ngFor="let student of students" class="hover:bg-gray-50/30 transition-all group">
-                    <td class="px-6 py-4">
-                        <div class="flex flex-col">
-                            <span class="text-sm font-bold text-gray-700">{{ student.nome || student.nome_completo
-                                }}</span>
-                            <span class="text-[10px] text-gray-400 truncate max-w-[150px]">{{ student.email }}</span>
-                        </div>
+                <tr *ngFor="let student of paginatedStudents" class="hover:bg-gray-50/40 transition-all group">
+                    <td class="pl-8 pr-4 py-5 text-center">
+                        <input type="checkbox" class="rounded border-gray-200 text-[#00609b] focus:ring-[#00609b]">
                     </td>
-                    <td class="px-6 py-4 text-xs text-gray-600 font-medium text-left">
-                        <span class="px-2 py-0.5 bg-gray-50 rounded-lg border border-gray-100">
-                            {{ student.turma?.serie || '' }} {{ student.turma?.nome || 'Sem turma' }}
-                        </span>
+                    <td class="px-4 py-5 text-sm font-bold text-gray-800">{{ student.numeroCarteira || '---' }}</td>
+                    <td class="px-4 py-5 font-bold text-gray-800 text-[15px]">{{ student.nome || student.nome_completo
+                        }}</td>
+                    <td class="px-4 py-5 text-sm font-bold text-gray-800">
+                        {{ student.turma?.serie || '' }} {{ student.turma?.nome || 'Sem turma' }}
                     </td>
-                    <td class="px-6 py-4 text-center text-left">
-                        <div class="flex justify-center">
-                            <span *ngIf="!student.user"
-                                class="px-2 py-0.5 bg-gray-100 text-gray-400 text-[10px] font-bold rounded-full uppercase border border-gray-200">
-                                Pendente
-                            </span>
-                            <span *ngIf="student.user && !student.user.ultimo_login"
-                                class="px-2 py-0.5 bg-blue-100 text-blue-600 text-[10px] font-bold rounded-full uppercase border border-blue-200">
-                                Primeiro Acesso
-                            </span>
-                            <span *ngIf="student.user && student.user.ultimo_login"
-                                class="px-2 py-0.5 bg-green-100 text-green-600 text-[10px] font-bold rounded-full uppercase border border-green-200">
-                                Ativo
-                            </span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center justify-center gap-2">
+                    <td class="px-4 py-5">
+                        <div class="flex items-center justify-center gap-3">
+                            <button (click)="onDelete(student.id)"
+                                class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                <lucide-icon [img]="icons.Trash2" class="w-5 h-5 text-red-400"></lucide-icon>
+                            </button>
                             <button (click)="onSendEmail(student)" [disabled]="isSendingEmail[student.id]"
-                                class="p-2 text-gray-300 hover:text-[#00609b] hover:bg-blue-50 rounded-lg transition-all disabled:opacity-50"
-                                title="Enviar e-mail">
+                                class="p-2 text-gray-400 hover:bg-blue-50 rounded-lg transition-colors">
                                 <lucide-icon *ngIf="!isSendingEmail[student.id]" [img]="icons.Mail"
-                                    class="w-4 h-4"></lucide-icon>
+                                    class="w-5 h-5"></lucide-icon>
                                 <div *ngIf="isSendingEmail[student.id]"
-                                    class="w-4 h-4 border-2 border-[#00609b]/20 border-t-[#00609b] rounded-full animate-spin">
+                                    class="w-4 h-4 border-2 border-blue-200 border-t-blue-500 rounded-full animate-spin">
                                 </div>
                             </button>
-                            <button (click)="onDelete(student.id)"
-                                class="p-2 text-red-100 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
-                                <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon>
+                            <button (click)="openEditModal(student)"
+                                class="p-2 text-gray-400 border border-gray-100 rounded-lg hover:bg-gray-50 transition-all">
+                                <lucide-icon [img]="icons.Edit" class="w-5 h-5"></lucide-icon>
                             </button>
                         </div>
                     </td>
                 </tr>
             </tbody>
         </table>
+
+        <!-- Pagination Bar -->
+        <div class="flex items-center justify-between p-8 border-t border-gray-50 bg-white">
+            <p class="text-sm font-medium text-gray-500">Página {{ currentPage }} de {{ totalPages }}</p>
+            <div class="flex items-center gap-4">
+                <button (click)="prevPage()" [disabled]="currentPage === 1" class="btn-pagination">
+                    Anterior
+                </button>
+                <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn-pagination">
+                    Próximo
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Empty State -->
-    <div *ngIf="!isLoading && students.length === 0"
-        class="p-12 text-center bg-white rounded-3xl border border-dashed border-gray-200 flex flex-col items-center gap-4">
-        <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center">
-            <lucide-icon [img]="icons.GraduationCap" class="w-6 h-6 text-gray-300"></lucide-icon>
+    <div *ngIf="!isLoading && filteredStudents.length === 0"
+        class="p-16 text-center bg-gray-50/50 rounded-[2rem] border-2 border-dashed border-gray-100 flex flex-col items-center gap-4">
+        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm">
+            <lucide-icon [img]="icons.GraduationCap" class="w-8 h-8 text-gray-300"></lucide-icon>
         </div>
         <div>
-            <h4 class="font-bold text-gray-700">Nenhum aluno cadastrado</h4>
-            <p class="text-xs text-gray-400">Importe um CSV ou cadastre manualmente os alunos.</p>
+            <h4 class="font-bold text-gray-700 text-lg">Nenhum aluno encontrado</h4>
+            <p class="text-sm text-gray-400">Cadastre um novo aluno ou realize a importação em massa para começar.</p>
         </div>
-        <button (click)="openAddModal()" class="btn-primary py-2 px-6 text-xs">Adicionar Aluno</button>
     </div>
 
-    <!-- Modal -->
-    <div *ngIf="showModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-        <div
-            class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in duration-300 text-left">
-            <header class="p-6 bg-[#00609b] text-white flex items-center justify-between">
-                <h3 class="text-xl font-bold font-primary">{{ isBulk ? 'Importação em Massa' : 'Novo Aluno' }}</h3>
-                <button (click)="showModal = false" class="p-2 hover:bg-white/10 rounded-lg transition-all">
-                    <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
-                </button>
-            </header>
-
-            <div *ngIf="isBulk" class="p-8 space-y-6 text-center">
-                <div class="flex items-center justify-between bg-blue-50/50 p-4 rounded-xl border border-blue-100 mb-4">
-                    <div class="flex items-center gap-3">
-                        <lucide-icon [img]="icons.FileSpreadsheet" class="w-4 h-4 text-blue-600"></lucide-icon>
-                        <span class="text-xs font-bold text-blue-900">Download Template</span>
-                    </div>
-                    <button (click)="downloadTemplate()" class="text-xs font-bold text-[#00609b] hover:underline">
-                        Baixar modelo CSV
+    <!-- Modal Layout according to User Images (Students) -->
+    <div *ngIf="showModal && !isBulk"
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg p-8 animate-in zoom-in-95 duration-200 relative">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-4">
+                    <h3 class="text-xl font-bold text-gray-900">{{ isEditing ? 'Editar' : 'Cadastrar' }} aluno</h3>
+                    <button *ngIf="isEditing" (click)="onDelete(editingId!); closeModal()"
+                        class="flex items-center gap-1.5 text-sm font-bold text-red-500 hover:text-red-600 transition-all ml-4">
+                        <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon>
+                        Excluir aluno
                     </button>
                 </div>
-
-                <div
-                    class="border-2 border-dashed border-gray-100 rounded-3xl p-10 bg-gray-50/50 flex flex-col items-center gap-4">
-                    <lucide-icon *ngIf="!isSubmitting" [img]="icons.FileSpreadsheet"
-                        class="w-12 h-12 text-gray-300"></lucide-icon>
-                    <div *ngIf="isSubmitting"
-                        class="w-12 h-12 border-4 border-[#00609b]/10 border-t-[#00609b] rounded-full animate-spin">
-                    </div>
-
-                    <div class="space-y-1 text-center">
-                        <p class="text-sm font-bold text-gray-600">{{ isSubmitting ? 'Processando arquivo...' :
-                            'Selecione seu arquivo CSV' }}</p>
-                        <p class="text-xs text-gray-400">O arquivo deve conter as colunas: nome, email, telefone,
-                            data_nascimento, turma</p>
-                    </div>
-
-                    <label *ngIf="!isSubmitting"
-                        class="btn-primary py-2 px-8 text-xs cursor-pointer inline-block mt-2 shadow-md">
-                        Procurar Arquivo
-                        <input type="file" (change)="onFileChange($event)" accept=".csv" class="hidden">
-                    </label>
-                </div>
+                <button (click)="closeModal()" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                    <lucide-icon [img]="icons.X" class="w-5 h-5 text-gray-400"></lucide-icon>
+                </button>
             </div>
 
-            <form *ngIf="!isBulk" [formGroup]="studentForm" (ngSubmit)="onSubmit()" class="p-8 space-y-4">
-                <div class="form-group">
-                    <label>Turma *</label>
-                    <select formControlName="turmaId" class="form-input">
-                        <option value="">Selecione a turma</option>
-                        <option *ngFor="let t of turmas" [value]="t.id">{{ t.serie }} {{ t.nome }}</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Nome do Aluno *</label>
-                    <input type="text" formControlName="nome" class="form-input" placeholder="Nome completo">
-                </div>
+            <form [formGroup]="studentForm" (ngSubmit)="onSubmit()" class="space-y-5">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
-                        <label>E-mail *</label>
-                        <input type="email" formControlName="email" class="form-input" placeholder="exemplo@email.com">
+                        <label>Turma *</label>
+                        <div class="relative">
+                            <select formControlName="turmaId" class="form-input appearance-none pr-10">
+                                <option value="">Selecionar</option>
+                                <option *ngFor="let t of turmas" [value]="t.id">{{ t.serie }} {{ t.nome }}</option>
+                            </select>
+                            <lucide-icon [img]="icons.ChevronDown"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>Telefone</label>
-                        <input type="text" formControlName="telefone" class="form-input" placeholder="(00) 00000-0000">
+                        <label>Carteira</label>
+                        <input type="text" formControlName="numeroCarteira" class="form-input" placeholder="Ex: AA0001">
                     </div>
                 </div>
+
                 <div class="form-group">
-                    <label>Data de Nascimento</label>
-                    <input type="date" formControlName="data_nascimento" class="form-input">
+                    <label>Nome do aluno *</label>
+                    <input type="text" formControlName="nome" class="form-input" placeholder="Nome completo">
                 </div>
 
-                <div class="flex justify-end gap-3 pt-6 border-t border-gray-50">
-                    <button type="button" (click)="showModal = false" [disabled]="isSubmitting"
-                        class="px-6 py-2.5 text-gray-400 font-bold hover:text-gray-600 transition-colors disabled:opacity-50">Cancelar</button>
+                <div class="form-group">
+                    <label>Email do aluno *</label>
+                    <input type="email" formControlName="email" class="form-input" placeholder="email@exemplo.com">
+                </div>
+
+                <!-- Status Toggle (Same as professor) -->
+                <div class="flex items-center justify-between py-2 border-b border-gray-50">
+                    <label class="text-[13px] font-bold text-gray-700">Status *</label>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-medium"
+                            [ngClass]="statusValue ? 'text-gray-400' : 'text-gray-900'">Inativo</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" [checked]="statusValue" (change)="toggleStatus()"
+                                class="sr-only peer">
+                            <div
+                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00609b]">
+                            </div>
+                        </label>
+                        <span class="text-sm font-medium"
+                            [ngClass]="statusValue ? 'text-gray-900' : 'text-gray-400'">Ativo</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 pt-6">
+                    <button type="button" (click)="closeModal()"
+                        class="flex-1 py-3.5 border border-gray-200 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                        Cancelar
+                    </button>
                     <button type="submit" [disabled]="isSubmitting"
-                        class="btn-primary py-2.5 px-8 flex items-center gap-2 disabled:bg-gray-400">
-                        <lucide-icon *ngIf="!isSubmitting" [img]="icons.UserPlus" class="w-5 h-5"></lucide-icon>
-                        <div *ngIf="isSubmitting"
-                            class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                        {{ isSubmitting ? 'Salvando...' : 'Finalizar Cadastro' }}
+                        class="flex-1 py-3.5 bg-[#00609b] text-white rounded-xl font-bold hover:bg-[#004d7c] transition-all disabled:opacity-50">
+                        {{ isSubmitting ? 'Salvando...' : (isEditing ? 'Salvar alterações' : 'Cadastrar') }}
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Toast UI -->
-    <div *ngIf="showToast"
-        class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-5 duration-300">
-        <div class="bg-gray-900 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3">
-            <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                <lucide-icon [img]="icons.Upload" class="w-3 h-3 text-white"></lucide-icon>
+    <!-- Bulk Import Modal -->
+    <div *ngIf="showModal && isBulk"
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg p-8 animate-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="text-xl font-bold text-gray-900">Importação em massa</h3>
+                <button (click)="closeModal()" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                    <lucide-icon [img]="icons.X" class="w-5 h-5 text-gray-400"></lucide-icon>
+                </button>
             </div>
-            <span class="text-sm font-bold tracking-tight text-white">{{ toastMessage }}</span>
+
+            <div
+                class="p-6 border-2 border-dashed border-gray-100 rounded-[2rem] bg-gray-50/50 flex flex-col items-center gap-6 text-center">
+                <lucide-icon [img]="icons.Upload" class="w-12 h-12 text-[#00609b] opacity-20"></lucide-icon>
+                <div class="space-y-2">
+                    <p class="font-bold text-gray-700">Arraste seu arquivo ou procure no computador</p>
+                    <p class="text-xs text-gray-400 px-8">O arquivo deve estar no formato .CSV e seguir o modelo padrão
+                        do sistema.</p>
+                </div>
+
+                <button (click)="downloadTemplate()"
+                    class="text-xs font-bold text-[#00609b] hover:underline flex items-center gap-2">
+                    <lucide-icon [img]="icons.FileSpreadsheet" class="w-4 h-4"></lucide-icon>
+                    Baixar modelo CSV
+                </button>
+
+                <label
+                    class="px-8 py-3 bg-[#00609b] text-white rounded-xl font-bold text-sm cursor-pointer hover:bg-[#004d7c] transition-all shadow-md">
+                    Procurar arquivo
+                    <input type="file" (change)="onFileChange($event)" accept=".csv" class="hidden">
+                </label>
+            </div>
         </div>
     </div>
+
+    <!-- Success Modals -->
+    <app-action-success-modal [isVisible]="showSuccessModal" [title]="successModalTitle" [message]="successModalMessage"
+        (onClose)="showSuccessModal = false">
+    </app-action-success-modal>
 
     <!-- Delete Confirm Modal -->
     <app-delete-confirm-modal entityName="aluno" entityArticle="o" [isVisible]="showDeleteModal"

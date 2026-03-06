@@ -7,6 +7,8 @@ export interface DashboardStats {
     freeBalance: number;
     purposeBalance: number;
     totalStudents: number;
+    saldo_livre?: number;     // For template compatibility
+    saldo_propositos?: number; // For template compatibility
 }
 
 export interface TurmaSummary {
@@ -104,19 +106,33 @@ export class AdminDashboardService {
             const freeBalance = freeBalanceData?.reduce((acc, curr) => acc + (Number(curr.saldo_carteira) || 0), 0) || 0;
 
             // 4. Saldo em Propósitos (Current snapshot)
-            // Fix: Since we don't have admins for all schools yet, we use a naming convention check 
-            // to fetch simulated school purpose data.
             let finalPurposeBalance = 0;
             if (escolaId) {
-                // Fetch the school name to filter by its simulated label
+                // 4.1 Carregar saldo dos propósitos dos ALUNOS
+                const { data: students } = await supabase.from('aluno').select('user_id').eq('escola_id', escolaId);
+                const userIds = (students || []).map(a => a.user_id).filter(id => !!id);
+
+                let studentPurposeSum = 0;
+                if (userIds.length > 0) {
+                    const { data: studentPurposes } = await supabase
+                        .from('propositos')
+                        .select('saldo')
+                        .in('usuario_id', userIds);
+                    studentPurposeSum = studentPurposes?.reduce((acc, curr) => acc + (Number(curr.saldo) || 0), 0) || 0;
+                }
+
+                // 4.2 Carregar saldo dos propósitos da ESCOLA (Reservas e Projetos da própria instituição)
                 const { data: school } = await supabase.from('escola').select('nome_fantasia').eq('id', escolaId).single();
                 const schoolName = school?.nome_fantasia || '';
+
                 const { data: schoolPurposes } = await supabase
                     .from('propositos')
                     .select('saldo')
                     .or(`nome.eq."Reserva ${schoolName}",nome.eq."Projetos ${schoolName}"`);
 
-                finalPurposeBalance = schoolPurposes?.reduce((acc, curr) => acc + (Number(curr.saldo) || 0), 0) || 0;
+                const schoolPurposeSum = schoolPurposes?.reduce((acc, curr) => acc + (Number(curr.saldo) || 0), 0) || 0;
+
+                finalPurposeBalance = studentPurposeSum + schoolPurposeSum;
             } else {
                 // Sum all for global view
                 const { data: purposeDataRaw } = await supabase.from('propositos').select('saldo');
@@ -146,7 +162,9 @@ export class AdminDashboardService {
                 totalSpent: adjustedSpent,
                 freeBalance: adjustedFree,
                 purposeBalance: adjustedPurpose,
-                totalStudents
+                totalStudents,
+                saldo_livre: freeBalance,      // RAW value for school view
+                saldo_propositos: finalPurposeBalance // RAW value for school view
             };
         } catch (error) {
             console.error('Error fetching dashboard stats:', error);
