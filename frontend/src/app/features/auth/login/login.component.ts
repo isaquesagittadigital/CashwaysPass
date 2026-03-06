@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, User, Key, Eye, EyeOff } from 'lucide-angular';
+import { LucideAngularModule, User, Key, Eye, EyeOff, AlertCircle, AlertTriangle, X } from 'lucide-angular';
 import { LogoComponent } from '../../../components/logo/logo.component';
 
 @Component({
@@ -19,12 +19,16 @@ export class LoginComponent {
   showPassword = false;
   isLoading = false;
   submitted = false;
+  errorMessage = '';
 
   icons = {
     User: User,
     Key: Key,
     Eye: Eye,
     EyeOff: EyeOff,
+    AlertCircle: AlertCircle,
+    AlertTriangle: AlertTriangle,
+    X: X
   };
 
   constructor(private router: Router) { }
@@ -59,44 +63,47 @@ export class LoginComponent {
     this.isLoading = true;
 
     try {
-      // Import the dynamic supabase client (avoiding circular or early initialization issues if any)
+      this.errorMessage = '';
+
       const { supabase } = await import('../../../core/supabase');
 
       const { data, error } = await supabase
         .from('usuarios')
-        .select('id, email, senha, tipo_acesso')
+        .select('*')
         .eq('email', this.email.trim())
         .eq('senha', this.password)
         .single();
 
       if (error || !data) {
-        alert('E-mail ou senha incorretos.');
+        this.errorMessage = 'E-mail ou senha incorretos.';
         this.isLoading = false;
         return;
       }
 
-      // Verify if the role matches the selected tab
-      const userRole = data.tipo_acesso.toLowerCase();
-      const selectedRole = this.role === 'school' ? 'escola' : 'admin';
+      const userType = data.tipo_acesso;
 
-      if (userRole !== selectedRole) {
-        alert(`Este usuário não tem permissão de ${this.role === 'admin' ? 'Administrador' : 'Escola'}.`);
-        this.isLoading = false;
-        return;
-      }
-
-      // Store current user to be used by ProfileService
-      localStorage.setItem('currentUser', JSON.stringify(data));
-
-      // Success - navigate to the appropriate dashboard
       if (this.role === 'admin') {
+        if (userType !== 'Administrador') {
+          this.errorMessage = 'Acesso negado. Este usuário não possui privilégios de Administrador.';
+          this.isLoading = false;
+          return;
+        }
+
+        localStorage.setItem('currentUser', JSON.stringify(data));
         this.router.navigate(['/admin']);
-      } else {
+      } else if (this.role === 'school') {
+        if (userType !== 'Escola') {
+          this.errorMessage = 'Acesso negado. Este usuário não possui privilégios de Escola.';
+          this.isLoading = false;
+          return;
+        }
+
+        localStorage.setItem('currentUser', JSON.stringify(data));
         this.router.navigate(['/escola']);
       }
     } catch (err) {
       console.error('Login error:', err);
-      alert('Erro ao conectar ao servidor.');
+      this.errorMessage = 'Erro ao conectar ao servidor. Verifique sua conexão.';
     } finally {
       this.isLoading = false;
     }

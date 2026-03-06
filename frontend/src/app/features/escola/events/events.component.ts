@@ -22,13 +22,13 @@ import {
 } from 'lucide-angular';
 import { EventoService, Evento } from '../../../core/services/evento.service';
 import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
-import { SchoolService } from '../../../core/services/school.service';
+import { SchoolService, School } from '../../../core/services/school.service';
 
 @Component({
     selector: 'app-escola-events',
     standalone: true,
     imports: [CommonModule, FormsModule, LucideAngularModule, DeleteConfirmModalComponent],
-    templateUrl: '../../admin/events/events.component.html',
+    templateUrl: './events.component.html',
 })
 export class EscolaEventsComponent implements OnInit, OnDestroy {
     icons = {
@@ -59,13 +59,13 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
         nome: '',
         descricao_curta: '',
         data_evento: '',
-        turma_ids: [] as string[],
+        turma_ids: [] as string[], // Changed to array for multi-select
         ativo: true,
         capa_url: '',
         lojistas_convidados: [] as string[]
     };
     newLojistaEmail = '';
-    selectedTurmaId = '';
+    selectedTurmaId = ''; // Helper for select dropdown
 
     // Delete Modal
     showDeleteModal = false;
@@ -100,26 +100,17 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
     async loadEventos() {
         if (!this.selectedSchoolId) return;
         this.loading = true;
-        try {
-            this.eventos = await this.eventoService.getEventos(
-                this.selectedSchoolId,
-                this.searchTerm,
-                this.statusFilter
-            );
-        } catch (error) {
-            console.error('Error loading school events:', error);
-        } finally {
-            this.loading = false;
-        }
+        this.eventos = await this.eventoService.getEventos(
+            this.selectedSchoolId,
+            this.searchTerm,
+            this.statusFilter
+        );
+        this.loading = false;
     }
 
     async loadTurmas() {
         if (!this.selectedSchoolId) return;
-        try {
-            this.turmas = await this.eventoService.getTurmas(this.selectedSchoolId);
-        } catch (error) {
-            console.error('Error loading turmas:', error);
-        }
+        this.turmas = await this.eventoService.getTurmas(this.selectedSchoolId);
     }
 
     onSearch() {
@@ -134,12 +125,17 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
         this.router.navigate(['/escola/dashboard']);
     }
 
+    // --- Helpers ---
     getEventStatus(data: string): { label: string, class: string } {
         if (!data) return { label: 'Agendado', class: 'bg-blue-100 text-blue-700' };
+
         const eventDate = new Date(data + 'T00:00:00');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        if (eventDate < today) return { label: 'Realizado', class: 'bg-gray-100 text-gray-500' };
+
+        if (eventDate < today) {
+            return { label: 'Realizado', class: 'bg-gray-100 text-gray-500' };
+        }
         return { label: 'Agendado', class: 'bg-blue-100 text-blue-700' };
     }
 
@@ -159,6 +155,7 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
         return turma ? turma.nome : 'Nenhuma turma';
     }
 
+    // --- Form Actions ---
     openCreateModal() {
         this.isEditing = false;
         this.editingEventId = null;
@@ -173,7 +170,7 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
             nome: event.nome,
             descricao_curta: event.descricao_curta || '',
             data_evento: event.data_evento || '',
-            turma_ids: event.turma_ids || (event.turma_id ? [event.turma_id] : []),
+            turma_ids: event.turma_ids || (event.turma_id ? [event.turma_id] : []), // Handle migration from single to multi
             ativo: event.ativo,
             capa_url: event.capa_url || '',
             lojistas_convidados: [...(event.lojistas_convidados || [])]
@@ -239,28 +236,38 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
 
     async submitForm() {
         if (!this.selectedSchoolId || !this.form.nome) return;
+
         this.formLoading = true;
+
         try {
+            // Upload image if selected
             if (this.imageFile) {
                 const url = await this.eventoService.uploadCapa(this.imageFile);
                 if (url) this.form.capa_url = url;
             }
+
             const dataToSave = {
                 ...this.form,
                 escola_id: this.selectedSchoolId,
                 updated_at: new Date().toISOString()
             };
+
             let result;
             if (this.isEditing && this.editingEventId) {
                 result = await this.eventoService.updateEvento(this.editingEventId, dataToSave);
-                if (result.success) this.showSuccess('Evento atualizado!', 'As alterações foram salvas com sucesso.');
+                if (result.success) {
+                    this.showSuccess('Evento atualizado!', 'As alterações foram salvas com sucesso.');
+                }
             } else {
                 result = await this.eventoService.createEvento({
                     ...dataToSave,
                     created_at: new Date().toISOString()
                 });
-                if (result.success) this.showSuccess('Evento cadastrado!', 'O evento foi cadastrado com sucesso!');
+                if (result.success) {
+                    this.showSuccess('Evento cadastrado!', 'O evento foi cadastrado com sucesso!');
+                }
             }
+
             if (result.success) {
                 this.closeFormModal();
                 this.loadEventos();
@@ -272,6 +279,7 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
         }
     }
 
+    // --- Delete Actions ---
     openDeleteModal(id: string) {
         this.deleteEventId = id;
         this.showDeleteModal = true;
@@ -280,20 +288,17 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
     async confirmDelete() {
         if (!this.deleteEventId) return;
         this.deleteLoading = true;
-        try {
-            const result = await this.eventoService.deleteEvento(this.deleteEventId);
-            if (result.success) {
-                this.showSuccess('Evento excluído!', 'O evento foi excluído com sucesso!');
-                this.loadEventos();
-                this.showDeleteModal = false;
-            }
-        } catch (error) {
-            console.error('Error deleting event:', error);
-        } finally {
-            this.deleteLoading = false;
+
+        const result = await this.eventoService.deleteEvento(this.deleteEventId);
+        if (result.success) {
+            this.showSuccess('Evento excluído!', 'O evento foi excluído com sucesso!');
+            this.loadEventos();
+            this.showDeleteModal = false;
         }
+        this.deleteLoading = false;
     }
 
+    // --- Feedback ---
     showSuccess(title: string, message: string) {
         this.successTitle = title;
         this.successMessage = message;

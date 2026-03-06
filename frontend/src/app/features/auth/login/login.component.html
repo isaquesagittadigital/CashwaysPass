@@ -20,8 +20,24 @@
         </div>
 
         <!-- Logo -->
-        <div class="mb-10 flex justify-center w-full">
+        <div class="mb-8 flex justify-center w-full">
             <app-logo className="w-52" [light]="false"></app-logo>
+        </div>
+
+        <!-- Inline Error Message -->
+        <div *ngIf="errorMessage" class="w-full mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div class="bg-red-50 border border-red-100 rounded-xl p-4 flex items-start gap-3 shadow-sm">
+                <div class="bg-red-500 rounded-lg p-1.5 flex-shrink-0">
+                    <lucide-icon [img]="icons.AlertCircle" class="w-4 h-4 text-white"></lucide-icon>
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs font-bold text-red-800 leading-tight">{{ errorMessage }}</p>
+                    <p class="text-[10px] text-red-500 mt-0.5 font-medium">Verifique os dados e tente novamente.</p>
+                </div>
+                <button (click)="errorMessage = ''" class="text-red-300 hover:text-red-500 transition-colors">
+                    <lucide-icon [img]="icons.X" class="w-3.5 h-3.5"></lucide-icon>
+                </button>
+            </div>
         </div>
 
         <!-- Form -->

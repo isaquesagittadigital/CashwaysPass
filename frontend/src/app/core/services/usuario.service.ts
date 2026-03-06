@@ -26,11 +26,18 @@ export interface Usuario {
 export class UsuarioService {
     private readonly TABLE = 'usuarios';
 
-    async getUsuarios(escolaId: string, searchTerm?: string, tipoAcesso?: string): Promise<Usuario[]> {
+    async getUsuarios(
+        escolaId: string,
+        searchTerm?: string,
+        tipoAcesso?: string,
+        status?: string,
+        page: number = 1,
+        pageSize: number = 10
+    ): Promise<{ users: Usuario[], total: number }> {
         try {
             let query = supabase
                 .from(this.TABLE)
-                .select('*')
+                .select('*', { count: 'exact' })
                 .eq('escola_id', escolaId)
                 .order('id', { ascending: false });
 
@@ -42,13 +49,55 @@ export class UsuarioService {
                 query = query.eq('tipo_acesso', tipoAcesso);
             }
 
-            const { data, error } = await query;
+            if (status) {
+                query = query.eq('status', status);
+            }
+
+            // Pagination
+            const from = (page - 1) * pageSize;
+            const to = from + pageSize - 1;
+            query = query.range(from, to);
+
+            const { data, error, count } = await query;
 
             if (error) throw error;
-            return (data || []) as Usuario[];
+            return {
+                users: (data || []) as Usuario[],
+                total: count || 0
+            };
         } catch (error) {
             console.error('Error fetching users:', error);
-            return [];
+            return { users: [], total: 0 };
+        }
+    }
+
+    async deleteUsuario(id: number): Promise<{ success: boolean; error?: any }> {
+        try {
+            const { error } = await supabase
+                .from(this.TABLE)
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            return { success: true };
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            return { success: false, error };
+        }
+    }
+
+    async deleteBulkUsuarios(ids: number[]): Promise<{ success: boolean; error?: any }> {
+        try {
+            const { error } = await supabase
+                .from(this.TABLE)
+                .delete()
+                .in('id', ids);
+
+            if (error) throw error;
+            return { success: true };
+        } catch (error) {
+            console.error('Error deleting multiple users:', error);
+            return { success: false, error };
         }
     }
 

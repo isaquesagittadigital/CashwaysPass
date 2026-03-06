@@ -19,7 +19,7 @@ import { ProfileService, UserProfile } from '../../../core/services/profile.serv
     selector: 'app-escola-perfil',
     standalone: true,
     imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule],
-    templateUrl: '../../admin/profile/perfil.component.html',
+    templateUrl: './perfil.component.html',
 })
 export class EscolaPerfilComponent implements OnInit {
     icons = {
@@ -37,7 +37,7 @@ export class EscolaPerfilComponent implements OnInit {
     profile?: UserProfile;
     previewUrl?: string;
     selectedFile?: File;
-    isAdmin = false;
+    isAdmin = true;
 
     constructor(
         private fb: FormBuilder,

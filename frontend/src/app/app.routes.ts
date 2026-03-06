@@ -18,6 +18,17 @@ export const routes: Routes = [
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             { path: 'dashboard', component: AdminDashboardComponent },
             {
+                path: 'carteira', loadComponent: () => import('./features/admin/wallet/wallet.component').then(m => m.WalletComponent)
+            },
+            {
+                path: 'produtos',
+                loadComponent: () => import('./features/admin/products/products.component').then(m => m.ProductsComponent)
+            },
+            {
+                path: 'eventos',
+                loadComponent: () => import('./features/admin/events/events.component').then(m => m.EventsComponent)
+            },
+            {
                 path: 'escolas',
                 loadComponent: () => import('./features/admin/schools/schools-list.component').then(m => m.SchoolsListComponent)
             },
@@ -28,18 +39,6 @@ export const routes: Routes = [
             {
                 path: 'escolas/:id',
                 loadComponent: () => import('./features/admin/schools/school-details.component').then(m => m.SchoolDetailsComponent)
-            },
-            {
-                path: 'carteira',
-                loadComponent: () => import('./features/admin/wallet/wallet.component').then(m => m.WalletComponent)
-            },
-            {
-                path: 'produtos',
-                loadComponent: () => import('./features/admin/products/products.component').then(m => m.ProductsComponent)
-            },
-            {
-                path: 'eventos',
-                loadComponent: () => import('./features/admin/events/events.component').then(m => m.EventsComponent)
             },
             {
                 path: 'usuarios',
@@ -55,7 +54,6 @@ export const routes: Routes = [
             },
         ]
     },
-
     // School panel
     {
         path: 'escola',
@@ -63,10 +61,6 @@ export const routes: Routes = [
         children: [
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             { path: 'dashboard', component: EscolaDashboardComponent },
-            {
-                path: 'cadastro',
-                loadComponent: () => import('./features/escola/cadastro/cadastro.component').then(m => m.CadastroComponent)
-            },
             {
                 path: 'carteira',
                 loadComponent: () => import('./features/escola/wallet/wallet.component').then(m => m.EscolaWalletComponent)
@@ -78,6 +72,10 @@ export const routes: Routes = [
             {
                 path: 'eventos',
                 loadComponent: () => import('./features/escola/events/events.component').then(m => m.EscolaEventsComponent)
+            },
+            {
+                path: 'relatorios',
+                loadComponent: () => import('./features/escola/reports/reports.component').then(m => m.EscolaReportsComponent)
             },
             {
                 path: 'perfil',

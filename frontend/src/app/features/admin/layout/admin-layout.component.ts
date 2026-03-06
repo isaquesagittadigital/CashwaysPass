@@ -50,10 +50,10 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
     menuItems = [
         { icon: LayoutDashboard, label: 'Dashboard', route: 'dashboard', active: false },
-        { icon: Building2, label: 'Escolas', route: 'escolas', active: false },
         { icon: Wallet, label: 'Carteira', route: 'carteira', active: false },
         { icon: Package, label: 'Produtos', route: 'produtos', active: false },
         { icon: CalendarDays, label: 'Eventos', route: 'eventos', active: false },
+        { icon: Building2, label: 'Escolas', route: 'escolas', active: false },
         { icon: Users, label: 'Usuários', route: 'usuarios', active: false },
         { icon: BarChart3, label: 'Relatórios', route: 'relatorios', active: false },
         { icon: UserCircle, label: 'Perfil', route: 'perfil', active: false },

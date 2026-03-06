@@ -23,7 +23,7 @@ import { SchoolManagementService } from '../../../core/services/school-managemen
     selector: 'app-escola-wallet',
     standalone: true,
     imports: [CommonModule, FormsModule, LucideAngularModule],
-    templateUrl: '../../admin/wallet/wallet.component.html',
+    templateUrl: './wallet.component.html',
 })
 export class EscolaWalletComponent implements OnInit, OnDestroy {
     public icons: any = { ArrowLeft, Search, Download, Eye, ChevronDown, X: XIcon, RefreshCw, CreditCard, Filter };
@@ -86,8 +86,8 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
             this.selectedSchoolId = s?.id || null;
             if (this.selectedSchoolId) {
                 this.loadTurmas(this.selectedSchoolId);
-                this.loadStudents();
             }
+            this.loadStudents();
         });
     }
 
@@ -103,23 +103,18 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
             return;
         }
         this.loading = true;
-        try {
-            const { students, total } = await this.carteiraService.getStudentsWallet(
-                this.selectedSchoolId,
-                'Todos',
-                this.searchTerm,
-                this.currentPage,
-                this.pageSize,
-                this.turmaFilter || undefined
-            );
-            this.students = students;
-            this.totalStudents = total;
-            this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
-        } catch (error) {
-            console.error('Error loading wallet students:', error);
-        } finally {
-            this.loading = false;
-        }
+        const { students, total } = await this.carteiraService.getStudentsWallet(
+            this.selectedSchoolId,
+            'Todos',
+            this.searchTerm,
+            this.currentPage,
+            this.pageSize,
+            this.turmaFilter || undefined
+        );
+        this.students = students;
+        this.totalStudents = total;
+        this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
+        this.loading = false;
     }
 
     async loadTurmas(schoolId: string) {
@@ -185,6 +180,7 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
         return status === 'active' ? 'Ativo' : 'Inativo';
     }
 
+    // --- Financial Profile Modal ---
     async openProfileModal(student: WalletStudent) {
         this.showProfileModal = true;
         this.profileLoading = true;
@@ -247,8 +243,6 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
         ];
     }
 
-
-
     closeProfileModal() {
         this.showProfileModal = false;
         this.selectedProfile = null;
@@ -257,26 +251,18 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
     async loadInventory(alunoId?: string) {
         const id = alunoId || this.selectedProfile?.id;
         if (!id) return;
-        try {
-            const { items, total } = await this.carteiraService.getStudentInventory(id, this.inventoryPage, 5);
-            this.inventory = items;
-            this.inventoryTotal = total;
-            this.inventoryTotalPages = Math.max(1, Math.ceil(total / 5));
-        } catch (error) {
-            console.error('Error loading inventory:', error);
-        }
+        const { items, total } = await this.carteiraService.getStudentInventory(id, this.inventoryPage, 5);
+        this.inventory = items;
+        this.inventoryTotal = total;
+        this.inventoryTotalPages = Math.max(1, Math.ceil(total / 5));
     }
 
     async loadTransactions(alunoId?: string) {
         const id = alunoId || this.selectedProfile?.id;
         if (!id) return;
-        try {
-            const { transactions, total } = await this.carteiraService.getStudentTransactionHistory(id, this.transactionMonth || undefined);
-            this.transactions = transactions;
-            this.transactionsTotal = total;
-        } catch (error) {
-            console.error('Error loading transactions:', error);
-        }
+        const { transactions, total } = await this.carteiraService.getStudentTransactionHistory(id, this.transactionMonth || undefined);
+        this.transactions = transactions;
+        this.transactionsTotal = total;
     }
 
     onTransactionMonthChange() {
@@ -304,6 +290,17 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
 
     getPurposeBorderClass(index: number): string {
         return index === 2 ? 'ring-2 ring-[#8BC34A] ring-offset-1' : '';
+    }
+
+    // --- Redeem Modal ---
+    openRedeemModal(itemId: string) {
+        this.redeemItemId = itemId;
+        this.showRedeemModal = true;
+    }
+
+    closeRedeemModal() {
+        this.showRedeemModal = false;
+        this.redeemItemId = null;
     }
 
     async exportToCSV() {
@@ -350,31 +347,17 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
         document.body.removeChild(link);
     }
 
-    openRedeemModal(itemId: string) {
-        this.redeemItemId = itemId;
-        this.showRedeemModal = true;
-    }
-
-    closeRedeemModal() {
-        this.showRedeemModal = false;
-        this.redeemItemId = null;
-    }
-
     async confirmRedeem() {
         if (!this.redeemItemId) return;
         this.redeemLoading = true;
-        try {
-            const result = await this.carteiraService.redeemInventoryItem(this.redeemItemId);
-            if (result.success) {
-                await this.loadInventory();
-            } else {
-                alert('Erro ao resgatar item. Tente novamente.');
-            }
-        } catch (error) {
-            console.error('Error redeeming item:', error);
-        } finally {
-            this.redeemLoading = false;
-            this.closeRedeemModal();
+        const result = await this.carteiraService.redeemInventoryItem(this.redeemItemId);
+        this.redeemLoading = false;
+        this.closeRedeemModal();
+
+        if (result.success) {
+            await this.loadInventory();
+        } else {
+            alert('Erro ao resgatar item. Tente novamente.');
         }
     }
 }

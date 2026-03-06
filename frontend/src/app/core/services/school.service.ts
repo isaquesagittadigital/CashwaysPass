@@ -5,6 +5,7 @@ import { supabase } from '../../core/supabase';
 export interface School {
     id: string;
     name: string;
+    logo_url?: string;
 }
 
 @Injectable({

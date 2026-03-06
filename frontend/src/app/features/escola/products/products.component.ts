@@ -20,13 +20,13 @@ import {
 } from 'lucide-angular';
 import { ProdutoService, Produto, ProdutoForm } from '../../../core/services/produto.service';
 import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
-import { SchoolService } from '../../../core/services/school.service';
+import { SchoolService, School } from '../../../core/services/school.service';
 
 @Component({
     selector: 'app-escola-products',
     standalone: true,
     imports: [CommonModule, FormsModule, LucideAngularModule, DeleteConfirmModalComponent],
-    templateUrl: '../../admin/products/products.component.html',
+    templateUrl: './products.component.html',
 })
 export class EscolaProductsComponent implements OnInit, OnDestroy {
     icons = { ArrowLeft, Search, Plus, Eye, Pencil, Trash2, X, CalendarDays, Users, CheckCircle2, Upload, Package };
@@ -66,9 +66,7 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.schoolSub = this.schoolService.selectedSchool$.subscribe(s => {
             this.selectedSchoolId = s?.id || null;
-            if (this.selectedSchoolId) {
-                this.loadProducts();
-            }
+            this.loadProducts();
         });
     }
 
@@ -91,18 +89,12 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
     }
 
     async loadProducts() {
-        if (!this.selectedSchoolId) return;
         this.loading = true;
-        try {
-            this.products = await this.produtoService.getProducts(
-                this.selectedSchoolId,
-                this.searchTerm
-            );
-        } catch (error) {
-            console.error('Error loading products:', error);
-        } finally {
-            this.loading = false;
-        }
+        this.products = await this.produtoService.getProducts(
+            this.selectedSchoolId || undefined,
+            this.searchTerm
+        );
+        this.loading = false;
     }
 
     onSearch() {
@@ -113,8 +105,9 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
         this.router.navigate(['/escola/dashboard']);
     }
 
+    // --- Currency formatting ---
     formatCurrency(value: number): string {
-        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        return `R$${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 
     formatDate(dateStr: string): string {
@@ -127,6 +120,7 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
         return `${this.formatDate(inicio)} - ${this.formatDate(final_)}`;
     }
 
+    // --- Form Modal ---
     openCreateModal() {
         this.isEditing = false;
         this.editingProductId = null;
@@ -173,34 +167,46 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
     }
 
     async submitForm() {
-        if (!this.form.nome.trim() || !this.selectedSchoolId) return;
+        if (!this.form.nome.trim()) return;
         this.formLoading = true;
-        try {
-            if (this.imageFile) {
-                const imageUrl = await this.produtoService.uploadProductImage(this.imageFile);
-                if (imageUrl) this.form.url_imagem = imageUrl;
-            }
 
-            let result;
-            if (this.isEditing && this.editingProductId) {
-                result = await this.produtoService.updateProduct(this.editingProductId, this.form);
-                if (result.success) this.showSuccess('Alterações salvas!', 'As alterações no produto foram salvas com sucesso!');
-            } else {
-                result = await this.produtoService.createProduct(this.form, this.selectedSchoolId);
-                if (result.success) this.showSuccess('Produto cadastrado!', 'O produto foi cadastrado com sucesso!');
+        // Upload image if a new file was selected
+        if (this.imageFile) {
+            const imageUrl = await this.produtoService.uploadProductImage(this.imageFile);
+            if (imageUrl) {
+                this.form.url_imagem = imageUrl;
             }
+        }
 
+        let result;
+        if (this.isEditing && this.editingProductId) {
+            result = await this.produtoService.updateProduct(this.editingProductId, this.form);
             if (result.success) {
-                this.closeFormModal();
-                await this.loadProducts();
+                this.showSuccess('Alterações salvas!', 'As alterações no produtos foram salvas com sucesso!');
             }
-        } catch (error) {
-            console.error('Error saving product:', error);
-        } finally {
-            this.formLoading = false;
+        } else {
+            if (!this.selectedSchoolId) {
+                alert('Selecione uma escola para cadastrar o produto.');
+                this.formLoading = false;
+                return;
+            }
+            result = await this.produtoService.createProduct(this.form, this.selectedSchoolId);
+            if (result.success) {
+                this.showSuccess('Produto cadastrado!', 'O produto foi cadastrado com sucesso!');
+            }
+        }
+
+        this.formLoading = false;
+
+        if (result.success) {
+            this.closeFormModal();
+            await this.loadProducts();
+        } else {
+            alert('Erro ao salvar produto. Tente novamente.');
         }
     }
 
+    // --- Delete Modal ---
     openDeleteModal(productId: string) {
         this.deleteProductId = productId;
         this.showDeleteModal = true;
@@ -214,20 +220,20 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
     async confirmDelete() {
         if (!this.deleteProductId) return;
         this.deleteLoading = true;
-        try {
-            const result = await this.produtoService.deleteProduct(this.deleteProductId);
-            if (result.success) {
-                this.closeDeleteModal();
-                this.showSuccess('Produto excluído!', 'O produto foi excluído com sucesso!');
-                await this.loadProducts();
-            }
-        } catch (error) {
-            console.error('Error deleting product:', error);
-        } finally {
-            this.deleteLoading = false;
+
+        const result = await this.produtoService.deleteProduct(this.deleteProductId);
+        this.deleteLoading = false;
+
+        if (result.success) {
+            this.closeDeleteModal();
+            this.showSuccess('Produto excluído!', 'O produto foi excluído com sucesso!');
+            await this.loadProducts();
+        } else {
+            alert('Erro ao excluir produto. Tente novamente.');
         }
     }
 
+    // --- Success Toast ---
     showSuccess(title: string, message: string) {
         this.successTitle = title;
         this.successMessage = message;
