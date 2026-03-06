@@ -19,25 +19,35 @@ import { CommonModule } from '@angular/common';
 
         <!-- Icon -->
         <div class="flex justify-center mb-5">
-          <img src="assets/icons/IconExcluir.svg" alt="Excluir" class="w-12 h-12" />
+          <ng-container *ngIf="isReactivation; else deleteIcon">
+             <div class="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center text-green-500 mb-2">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 6 9 17l-5-5"/>
+                </svg>
+             </div>
+          </ng-container>
+          <ng-template #deleteIcon>
+            <img src="assets/icons/IconExcluir.svg" alt="Excluir" class="w-12 h-12" />
+          </ng-template>
         </div>
 
         <!-- Title -->
         <h3 class="text-lg font-bold text-gray-900 mb-1">
-          Deseja realmente excluir {{ entityArticle }} {{ entityName }}?
+          {{ isReactivation ? 'Deseja reativar ' + entityArticle + ' ' + entityName + '?' : (actionType === 'inactivate' ? 'Deseja inativar ' + entityArticle + ' ' + entityName + '?' : 'Deseja realmente excluir ' + entityArticle + ' ' + entityName + '?') }}
         </h3>
 
         <!-- Subtitle -->
         <p class="text-sm text-gray-400 mb-8">
-          A ação não poderá ser desfeita.
+          {{ isReactivation ? 'Esta escola voltará a aparecer nos fluxos ativos.' : (actionType === 'inactivate' ? 'A escola será ocultada dos fluxos ativos, mas poderá ser reativada depois.' : 'A ação não poderá ser desfeita.') }}
         </p>
 
         <!-- Buttons (stacked vertically) -->
         <div class="flex flex-col gap-3">
           <button (click)="onConfirm.emit()" [disabled]="isLoading"
-            class="w-full py-3.5 bg-[#00609b] text-white rounded-xl text-sm font-bold hover:bg-[#004a7a] transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            [ngClass]="isReactivation ? 'bg-green-600 hover:bg-green-700' : 'bg-[#00609b] hover:bg-[#004a7a]'"
+            class="w-full py-3.5 text-white rounded-xl text-sm font-bold transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <span *ngIf="isLoading" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-            {{ isLoading ? 'Excluindo...' : 'Sim, excluir ' + entityName }}
+            {{ isLoading ? (isReactivation ? 'Reativando...' : (actionType === 'inactivate' ? 'Inativando...' : 'Excluindo...')) : (isReactivation ? 'Sim, reativar ' + entityName : (actionType === 'inactivate' ? 'Sim, inativar ' + entityName : 'Sim, excluir ' + entityName)) }}
           </button>
           <button (click)="onCancel.emit()"
             class="w-full py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 hover:border-gray-300 transition-all">
@@ -56,6 +66,8 @@ export class DeleteConfirmModalComponent {
   @Input() entityArticle = 'o';
   @Input() isVisible = false;
   @Input() isLoading = false;
+  @Input() isReactivation = false;
+  @Input() actionType: 'delete' | 'inactivate' | 'reactivate' = 'delete';
 
   @Output() onConfirm = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();

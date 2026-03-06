@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SchoolManagementService, School } from '../../../core/services/school-management.service';
 import { AdminDashboardService } from '../../../core/services/admin-dashboard.service';
 import { SchoolService as GlobalSchoolService } from '../../../core/services/school.service';
-import { LucideAngularModule, Plus, Search, Pencil, Trash2, Building2, ChevronLeft, ChevronRight } from 'lucide-angular';
+import { LucideAngularModule, Plus, Search, Pencil, Trash2, Building2, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-angular';
 import { Router, RouterModule } from '@angular/router';
 import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
 
@@ -16,7 +16,7 @@ import { DeleteConfirmModalComponent } from '../../../shared/components/delete-c
     styleUrls: ['./schools-list.component.css']
 })
 export class SchoolsListComponent implements OnInit {
-    icons = { Plus, Search, Pencil, Trash2, Building2, ChevronLeft, ChevronRight };
+    icons = { Plus, Search, Pencil, Trash2, Building2, ChevronLeft, ChevronRight, RefreshCw };
     allSchools: any[] = [];
     filteredSchools: any[] = [];
     isLoading = true;
@@ -30,6 +30,10 @@ export class SchoolsListComponent implements OnInit {
     currentPage: number = 1;
     pageSize: number = 10;
     protected Math = Math;
+
+    // Modal state
+    isReactivationMode = false;
+    modalActionType: 'delete' | 'inactivate' | 'reactivate' = 'delete';
 
     constructor(
         private schoolService: SchoolManagementService,
@@ -115,15 +119,29 @@ export class SchoolsListComponent implements OnInit {
         this.router.navigate(['/admin/escolas', school.id]);
     }
 
-    onDelete(id: string) {
-        this.schoolToDeleteId = id;
+    onDelete(school: any) {
+        this.schoolToDeleteId = school.id;
+
+        if (school.deletado || school.status === 'inactive') {
+            this.isReactivationMode = true;
+            this.modalActionType = 'reactivate';
+        } else {
+            this.isReactivationMode = false;
+            this.modalActionType = 'inactivate';
+        }
+
         this.showDeleteModal = true;
     }
 
     confirmDelete() {
         if (this.schoolToDeleteId) {
             this.deleteLoading = true;
-            this.schoolService.deleteSchool(this.schoolToDeleteId).subscribe({
+
+            const action = this.isReactivationMode
+                ? this.schoolService.updateSchool(this.schoolToDeleteId, { deletado: false, status: 'active' })
+                : this.schoolService.deleteSchool(this.schoolToDeleteId);
+
+            action.subscribe({
                 next: () => {
                     this.deleteLoading = false;
                     this.showDeleteModal = false;
@@ -133,7 +151,7 @@ export class SchoolsListComponent implements OnInit {
                 },
                 error: (err) => {
                     this.deleteLoading = false;
-                    console.error('Erro ao excluir escola:', err);
+                    console.error('Erro ao processar ação:', err);
                 }
             });
         }
