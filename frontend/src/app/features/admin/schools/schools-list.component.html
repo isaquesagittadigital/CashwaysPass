@@ -2,13 +2,15 @@
     <!-- Topo fota da div branca -->
     <div class="flex justify-between items-start w-full">
         <div>
-            <a routerLink="/admin/dashboard"
+            <a [routerLink]="isAdmin ? '/admin/dashboard' : '/escola/dashboard'"
                 class="flex items-center gap-1.5 text-[14px] text-gray-400 font-medium hover:text-[#00609b] cursor-pointer mb-2 transition-colors"><lucide-icon
-                    [img]="icons.ArrowLeft" class="w-[18px] h-[18px]" strokeWidth="2.5"></lucide-icon> Voltar</a>
-            <h1 class="text-3xl font-bold text-gray-900">Escolas</h1>
-            <p class="text-gray-500 mt-1">Gerencie escolas cadastradas no sistema.</p>
+                    [img]="icons.ArrowLeft" class="w-[18px] h-[18px]" strokeWidth="2.5"></lucide-icon> Voltar
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900">{{ isAdmin ? 'Escolas' : 'Cadastro' }}</h1>
+            <p class="text-gray-500 mt-1">Gerencie {{ isAdmin ? 'escolas cadastradas' : 'dados da sua escola' }} no
+                sistema.</p>
         </div>
-        <div class="flex items-center gap-5 mt-4 sm:mt-0">
+        <div class="flex items-center gap-5 mt-4 sm:mt-0" *ngIf="isAdmin">
             <button (click)="onDeleteSchool()"
                 class="flex items-center gap-2 px-2 py-2 text-[#E71B24] rounded-lg hover:bg-red-50 font-bold transition-colors">
                 <img src="assets/icons/LixoVermeelho.svg" alt="Excluir" class="w-[18px] h-[18px]" /> Excluir escola

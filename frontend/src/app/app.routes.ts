@@ -62,6 +62,10 @@ export const routes: Routes = [
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             { path: 'dashboard', component: EscolaDashboardComponent },
             {
+                path: 'cadastro',
+                loadComponent: () => import('./features/admin/schools/schools-list.component').then(m => m.SchoolsListComponent)
+            },
+            {
                 path: 'carteira',
                 loadComponent: () => import('./features/escola/wallet/wallet.component').then(m => m.EscolaWalletComponent)
             },

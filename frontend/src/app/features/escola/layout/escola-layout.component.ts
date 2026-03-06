@@ -70,6 +70,7 @@ export class EscolaLayoutComponent implements OnInit, OnDestroy {
 
     menuItems = [
         { icon: LayoutDashboard, label: 'Dashboard', route: 'dashboard', active: false },
+        { icon: FileText, label: 'Cadastro', route: 'cadastro', active: false },
         { icon: Wallet, label: 'Carteira', route: 'carteira', active: false },
         { icon: Package, label: 'Produtos', route: 'produtos', active: false },
         { icon: CalendarDays, label: 'Eventos', route: 'eventos', active: false },

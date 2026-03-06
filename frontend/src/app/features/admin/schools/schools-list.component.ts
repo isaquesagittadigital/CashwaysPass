@@ -73,6 +73,9 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
     successModalTitle = '';
     successModalMessage = '';
 
+    // Role Control
+    isAdmin = true;
+
     constructor(
         private schoolService: SchoolManagementService,
         private dashboardService: AdminDashboardService,
@@ -92,6 +95,14 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        const userStr = localStorage.getItem('currentUser');
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            if (user.tipo_acesso === 'Escola') {
+                this.isAdmin = false;
+            }
+        }
+
         this.schoolSub = this.globalSchoolService.selectedSchool$.subscribe(school => {
             if (school) {
                 this.loadSchoolFullData(school.id);
