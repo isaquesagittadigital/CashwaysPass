@@ -19,3 +19,40 @@
 .btn-primary:hover {
     background-color: #004a7a;
 }
+
+/* Table Section (Mirroring dashboard style) */
+.table-card {
+    @apply bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden h-full flex flex-col;
+}
+
+.table-header {
+    @apply p-8 border-b border-gray-50 flex items-center justify-between;
+}
+
+.table-title {
+    @apply text-xl font-bold text-gray-900;
+}
+
+.table-container {
+    @apply overflow-x-auto;
+}
+
+.data-table {
+    @apply w-full text-left;
+}
+
+.data-table th {
+    @apply px-8 py-5;
+}
+
+.data-table thead tr {
+    @apply bg-gray-50/50 text-[11px] font-bold text-gray-400 uppercase tracking-wider;
+}
+
+.data-table tbody tr {
+    @apply hover:bg-gray-50/30 transition-all;
+}
+
+.data-table td {
+    @apply px-8 py-5 text-sm;
+}

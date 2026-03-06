@@ -12,87 +12,88 @@
         </button>
     </header>
 
-    <!-- Filters -->
-    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-wrap items-center gap-4">
-        <div class="flex-1 min-w-[280px]">
-            <div class="relative">
-                <lucide-icon [img]="icons.Search"
-                    class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></lucide-icon>
-                <input type="text" placeholder="Buscar por nome, CNPJ ou email..."
-                    class="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-[#00609b]/20 transition-all">
+    <!-- Schools Table Card -->
+    <div class="table-card mt-8">
+        <div class="table-header flex items-center justify-between p-8 border-b border-gray-50">
+            <h3 class="table-title text-xl font-bold text-gray-900">Escolas cadastradas</h3>
+
+            <!-- Filters inside table header (Optional, but looks cleaner) -->
+            <div class="flex items-center gap-4">
+                <div class="relative min-w-[320px]">
+                    <lucide-icon [img]="icons.Search"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+                    <input type="text" placeholder="Buscar por nome, CNPJ ou email..."
+                        class="w-full pl-11 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-[#00609b] transition-all">
+                </div>
+                <select
+                    class="px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm min-w-[160px] text-gray-500 font-medium">
+                    <option value="">Status: Todos</option>
+                    <option value="active">Ativo</option>
+                    <option value="inactive">Inativo</option>
+                </select>
             </div>
         </div>
-        <select class="px-4 py-3 bg-gray-50 border-none rounded-xl text-sm min-w-[160px]">
-            <option value="">Status: Todos</option>
-            <option value="active">Ativo</option>
-            <option value="inactive">Inativo</option>
-        </select>
-    </div>
 
-    <!-- Schools Table -->
-    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[400px]">
-        <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-20 gap-4">
-            <div class="w-10 h-10 border-4 border-[#00609b]/20 border-t-[#00609b] rounded-full animate-spin"></div>
-            <p class="text-sm text-gray-400 font-medium tracking-tight">Carregando escolas...</p>
-        </div>
+        <div class="table-container">
+            <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-20 gap-4">
+                <div class="w-10 h-10 border-4 border-[#00609b]/20 border-t-[#00609b] rounded-full animate-spin"></div>
+                <p class="text-sm text-gray-400 font-medium tracking-tight">Carregando escolas...</p>
+            </div>
 
-        <div *ngIf="!isLoading && schools.length > 0" class="overflow-x-auto no-scrollbar">
-            <table class="w-full text-left">
+            <table *ngIf="!isLoading && schools.length > 0" class="data-table">
                 <thead>
-                    <tr class="bg-gray-50/50 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                        <th class="px-6 py-5">Escola</th>
-                        <th class="px-6 py-5">CNPJ</th>
-                        <th class="px-6 py-5 border-l border-gray-100 bg-gray-50/30">Total Investido</th>
-                        <th class="px-6 py-5 bg-gray-50/30">Gasto</th>
-                        <th class="px-6 py-5 bg-gray-50/30">Saldo Livre</th>
-                        <th class="px-6 py-5 bg-gray-50/30">Saldo Propósitos</th>
-                        <th class="px-6 py-5 text-center">Status</th>
-                        <th class="px-6 py-5 text-center">Ações</th>
+                    <tr>
+                        <th class="px-8 py-5">Escola</th>
+                        <th class="px-8 py-5">CNPJ</th>
+                        <th class="px-8 py-5">Total Investido</th>
+                        <th class="px-8 py-5">Gasto</th>
+                        <th class="px-8 py-5">Saldo Livre</th>
+                        <th class="px-8 py-5">Saldo Propósitos</th>
+                        <th class="px-8 py-5 text-center">Status</th>
+                        <th class="px-8 py-5 text-center">Ações</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                    <tr *ngFor="let school of schools" class="hover:bg-gray-50/30 transition-all group">
-                        <td class="px-6 py-5">
+                    <tr *ngFor="let school of schools">
+                        <td class="px-8 py-5">
                             <div class="flex flex-col">
-                                <span class="text-sm font-bold text-gray-700">{{ school.nome_fantasia }}</span>
+                                <span class="font-bold text-gray-700">{{ school.nome_fantasia }}</span>
                                 <span class="text-[11px] text-gray-400 mt-0.5">{{ school.email_contato }}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-5 text-xs text-gray-600 font-medium whitespace-nowrap">{{ school.cnpj }}</td>
+                        <td class="px-8 py-5 font-medium text-gray-600">{{ school.cnpj }}</td>
 
                         <!-- Financial Data -->
-                        <td
-                            class="px-6 py-5 border-l border-gray-50 text-sm font-bold text-[#4facfe] whitespace-nowrap">
+                        <td class="px-8 py-5 font-bold text-[#00609b]">
                             {{ formatCurrency(school.stats?.totalInvested) }}
                         </td>
-                        <td class="px-6 py-5 text-sm font-bold text-orange-400 whitespace-nowrap">
+                        <td class="px-8 py-5 font-bold text-[#d9534f]">
                             {{ formatCurrency(school.stats?.totalSpent) }}
                         </td>
-                        <td class="px-6 py-5 text-sm font-bold text-[#a18cd1] whitespace-nowrap">
+                        <td class="px-8 py-5 font-medium text-gray-600">
                             {{ formatCurrency(school.stats?.freeBalance) }}
                         </td>
-                        <td class="px-6 py-5 text-sm font-bold text-[#84fab0] whitespace-nowrap">
+                        <td class="px-8 py-5 font-medium text-gray-600">
                             {{ formatCurrency(school.stats?.purposeBalance) }}
                         </td>
 
-                        <td class="px-6 py-5">
+                        <td class="px-8 py-5">
                             <div class="flex justify-center">
                                 <span [class]="getStatusClass(school.status)"
-                                    class="px-3 py-1 text-[10px] font-bold rounded-full uppercase">
+                                    class="px-3 py-1 text-[10px] font-extrabold rounded-full uppercase tracking-wider">
                                     {{ school.status === 'active' ? 'Ativo' : 'Inativo' }}
                                 </span>
                             </div>
                         </td>
-                        <td class="px-6 py-5">
-                            <div class="flex items-center justify-center gap-2 transition-all">
+                        <td class="px-8 py-5">
+                            <div class="flex items-center justify-center gap-2">
                                 <button (click)="onEdit(school)"
-                                    class="p-2.5 text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
+                                    class="p-2 text-[#00609b] hover:bg-[#00609b]/5 rounded-xl transition-all"
                                     title="Editar / Gerenciar">
                                     <lucide-icon [img]="icons.Settings" class="w-5 h-5"></lucide-icon>
                                 </button>
                                 <button (click)="onDelete(school.id)"
-                                    class="p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                                    title="Excluir">
+                                    class="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Excluir">
                                     <lucide-icon [img]="icons.Trash2" class="w-5 h-5"></lucide-icon>
                                 </button>
                             </div>
@@ -100,20 +101,21 @@
                     </tr>
                 </tbody>
             </table>
-        </div>
 
-        <!-- Empty State -->
-        <div *ngIf="!isLoading && schools.length === 0"
-            class="flex flex-col items-center justify-center p-20 gap-6 text-center">
-            <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center">
-                <lucide-icon [img]="icons.Building2" class="w-12 h-12 text-gray-300"></lucide-icon>
+            <!-- Empty State -->
+            <div *ngIf="!isLoading && schools.length === 0"
+                class="flex flex-col items-center justify-center p-20 gap-6 text-center">
+                <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center">
+                    <lucide-icon [img]="icons.Building2" class="w-12 h-12 text-gray-300"></lucide-icon>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800">Nenhuma escola encontrada</h3>
+                    <p class="text-sm text-gray-400 mt-1 max-w-xs mx-auto">Você ainda não cadastrou nenhuma escola ou os
+                        filtros não retornaram resultados.</p>
+                </div>
+                <button routerLink="/admin/escolas/cadastro" class="btn-primary py-3 px-8 text-sm">Cadastrar
+                    agora</button>
             </div>
-            <div>
-                <h3 class="text-lg font-bold text-gray-800">Nenhuma escola encontrada</h3>
-                <p class="text-sm text-gray-400 mt-1 max-w-xs mx-auto">Você ainda não cadastrou nenhuma escola ou os
-                    filtros não retornaram resultados.</p>
-            </div>
-            <button routerLink="/admin/escolas/cadastro" class="btn-primary py-3 px-8 text-sm">Cadastrar agora</button>
         </div>
     </div>
 </div>
