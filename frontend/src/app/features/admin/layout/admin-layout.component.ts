@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule, RouterOutlet } from '@angular/router';
+import { Router, RouterModule, RouterOutlet, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import {
     LucideAngularModule,
     LayoutDashboard,
@@ -48,7 +49,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     private searchSub?: Subscription;
 
     menuItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', route: 'dashboard', active: true },
+        { icon: LayoutDashboard, label: 'Dashboard', route: 'dashboard', active: false },
         { icon: Building2, label: 'Escolas', route: 'escolas', active: false },
         { icon: Wallet, label: 'Carteira', route: 'carteira', active: false },
         { icon: Package, label: 'Produtos', route: 'produtos', active: false },
@@ -66,6 +67,21 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.schoolService.schools$.subscribe(s => this.schools = s);
         this.schoolService.selectedSchool$.subscribe(s => this.selectedSchool = s);
+
+        // Update active route on init and on navigation
+        this.updateActiveRoute(this.router.url);
+        this.router.events.pipe(
+            filter(event => event instanceof NavigationEnd)
+        ).subscribe((event: any) => {
+            this.updateActiveRoute(event.urlAfterRedirects);
+        });
+    }
+
+    private updateActiveRoute(url: string) {
+        this.menuItems.forEach(item => {
+            item.active = url.includes(`/admin/${item.route}`);
+            if (item.active) this.activeRoute = item.route;
+        });
     }
 
     ngOnDestroy() {
@@ -83,8 +99,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     }
 
     setActive(route: string) {
-        this.activeRoute = route;
-        this.menuItems.forEach(item => item.active = item.route === route);
         this.router.navigate(['/admin', route]);
     }
 
