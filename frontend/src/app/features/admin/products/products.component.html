@@ -226,26 +226,14 @@
 
 
 <!-- ===================== DELETE CONFIRM MODAL ===================== -->
-<div *ngIf="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 text-center">
-        <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-            <lucide-icon [img]="icons.Trash2" class="w-7 h-7 text-red-500"></lucide-icon>
-        </div>
-        <h3 class="text-lg font-bold text-gray-900 mb-1">Excluir produto?</h3>
-        <p class="text-sm text-gray-500 mb-6">Esta ação não pode ser desfeita. O produto será removido permanentemente.
-        </p>
-        <div class="flex gap-3">
-            <button (click)="closeDeleteModal()"
-                class="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition">
-                Cancelar
-            </button>
-            <button (click)="confirmDelete()" [disabled]="deleteLoading"
-                class="flex-1 py-2.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition disabled:opacity-50">
-                {{ deleteLoading ? 'Excluindo...' : 'Excluir' }}
-            </button>
-        </div>
-    </div>
-</div>
+<app-delete-confirm-modal
+    entityName="produto"
+    entityArticle="o"
+    [isVisible]="showDeleteModal"
+    [isLoading]="deleteLoading"
+    (confirm)="confirmDelete()"
+    (cancel)="closeDeleteModal()">
+</app-delete-confirm-modal>
 
 
 <!-- ===================== SUCCESS TOAST ===================== -->

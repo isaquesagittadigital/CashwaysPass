@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SchoolManagementService } from '../../../../core/services/school-management.service';
+import { DeleteConfirmModalComponent } from '../../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
 import { LucideAngularModule, Upload, UserPlus, Mail, Trash2, GraduationCap, X, FileSpreadsheet } from 'lucide-angular';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Papa } from 'ngx-papaparse';
@@ -10,7 +11,7 @@ import { EmailService } from '../../../../core/services/email.service';
 @Component({
     selector: 'app-student-management',
     standalone: true,
-    imports: [CommonModule, LucideAngularModule, ReactiveFormsModule],
+    imports: [CommonModule, LucideAngularModule, ReactiveFormsModule, DeleteConfirmModalComponent],
     templateUrl: './student-management.component.html',
     styleUrls: ['./student-management.component.css'],
     providers: [Papa]
@@ -21,6 +22,10 @@ export class StudentManagementComponent implements OnInit {
     students: any[] = [];
     isLoading = true;
     isSubmitting = false;
+
+    showDeleteModal = false;
+    deleteId: string | null = null;
+    deleteLoading = false;
 
     showModal = false;
     isBulk = false;
@@ -132,9 +137,29 @@ export class StudentManagementComponent implements OnInit {
     }
 
     onDelete(id: string) {
-        if (confirm('Deseja realmente excluir este aluno?')) {
-            this.schoolService.deleteStudent(id).subscribe(() => this.loadStudents());
-        }
+        this.deleteId = id;
+        this.showDeleteModal = true;
+    }
+
+    confirmDelete() {
+        if (!this.deleteId) return;
+        this.deleteLoading = true;
+        this.schoolService.deleteStudent(this.deleteId).subscribe({
+            next: () => {
+                this.showDeleteModal = false;
+                this.deleteLoading = false;
+                this.deleteId = null;
+                this.loadStudents();
+            },
+            error: () => {
+                this.deleteLoading = false;
+            }
+        });
+    }
+
+    cancelDelete() {
+        this.showDeleteModal = false;
+        this.deleteId = null;
     }
 
     isSendingEmail: { [key: string]: boolean } = {};

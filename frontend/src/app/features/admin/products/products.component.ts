@@ -19,12 +19,13 @@ import {
     Package
 } from 'lucide-angular';
 import { ProdutoService, Produto, ProdutoForm } from '../../../core/services/produto.service';
+import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
 import { SchoolService, School } from '../../../core/services/school.service';
 
 @Component({
     selector: 'app-products',
     standalone: true,
-    imports: [CommonModule, FormsModule, LucideAngularModule],
+    imports: [CommonModule, FormsModule, LucideAngularModule, DeleteConfirmModalComponent],
     templateUrl: './products.component.html',
 })
 export class ProductsComponent implements OnInit, OnDestroy {

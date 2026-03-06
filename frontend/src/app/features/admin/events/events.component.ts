@@ -21,12 +21,13 @@ import {
     PlusCircle
 } from 'lucide-angular';
 import { EventoService, Evento } from '../../../core/services/evento.service';
+import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
 import { SchoolService, School } from '../../../core/services/school.service';
 
 @Component({
     selector: 'app-events',
     standalone: true,
-    imports: [CommonModule, FormsModule, LucideAngularModule],
+    imports: [CommonModule, FormsModule, LucideAngularModule, DeleteConfirmModalComponent],
     templateUrl: './events.component.html',
 })
 export class EventsComponent implements OnInit, OnDestroy {

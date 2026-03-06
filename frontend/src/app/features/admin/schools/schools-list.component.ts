@@ -4,11 +4,12 @@ import { SchoolManagementService, School } from '../../../core/services/school-m
 import { AdminDashboardService } from '../../../core/services/admin-dashboard.service';
 import { LucideAngularModule, Plus, Search, Settings, Trash2, Building2 } from 'lucide-angular';
 import { Router, RouterModule } from '@angular/router';
+import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
 
 @Component({
     selector: 'app-schools-list',
     standalone: true,
-    imports: [CommonModule, LucideAngularModule, RouterModule],
+    imports: [CommonModule, LucideAngularModule, RouterModule, DeleteConfirmModalComponent],
     templateUrl: './schools-list.component.html',
     styleUrls: ['./schools-list.component.css']
 })
@@ -16,6 +17,8 @@ export class SchoolsListComponent implements OnInit {
     icons = { Plus, Search, Settings, Trash2, Building2 };
     schools: any[] = [];
     isLoading = true;
+    showDeleteModal = false;
+    schoolToDeleteId: string | null = null;
 
     constructor(
         private schoolService: SchoolManagementService,
@@ -55,12 +58,23 @@ export class SchoolsListComponent implements OnInit {
     }
 
     onDelete(id: string) {
-        // We should show a confirmation modal first
-        if (confirm('Deseja realmente excluir esta escola?')) {
-            this.schoolService.deleteSchool(id).subscribe(() => {
+        this.schoolToDeleteId = id;
+        this.showDeleteModal = true;
+    }
+
+    confirmDelete() {
+        if (this.schoolToDeleteId) {
+            this.schoolService.deleteSchool(this.schoolToDeleteId).subscribe(() => {
                 this.loadSchools();
+                this.showDeleteModal = false;
+                this.schoolToDeleteId = null;
             });
         }
+    }
+
+    cancelDelete() {
+        this.showDeleteModal = false;
+        this.schoolToDeleteId = null;
     }
 
     getStatusClass(status: string) {

@@ -118,4 +118,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <app-delete-confirm-modal entityName="escola" entityArticle="a" [isVisible]="showDeleteModal" [isLoading]="false"
+        (confirm)="confirmDelete()" (cancel)="cancelDelete()">
+    </app-delete-confirm-modal>
 </div>

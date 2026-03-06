@@ -1,13 +1,14 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SchoolManagementService } from '../../../../core/services/school-management.service';
+import { DeleteConfirmModalComponent } from '../../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
 import { LucideAngularModule, Plus, Edit, Trash2, Users, X, Save } from 'lucide-angular';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 @Component({
     selector: 'app-turma-management',
     standalone: true,
-    imports: [CommonModule, LucideAngularModule, ReactiveFormsModule],
+    imports: [CommonModule, LucideAngularModule, ReactiveFormsModule, DeleteConfirmModalComponent],
     templateUrl: './turma-management.component.html',
     styleUrls: ['./turma-management.component.css']
 })
@@ -16,6 +17,10 @@ export class TurmaManagementComponent implements OnInit {
     @Input() schoolId!: string;
     turmas: any[] = [];
     isLoading = true;
+
+    showDeleteModal = false;
+    deleteId: string | null = null;
+    deleteLoading = false;
 
     showModal = false;
     isEditing = false;
@@ -98,10 +103,28 @@ export class TurmaManagementComponent implements OnInit {
     }
 
     onDelete(id: string) {
-        if (confirm('Deseja realmente excluir esta turma?')) {
-            this.schoolService.deleteTurma(id).subscribe(() => {
+        this.deleteId = id;
+        this.showDeleteModal = true;
+    }
+
+    confirmDelete() {
+        if (!this.deleteId) return;
+        this.deleteLoading = true;
+        this.schoolService.deleteTurma(this.deleteId).subscribe({
+            next: () => {
+                this.showDeleteModal = false;
+                this.deleteLoading = false;
+                this.deleteId = null;
                 this.loadTurmas();
-            });
-        }
+            },
+            error: () => {
+                this.deleteLoading = false;
+            }
+        });
+    }
+
+    cancelDelete() {
+        this.showDeleteModal = false;
+        this.deleteId = null;
     }
 }

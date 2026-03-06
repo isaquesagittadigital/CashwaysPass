@@ -1,13 +1,14 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SchoolManagementService } from '../../../../core/services/school-management.service';
+import { DeleteConfirmModalComponent } from '../../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
 import { LucideAngularModule, UserPlus, Edit, Trash2, Users, X, Plus, Save } from 'lucide-angular';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 @Component({
     selector: 'app-professor-management',
     standalone: true,
-    imports: [CommonModule, LucideAngularModule, ReactiveFormsModule],
+    imports: [CommonModule, LucideAngularModule, ReactiveFormsModule, DeleteConfirmModalComponent],
     templateUrl: './professor-management.component.html',
     styleUrls: ['./professor-management.component.css']
 })
@@ -17,6 +18,10 @@ export class ProfessorManagementComponent implements OnInit {
     professors: any[] = [];
     isLoading = true;
     isSubmitting = false;
+
+    showDeleteModal = false;
+    deleteId: string | null = null;
+    deleteLoading = false;
 
     showModal = false;
     isEditing = false;
@@ -97,10 +102,28 @@ export class ProfessorManagementComponent implements OnInit {
     }
 
     onDelete(id: string) {
-        if (confirm('Deseja realmente excluir este professor?')) {
-            this.schoolService.deleteProfessor(id).subscribe(() => {
+        this.deleteId = id;
+        this.showDeleteModal = true;
+    }
+
+    confirmDelete() {
+        if (!this.deleteId) return;
+        this.deleteLoading = true;
+        this.schoolService.deleteProfessor(this.deleteId).subscribe({
+            next: () => {
+                this.showDeleteModal = false;
+                this.deleteLoading = false;
+                this.deleteId = null;
                 this.loadProfessors();
-            });
-        }
+            },
+            error: () => {
+                this.deleteLoading = false;
+            }
+        });
+    }
+
+    cancelDelete() {
+        this.showDeleteModal = false;
+        this.deleteId = null;
     }
 }

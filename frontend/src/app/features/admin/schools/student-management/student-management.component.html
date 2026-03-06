@@ -178,4 +178,9 @@
             </form>
         </div>
     </div>
+
+    <!-- Delete Confirm Modal -->
+    <app-delete-confirm-modal entityName="aluno" entityArticle="o" [isVisible]="showDeleteModal"
+        [isLoading]="deleteLoading" (confirm)="confirmDelete()" (cancel)="cancelDelete()">
+    </app-delete-confirm-modal>
 </div>
