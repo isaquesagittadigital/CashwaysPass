@@ -17,6 +17,11 @@ export class TurmaManagementComponent implements OnInit {
     @Input() schoolId!: string;
     turmas: any[] = [];
     isLoading = true;
+    isSubmitting = false;
+
+    // Toast state
+    showToast = false;
+    toastMessage = '';
 
     showDeleteModal = false;
     deleteId: string | null = null;
@@ -40,7 +45,7 @@ export class TurmaManagementComponent implements OnInit {
             serie: ['', Validators.required],
             professor_id: [''],
             quantidade_alunos: [0, Validators.required],
-            data_inicio: [''],
+            data_inicio: [new Date().toISOString().split('T')[0]],
             status: [true]
         });
     }
@@ -75,18 +80,21 @@ export class TurmaManagementComponent implements OnInit {
         this.isEditing = false;
         this.editingId = null;
         this.turmaForm.reset({ status: true, quantidade_alunos: 0 });
-        this.showModal = true;
+        this.showModal = false; // We use in-page form now
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     openEditModal(turma: any) {
         this.isEditing = true;
         this.editingId = turma.id;
         this.turmaForm.patchValue(turma);
-        this.showModal = true;
+        this.showModal = false; // We use in-page form now
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     onSubmit() {
         if (this.turmaForm.valid) {
+            this.isSubmitting = true;
             const data = { ...this.turmaForm.value, escola_id: this.schoolId };
             const obs = this.isEditing
                 ? this.schoolService.updateTurma(this.editingId!, data)
@@ -94,11 +102,28 @@ export class TurmaManagementComponent implements OnInit {
 
             obs.subscribe({
                 next: () => {
-                    this.showModal = false;
+                    this.isSubmitting = false;
+                    const wasEditing = this.isEditing;
+                    this.isEditing = false;
+                    this.turmaForm.reset({
+                        status: true,
+                        quantidade_alunos: 0,
+                        data_inicio: new Date().toISOString().split('T')[0]
+                    });
                     this.loadTurmas();
+
+                    // Show success toast
+                    this.toastMessage = wasEditing ? 'Turma atualizada com sucesso' : 'Turma cadastrada com sucesso';
+                    this.showToast = true;
+                    setTimeout(() => this.showToast = false, 3000);
                 },
-                error: (err) => alert('Erro ao salvar turma: ' + err.message)
+                error: (err) => {
+                    this.isSubmitting = false;
+                    alert('Erro ao salvar turma: ' + err.message);
+                }
             });
+        } else {
+            this.turmaForm.markAllAsTouched();
         }
     }
 

@@ -1,0 +1,217 @@
+<div *ngIf="isVisible"
+    class="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col relative animate-in zoom-in-95 duration-200">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center p-6 border-b border-gray-100 flex-shrink-0">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Editar Escola</h2>
+                <p class="text-[13px] text-gray-500 mt-1">Atualize as informações de cadastro e configurações da escola.
+                </p>
+            </div>
+            <button (click)="onClose.emit()"
+                class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all">
+                <lucide-icon name="x" class="w-5 h-5"></lucide-icon>
+            </button>
+        </div>
+
+        <!-- Body / Form -->
+        <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
+            <form [formGroup]="schoolForm" (ngSubmit)="onSubmit()" class="space-y-8">
+                <!-- Informações Básicas -->
+                <div>
+                    <h3 class="font-bold text-gray-800 text-[15px] mb-4 border-b border-gray-100 pb-2">Informações
+                        Básicas</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Nome Fantasia *</label>
+                            <input type="text" formControlName="nome_fantasia"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm"
+                                placeholder="Nome da escola">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">CNPJ *</label>
+                            <input type="text" formControlName="cnpj"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm"
+                                placeholder="00.000.000/0001-00">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Razão Social *</label>
+                            <input type="text" formControlName="razao_social"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm"
+                                placeholder="Razão social">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Tipo de Escola *</label>
+                            <input type="text" formControlName="tipo_escola"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm"
+                                placeholder="Ex: Particular">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Status *</label>
+                            <select formControlName="status"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] text-sm bg-white">
+                                <option value="active">Ativo</option>
+                                <option value="inactive">Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contatos e Responsáveis -->
+                <div>
+                    <h3 class="font-bold text-gray-800 text-[15px] mb-4 border-b border-gray-100 pb-2">Contatos e
+                        Responsáveis</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Responsável pela Direção
+                                *</label>
+                            <input type="text" formControlName="responsavel_direcao"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Nome do Secretariado
+                                *</label>
+                            <input type="text" formControlName="nome_secretariado"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">E-mail de Contato *</label>
+                            <input type="email" formControlName="email_contato"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">E-mail da Secretaria (Admin)
+                                *</label>
+                            <input type="email" formControlName="email_secretaria_admin"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Telefone Comercial *</label>
+                            <input type="tel" formControlName="telefone_contato"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">WhatsApp *</label>
+                            <input type="tel" formControlName="whatsapp"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Endereço -->
+                <div>
+                    <h3 class="font-bold text-gray-800 text-[15px] mb-4 border-b border-gray-100 pb-2">Endereço</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">CEP *</label>
+                            <input type="text" formControlName="cep"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Endereço Completo *</label>
+                            <input type="text" formControlName="endereco"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm">
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Complemento</label>
+                            <input type="text" formControlName="complemento"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contratos e Taxas -->
+                <div>
+                    <h3 class="font-bold text-gray-800 text-[15px] mb-4 border-b border-gray-100 pb-2">Contratos e Taxas
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 bg-gray-50 p-5 rounded-xl border border-gray-100">
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Modelo de Contratação
+                                *</label>
+                            <select formControlName="modelo_contratacao"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] text-sm bg-white">
+                                <option value="Full">Full</option>
+                                <option value="Light">Light</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Dias de Repasse *</label>
+                            <select formControlName="dias_repasse"
+                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] text-sm bg-white">
+                                <option [value]="3">3 dias</option>
+                                <option [value]="5">5 dias</option>
+                                <option [value]="10">10 dias</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" formControlName="possui_equipamentos"
+                                class="w-4 h-4 text-[#00609b] rounded border-gray-300">
+                            <label class="text-[13px] font-bold text-gray-700">Possui Equipamentos Locados?</label>
+                        </div>
+                        <div></div>
+                        <div *ngIf="schoolForm.get('possui_equipamentos')?.value"
+                            class="md:col-span-2 grid grid-cols-2 gap-5 mt-2">
+                            <div>
+                                <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Quantidade de
+                                    Eq.</label>
+                                <input type="number" formControlName="quantidade_equipamentos"
+                                    class="w-full border border-gray-200 rounded-lg p-2.5 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Valor Unitário Eq.
+                                    (R$)</label>
+                                <input type="number" formControlName="valor_unitario_equipamento"
+                                    class="w-full border border-gray-200 rounded-lg p-2.5 text-sm">
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2 flex items-center gap-2 mt-2 border-t border-gray-200 pt-5">
+                            <input type="checkbox" formControlName="cobra_transacoes"
+                                class="w-4 h-4 text-[#00609b] rounded border-gray-300">
+                            <label class="text-[13px] font-bold text-gray-700">Cobra Taxa por Transação?</label>
+                        </div>
+                        <div *ngIf="schoolForm.get('cobra_transacoes')?.value" class="md:col-span-2">
+                            <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Valor Unitário Transação
+                                (R$)</label>
+                            <input type="number" formControlName="valor_unitario_transacao"
+                                class="w-full md:w-1/2 border border-gray-200 rounded-lg p-2.5 text-sm">
+                        </div>
+
+                        <div class="md:col-span-2 grid grid-cols-2 gap-5 mt-2 border-t border-gray-200 pt-5">
+                            <div>
+                                <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Valor Mensalidade
+                                    Carteira (R$)</label>
+                                <input type="number" formControlName="valor_carteira"
+                                    class="w-full border border-gray-200 rounded-lg p-2.5 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Valor TED/Transferência
+                                    (R$)</label>
+                                <input type="number" formControlName="valor_transferencia"
+                                    class="w-full border border-gray-200 rounded-lg p-2.5 text-sm">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer / Actions -->
+        <div class="p-6 border-t border-gray-100 flex justify-end gap-3 flex-shrink-0 bg-gray-50/50 rounded-b-2xl">
+            <button type="button" (click)="onClose.emit()"
+                class="px-6 py-2.5 rounded-lg border border-gray-300 bg-white font-bold text-gray-700 hover:bg-gray-50 transition-colors text-sm">
+                Cancelar
+            </button>
+            <button type="button" (click)="onSubmit()" [disabled]="isSubmitting"
+                class="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-[#00609b] text-white font-bold hover:bg-[#0070b4] disabled:opacity-50 transition-colors text-sm shadow-md shadow-blue-900/20">
+                <span *ngIf="isSubmitting"
+                    class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <lucide-icon *ngIf="!isSubmitting" name="save" class="w-4 h-4"></lucide-icon>
+                {{ isSubmitting ? 'Salvando...' : 'Salvar Alterações' }}
+            </button>
+        </div>
+
+    </div>
+</div>

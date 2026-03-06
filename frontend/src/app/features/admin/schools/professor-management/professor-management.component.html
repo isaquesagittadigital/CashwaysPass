@@ -1,126 +1,153 @@
-<div class="space-y-6 animate-in fade-in duration-500">
-    <div class="flex items-center justify-between">
-        <h3 class="text-xl font-bold text-gray-900 font-primary">Corpo Docente</h3>
-        <button (click)="openAddModal()" class="btn-primary py-2 px-6 flex items-center gap-2 text-xs">
-            <lucide-icon [img]="icons.UserPlus" class="w-4 h-4"></lucide-icon>
-            Novo Professor
-        </button>
-    </div>
+<div class="space-y-8 animate-in fade-in duration-500">
+    <!-- Registration Form Card (Based on User Image) -->
+    <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
+        <div class="flex flex-col gap-6">
+            <h3 class="text-xl font-bold text-gray-900">Cadastrar novo professor</h3>
 
-    <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-12 gap-4">
-        <div class="w-8 h-8 border-4 border-[#00609b]/10 border-t-[#00609b] rounded-full animate-spin"></div>
-        <p class="text-xs text-gray-400 font-medium tracking-tight">Carregando professores...</p>
-    </div>
-
-    <div *ngIf="!isLoading && professors.length > 0"
-        class="overflow-x-auto no-scrollbar bg-white rounded-3xl border border-gray-100 shadow-sm">
-        <table class="w-full text-left">
-            <thead>
-                <tr class="bg-gray-50/50 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                    <th class="px-6 py-4">Nome completo</th>
-                    <th class="px-6 py-4">Email</th>
-                    <th class="px-6 py-4">Escolaridade</th>
-                    <th class="px-6 py-4 text-center">Status</th>
-                    <th class="px-6 py-4 text-center">Ações</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-                <tr *ngFor="let prof of professors" class="hover:bg-gray-50/30 transition-all group">
-                    <td class="px-6 py-4 font-bold text-gray-700 text-sm">{{ prof.nome_completo }}</td>
-                    <td class="px-6 py-4 text-xs text-gray-500">{{ prof.email }}</td>
-                    <td class="px-6 py-4 text-xs text-gray-600 font-medium">{{ prof.grau_escolaridade || 'N/A' }}</td>
-                    <td class="px-6 py-4">
-                        <div class="flex justify-center">
-                            <span
-                                [class]="prof.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'"
-                                class="px-3 py-1 text-[10px] font-bold rounded-full uppercase">
-                                {{ prof.status === 'active' ? 'Ativo' : 'Inativo' }}
-                            </span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center justify-center gap-2">
-                            <button (click)="openEditModal(prof)"
-                                class="p-2 text-blue-400 hover:bg-blue-50 rounded-lg transition-all">
-                                <lucide-icon [img]="icons.Edit" class="w-4 h-4"></lucide-icon>
-                            </button>
-                            <button (click)="onDelete(prof.id)"
-                                class="p-2 text-red-100 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
-                                <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Empty State -->
-    <div *ngIf="!isLoading && professors.length === 0"
-        class="p-12 text-center bg-white rounded-3xl border border-dashed border-gray-200 flex flex-col items-center gap-4">
-        <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center">
-            <lucide-icon [img]="icons.Users" class="w-6 h-6 text-gray-300"></lucide-icon>
-        </div>
-        <div>
-            <h4 class="font-bold text-gray-700">Nenhum professor cadastrado</h4>
-            <p class="text-xs text-gray-400">Cadastre os professores que atuarão nesta escola.</p>
-        </div>
-        <button (click)="openAddModal()" class="btn-primary py-2 px-6 text-xs">Adicionar Professor</button>
-    </div>
-
-    <!-- Modal -->
-    <div *ngIf="showModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in duration-300">
-            <header class="p-6 bg-[#00609b] text-white flex items-center justify-between">
-                <h3 class="text-xl font-bold font-primary">{{ isEditing ? 'Editar Professor' : 'Novo Professor' }}</h3>
-                <button (click)="showModal = false" class="p-2 hover:bg-white/10 rounded-lg transition-all">
-                    <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
-                </button>
-            </header>
-
-            <form [formGroup]="professorForm" (ngSubmit)="onSubmit()" class="p-8 space-y-6">
-                <div class="space-y-4">
+            <form [formGroup]="professorForm" (ngSubmit)="onSubmit()" class="space-y-6">
+                <!-- Row 1: Nome and Grau -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="form-group">
-                        <label>Nome completo</label>
+                        <label>Nome completo *</label>
                         <input type="text" formControlName="nome_completo" class="form-input"
-                            placeholder="Ex: João da Silva">
+                            placeholder="Nome completo">
                     </div>
                     <div class="form-group">
-                        <label>E-mail (Login)</label>
-                        <input type="email" formControlName="email" class="form-input" placeholder="exemplo@email.com">
-                    </div>
-                    <div class="form-group">
-                        <label>Grau de Escolaridade</label>
+                        <label>Grau de escolaridade *</label>
                         <select formControlName="grau_escolaridade" class="form-input">
+                            <option value="">Selecione o grau</option>
                             <option value="Superior Completo">Superior Completo</option>
                             <option value="Pós-Graduação">Pós-Graduação</option>
                             <option value="Mestrado">Mestrado</option>
                             <option value="Doutorado">Doutorado</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select formControlName="status" class="form-input">
-                            <option value="active">Ativo</option>
-                            <option value="inactive">Inativo</option>
-                        </select>
-                    </div>
                 </div>
 
-                <div class="flex justify-end gap-3 pt-6 border-t border-gray-50">
-                    <button type="button" (click)="showModal = false" [disabled]="isSubmitting"
-                        class="px-6 py-2.5 text-gray-400 font-bold hover:text-gray-600 transition-colors disabled:opacity-50">Cancelar</button>
-                    <button type="submit" [disabled]="isSubmitting"
-                        class="btn-primary py-2.5 px-8 flex items-center gap-2 disabled:bg-gray-400">
-                        <lucide-icon *ngIf="!isSubmitting" [img]="isEditing ? icons.Save : icons.Plus"
-                            class="w-5 h-5"></lucide-icon>
-                        <div *ngIf="isSubmitting"
-                            class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                        {{ isSubmitting ? 'Salvando...' : (isEditing ? 'Salvar Alterações' : 'Cadastrar') }}
-                    </button>
+                <!-- Row 2: Email and Button -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                    <div class="form-group">
+                        <label>Email do professor *</label>
+                        <input type="email" formControlName="email" class="form-input" placeholder="email@exemplo.com">
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button type="submit" [disabled]="isSubmitting"
+                            class="btn-primary min-w-[220px] h-[46px] flex items-center justify-center gap-2">
+                            <lucide-icon *ngIf="!isSubmitting" [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
+                            <div *ngIf="isSubmitting"
+                                class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                            {{ isSubmitting ? 'Salvando...' : (isEditing ? 'Salvar professor' : 'Cadastrar professor')
+                            }}
+                        </button>
+                        <p class="text-xs text-gray-400 font-medium leading-tight max-w-[200px]">
+                            Preencha os campos para realizar um novo cadastro.
+                        </p>
+                    </div>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- List Section -->
+    <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
+        <div class="flex flex-col gap-6">
+            <h3 class="text-xl font-bold text-gray-900">Professores cadastrados</h3>
+
+            <!-- Filters -->
+            <div class="flex items-center gap-4">
+                <div class="relative flex-1 max-w-lg">
+                    <lucide-icon [img]="icons.Search"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+                    <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Buscar professor"
+                        class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-[#00609b] transition-all">
+                </div>
+
+                <select [(ngModel)]="grauFilter" (change)="applyFilters()"
+                    class="px-4 py-3 bg-white border border-gray-100 rounded-xl text-sm text-gray-500 font-medium cursor-pointer min-w-[180px]">
+                    <option value="">Filtrar por grau</option>
+                    <option value="Superior Completo">Superior Completo</option>
+                    <option value="Pós-Graduação">Pós-Graduação</option>
+                    <option value="Mestrado">Mestrado</option>
+                    <option value="Doutorado">Doutorado</option>
+                </select>
+
+                <select [(ngModel)]="statusFilter" (change)="applyFilters()"
+                    class="px-4 py-3 bg-white border border-gray-100 rounded-xl text-sm text-gray-500 font-medium cursor-pointer min-w-[180px]">
+                    <option value="">Filtrar por status</option>
+                    <option value="active">Ativo</option>
+                    <option value="inactive">Inativo</option>
+                </select>
+            </div>
+
+            <!-- Table -->
+            <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-12 gap-4">
+                <div class="w-8 h-8 border-4 border-[#00609b]/10 border-t-[#00609b] rounded-full animate-spin"></div>
+                <p class="text-xs text-gray-400 font-medium italic">Buscando professores...</p>
+            </div>
+
+            <div *ngIf="!isLoading && filteredProfessors.length > 0" class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr
+                            class="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">
+                            <th class="px-2 py-4">Nome</th>
+                            <th class="px-2 py-4">Grau de escolaridade</th>
+                            <th class="px-2 py-4 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        <tr *ngFor="let prof of paginatedProfessors" class="hover:bg-gray-50/30 transition-all group">
+                            <td class="px-2 py-5 font-bold text-gray-700 text-sm">{{ prof.nome_completo }}</td>
+                            <td class="px-2 py-5">
+                                <span class="text-xs text-gray-500 font-medium">{{ prof.grau_escolaridade || 'N/A'
+                                    }}</span>
+                            </td>
+                            <td class="px-2 py-5">
+                                <div class="flex items-center justify-end gap-1">
+                                    <button (click)="onDelete(prof.id)"
+                                        class="p-2 text-red-200 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                        title="Excluir">
+                                        <lucide-icon [img]="icons.Trash2" class="w-5 h-5"></lucide-icon>
+                                    </button>
+                                    <button (click)="openEditModal(prof)"
+                                        class="p-2 text-blue-200 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
+                                        title="Editar">
+                                        <lucide-icon [img]="icons.Edit" class="w-5 h-5"></lucide-icon>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!isLoading && filteredProfessors.length === 0"
+                class="p-12 text-center bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-100 flex flex-col items-center gap-4">
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                    <lucide-icon [img]="icons.Users" class="w-6 h-6 text-gray-300"></lucide-icon>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-700">Nenhum professor encontrado</h4>
+                    <p class="text-xs text-gray-400">Tente ajustar seus filtros ou cadastre um novo professor.</p>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div *ngIf="!isLoading && filteredProfessors.length > 0" class="flex items-center justify-between pt-6">
+                <span class="text-sm font-medium text-gray-400 italic">Página {{ currentPage }} de {{ totalPages
+                    }}</span>
+                <div class="flex items-center gap-3">
+                    <button (click)="prevPage()" [disabled]="currentPage === 1"
+                        class="px-6 py-2 rounded-xl border border-gray-100 bg-white text-sm font-bold text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                        Anterior
+                    </button>
+                    <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                        class="px-6 py-2 rounded-xl border border-gray-100 bg-white text-sm font-bold text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                        Próximo
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -128,4 +155,15 @@
     <app-delete-confirm-modal entityName="professor" entityArticle="o" [isVisible]="showDeleteModal"
         [isLoading]="deleteLoading" (onConfirm)="confirmDelete()" (onCancel)="cancelDelete()">
     </app-delete-confirm-modal>
+
+    <!-- Toast UI -->
+    <div *ngIf="showToast"
+        class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-5 duration-300">
+        <div class="bg-gray-900 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3">
+            <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                <lucide-icon [img]="icons.Plus" class="w-3 h-3 text-white"></lucide-icon>
+            </div>
+            <span class="text-sm font-bold tracking-tight">{{ toastMessage }}</span>
+        </div>
+    </div>
 </div>

@@ -195,7 +195,9 @@ export class SchoolManagementService {
                     nome: data.nome,
                     nome_mae: data.responsavel,
                     email: data.emailResponsavel || data.email,
-                    ra: data.numeroCarteira
+                    ra: data.numeroCarteira,
+                    whatsapp: data.telefone,
+                    data_nascimento: data.data_nascimento
                 });
 
             if (alunoError) throw alunoError;

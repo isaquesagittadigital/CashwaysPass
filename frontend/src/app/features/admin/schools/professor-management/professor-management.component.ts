@@ -2,22 +2,33 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SchoolManagementService } from '../../../../core/services/school-management.service';
 import { DeleteConfirmModalComponent } from '../../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
-import { LucideAngularModule, UserPlus, Edit, Trash2, Users, X, Plus, Save } from 'lucide-angular';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { LucideAngularModule, UserPlus, Edit, Trash2, Users, X, Plus, Save, Search, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-angular';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-professor-management',
     standalone: true,
-    imports: [CommonModule, LucideAngularModule, ReactiveFormsModule, DeleteConfirmModalComponent],
+    imports: [CommonModule, LucideAngularModule, ReactiveFormsModule, FormsModule, DeleteConfirmModalComponent],
     templateUrl: './professor-management.component.html',
     styleUrls: ['./professor-management.component.css']
 })
 export class ProfessorManagementComponent implements OnInit {
-    icons = { UserPlus, Edit, Trash2, Users, X, Plus, Save };
+    icons = { UserPlus, Edit, Trash2, Users, X, Plus, Save, Search, ChevronLeft, ChevronRight, RefreshCw };
     @Input() schoolId!: string;
-    professors: any[] = [];
+    allProfessors: any[] = [];
+    filteredProfessors: any[] = [];
     isLoading = true;
     isSubmitting = false;
+
+    // Filters
+    searchTerm: string = '';
+    grauFilter: string = '';
+    statusFilter: string = '';
+
+    // Pagination
+    currentPage: number = 1;
+    pageSize: number = 10;
+    protected Math = Math;
 
     showDeleteModal = false;
     deleteId: string | null = null;
@@ -27,6 +38,10 @@ export class ProfessorManagementComponent implements OnInit {
     isEditing = false;
     editingId: string | null = null;
     professorForm: FormGroup;
+
+    // For toast feedback
+    showToast = false;
+    toastMessage = '';
 
     constructor(
         private schoolService: SchoolManagementService,
@@ -48,7 +63,8 @@ export class ProfessorManagementComponent implements OnInit {
         this.isLoading = true;
         this.schoolService.getProfessorsBySchool(this.schoolId).subscribe({
             next: (data) => {
-                this.professors = data;
+                this.allProfessors = data;
+                this.applyFilters();
                 this.isLoading = false;
             },
             error: (err) => {
@@ -58,18 +74,51 @@ export class ProfessorManagementComponent implements OnInit {
         });
     }
 
+    applyFilters() {
+        this.filteredProfessors = this.allProfessors.filter(prof => {
+            const matchesSearch = !this.searchTerm ||
+                prof.nome_completo?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                prof.email?.toLowerCase().includes(this.searchTerm.toLowerCase());
+
+            const matchesGrau = !this.grauFilter || prof.grau_escolaridade === this.grauFilter;
+            const matchesStatus = !this.statusFilter || prof.status === this.statusFilter;
+
+            return matchesSearch && matchesGrau && matchesStatus;
+        });
+        this.currentPage = 1;
+    }
+
+    get paginatedProfessors() {
+        const start = (this.currentPage - 1) * this.pageSize;
+        return this.filteredProfessors.slice(start, start + this.pageSize);
+    }
+
+    get totalPages() {
+        return Math.ceil(this.filteredProfessors.length / this.pageSize);
+    }
+
+    nextPage() {
+        if (this.currentPage < this.totalPages) this.currentPage++;
+    }
+
+    prevPage() {
+        if (this.currentPage > 1) this.currentPage--;
+    }
+
     openAddModal() {
         this.isEditing = false;
         this.editingId = null;
         this.professorForm.reset({ status: 'active' });
-        this.showModal = true;
+        this.showModal = false; // We use in-page form now
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     openEditModal(prof: any) {
         this.isEditing = true;
         this.editingId = prof.id;
         this.professorForm.patchValue(prof);
-        this.showModal = true;
+        this.showModal = false; // We use in-page form now
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     onSubmit() {
@@ -88,7 +137,15 @@ export class ProfessorManagementComponent implements OnInit {
             obs.subscribe({
                 next: () => {
                     this.isSubmitting = false;
-                    this.showModal = false;
+                    const wasEditing = this.isEditing;
+                    this.isEditing = false;
+                    this.professorForm.reset({ status: 'active' });
+
+                    // Show success toast
+                    this.toastMessage = wasEditing ? 'Professor atualizado com sucesso.' : 'Cadastro realizado com sucesso.';
+                    this.showToast = true;
+                    setTimeout(() => this.showToast = false, 3000);
+
                     this.loadProfessors();
                 },
                 error: (err) => {

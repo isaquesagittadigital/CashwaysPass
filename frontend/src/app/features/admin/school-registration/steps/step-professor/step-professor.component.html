@@ -1,114 +1,153 @@
-<div class="space-y-8">
-    <!-- Register New Professor -->
-    <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-        <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary">Cadastrar novo professor</h3>
+<div class="space-y-8 animate-in fade-in duration-500">
+    <!-- Register New Professor Card -->
+    <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
+        <div class="flex flex-col gap-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Cadastrar novo professor</h3>
 
-        <form [formGroup]="professorForm" (ngSubmit)="addProfessor()"
-            class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-            <div class="form-group">
-                <label>Nome completo *</label>
-                <input type="text" formControlName="nome" class="form-input" placeholder="Nome completo">
-            </div>
+            <form [formGroup]="professorForm" (ngSubmit)="addProfessor()" class="space-y-6">
+                <!-- Row 1: Nome and Grau -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label>Nome completo *</label>
+                        <input type="text" formControlName="nome" class="form-input" placeholder="Nome completo">
+                    </div>
+                    <div class="form-group">
+                        <label>Grau de escolaridade *</label>
+                        <select formControlName="escolaridade" class="form-input">
+                            <option value="">Selecione o grau</option>
+                            <option *ngFor="let option of escolaridadeOptions" [value]="option.value">
+                                {{ option.label }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label>Grau de escolaridade *</label>
-                <select formControlName="escolaridade" class="form-input">
-                    <option value="">Selecione o grau</option>
+                <!-- Row 2: Email -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label>Email do professor *</label>
+                        <input type="email" formControlName="email" class="form-input" placeholder="email@exemplo.com">
+                    </div>
+                </div>
+
+                <!-- Row 3: Add Button, Info Text and Navigation Buttons -->
+                <div class="flex items-center justify-between gap-4 pt-4 border-t border-gray-50/50">
+                    <div class="flex items-center gap-6 flex-1">
+                        <button type="submit"
+                            class="px-6 h-[46px] rounded-xl border border-gray-100 bg-white text-gray-400 font-bold flex items-center gap-2 hover:bg-gray-50 transition-all border-dashed">
+                            <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
+                            Cadastrar professor
+                        </button>
+                        <p class="text-xs text-gray-400 font-medium">Preencha os campos para realizar um novo cadastro.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button (click)="onBack()" type="button"
+                            class="px-8 h-[46px] rounded-xl border border-gray-100 bg-white text-gray-600 font-bold hover:bg-gray-50 transition-all">
+                            Voltar
+                        </button>
+                        <button (click)="onNext()" type="button"
+                            class="px-8 h-[46px] rounded-xl bg-[#00609b] text-white font-bold hover:bg-[#004d7c] transition-all shadow-lg shadow-blue-900/10">
+                            Prosseguir
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Professors List Card -->
+    <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
+        <div class="flex flex-col gap-6">
+            <h3 class="text-xl font-bold text-gray-900">Professores cadastrados</h3>
+
+            <!-- Filters Row -->
+            <div class="flex items-center gap-4">
+                <select (change)="updateGrau($any($event.target).value)"
+                    class="px-4 py-3 bg-white border border-gray-100 rounded-xl text-sm text-gray-500 font-medium cursor-pointer min-w-[200px]">
+                    <option value="">Filtrar por grau</option>
                     <option *ngFor="let option of escolaridadeOptions" [value]="option.value">{{ option.label }}
                     </option>
                 </select>
-            </div>
 
-            <div class="form-group">
-                <label>Email do professor *</label>
-                <input type="email" formControlName="email" class="form-input" placeholder="email@exemplo.com">
-            </div>
+                <select (change)="updateStatus($any($event.target).value)"
+                    class="px-4 py-3 bg-white border border-gray-100 rounded-xl text-sm text-gray-500 font-medium cursor-pointer min-w-[200px]">
+                    <option value="">Filtrar por status</option>
+                    <option value="active">Ativo</option>
+                    <option value="inactive">Inativo</option>
+                </select>
 
-            <div class="flex items-center gap-4">
-                <button type="submit"
-                    class="btn-secondary h-[46px] w-full max-w-[200px] flex items-center justify-center gap-2">
-                    <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
-                    Cadastrar professor
-                </button>
-                <div class="text-sm text-gray-400">Preencha os campos para realizar um novo cadastro.</div>
-            </div>
-        </form>
-    </div>
+                <div class="flex-1"></div>
 
-    <!-- Professors List -->
-    <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-        <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary">Professores cadastrados</h3>
-
-        <div class="flex flex-wrap items-center gap-4 mb-8">
-            <div class="flex-1 min-w-[240px]">
-                <div class="relative">
+                <div class="relative w-full max-w-sm">
                     <lucide-icon [img]="icons.Search"
-                        class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></lucide-icon>
-                    <input type="text" placeholder="Buscar professor" class="form-input pl-12">
+                        class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+                    <input type="text" (input)="updateSearch($any($event.target).value)" placeholder="Buscar professor"
+                        class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-[#00609b] transition-all">
                 </div>
             </div>
-            <div class="min-w-[180px]">
-                <select class="form-input">
-                    <option value="">Filtrar por grau</option>
-                </select>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr
+                            class="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">
+                            <th class="px-2 py-4">Nome</th>
+                            <th class="px-2 py-4 text-center">Grau de escolaridade</th>
+                            <th class="px-2 py-4 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        <tr *ngFor="let professor of filteredProfessors$ | async"
+                            class="hover:bg-gray-50/20 transition-all group">
+                            <td class="px-2 py-5 font-bold text-gray-700 text-sm">{{ professor.nome }}</td>
+                            <td class="px-2 py-5 text-center">
+                                <span
+                                    class="px-4 py-1.5 bg-gray-50 text-gray-500 text-[10px] font-bold rounded-full border border-gray-100 uppercase tracking-tight">
+                                    {{ professor.escolaridade }}
+                                </span>
+                            </td>
+                            <td class="px-2 py-5">
+                                <div class="flex items-center justify-end gap-2">
+                                    <button (click)="removeProfessor(professor.id!)"
+                                        class="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                        title="Excluir">
+                                        <lucide-icon [img]="icons.Trash2" class="w-5 h-5"></lucide-icon>
+                                    </button>
+                                    <button
+                                        class="p-2 text-gray-300 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all border border-gray-50"
+                                        title="Editar">
+                                        <lucide-icon [img]="icons.Edit" class="w-5 h-5"></lucide-icon>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Empty state -->
+                        <tr *ngIf="(filteredProfessors$ | async)?.length === 0">
+                            <td colspan="3" class="py-12 text-center text-gray-400 text-sm italic">
+                                Nenhum professor encontrado.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="min-w-[180px]">
-                <select class="form-input">
-                    <option value="">Filtrar por status</option>
-                </select>
+
+            <!-- Pagination Row -->
+            <div class="flex items-center justify-between pt-6">
+                <span class="text-sm font-medium text-gray-400">Página 1 de 1</span>
+                <div class="flex items-center gap-3">
+                    <button disabled
+                        class="px-6 py-2 rounded-xl border border-gray-100 bg-white text-sm font-bold text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                        Anterior
+                    </button>
+                    <button disabled
+                        class="px-6 py-2 rounded-xl border border-gray-100 bg-white text-sm font-bold text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                        Próximo
+                    </button>
+                </div>
             </div>
         </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-                        <th class="py-4">Nome</th>
-                        <th class="py-4">Grau de escolaridade</th>
-                        <th class="py-4 text-center">Ações</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-50">
-                    <tr *ngFor="let professor of professors$ | async" class="group">
-                        <td class="py-4 font-bold text-gray-700">{{ professor.nome }}</td>
-                        <td class="py-4">
-                            <span class="px-3 py-1 bg-gray-50 text-gray-500 text-xs font-bold rounded-full">
-                                {{ professor.escolaridade }}
-                            </span>
-                        </td>
-                        <td class="py-4">
-                            <div class="flex items-center justify-center gap-3">
-                                <button (click)="removeProfessor(professor.id!)"
-                                    class="p-2 text-red-100 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
-                                    <lucide-icon [img]="icons.Trash2" class="w-5 h-5"></lucide-icon>
-                                </button>
-                                <button
-                                    class="p-2 text-gray-300 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-all border border-gray-100">
-                                    <lucide-icon [img]="icons.Edit" class="w-5 h-5"></lucide-icon>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr *ngIf="(professors$ | async)?.length === 0">
-                        <td colspan="3" class="py-8 text-center text-gray-400">Nenhum professor cadastrado.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="flex items-center justify-between mt-8 text-sm">
-            <span class="text-gray-400">Página 1 de 1</span>
-            <div class="flex gap-2">
-                <button
-                    class="btn-secondary py-2 px-4 text-xs font-bold opacity-50 cursor-not-allowed">Anterior</button>
-                <button class="btn-secondary py-2 px-4 text-xs font-bold opacity-50 cursor-not-allowed">Próximo</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="flex justify-end gap-4 pt-8 border-t border-gray-100">
-        <button (click)="onBack()" type="button" class="btn-secondary px-12">Voltar</button>
-        <button (click)="onNext()" type="button" class="btn-primary px-12">Prosseguir</button>
     </div>
 </div>

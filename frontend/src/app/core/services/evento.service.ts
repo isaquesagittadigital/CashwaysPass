@@ -75,6 +75,39 @@ export class EventoService {
                 .insert([evento]);
 
             if (error) throw error;
+
+            // Busca os dados da escola para disparar o e-mail
+            if (evento.escola_id) {
+                const { data: escolaData } = await supabase
+                    .from('escola')
+                    .select('nome_fantasia, email_escola')
+                    .eq('id', evento.escola_id)
+                    .single();
+
+                if (escolaData && escolaData.email_escola) {
+                    try {
+                        const apiUrl = window.location.hostname.includes('localhost')
+                            ? 'http://localhost:3000/email/send-event-invite'
+                            : 'https://pass-2-0.vercel.app/api/email/send-event-invite'; // Ajuste caso sua URL de api de produção seja diferente
+
+                        console.log('Disparando e-mail para a escola: ', escolaData.email_escola);
+
+                        await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                to: escolaData.email_escola,
+                                schoolName: escolaData.nome_fantasia,
+                                eventName: evento.nome || 'Novo Evento',
+                                eventDate: evento.data_evento || new Date().toISOString()
+                            })
+                        }).catch(e => console.error('Erro ao chamar API de E-mail: ', e));
+                    } catch (e) {
+                        console.error('Falha interna no trigger de e-mail.', e);
+                    }
+                }
+            }
+
             return { success: true };
         } catch (error) {
             console.error('Error creating event:', error);

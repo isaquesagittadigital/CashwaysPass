@@ -1,175 +1,271 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { SchoolManagementService, School } from '../../../core/services/school-management.service';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { SchoolManagementService } from '../../../core/services/school-management.service';
 import { AdminDashboardService } from '../../../core/services/admin-dashboard.service';
-import { SchoolService as GlobalSchoolService } from '../../../core/services/school.service';
-import { LucideAngularModule, Plus, Search, Pencil, Trash2, Building2, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-angular';
+import { SchoolService as GlobalSchoolService, School } from '../../../core/services/school.service';
+import { LucideAngularModule, Search, Pencil, Trash2, ChevronLeft, BarChart2, Users, Plus, X, Check, ArrowLeft, ChevronDown, TrendingUp } from 'lucide-angular';
 import { Router, RouterModule } from '@angular/router';
 import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
+import { Subscription } from 'rxjs';
+import { ProfessorManagementComponent } from './professor-management/professor-management.component';
+import { StudentManagementComponent } from './student-management/student-management.component';
+import { EditSchoolModalComponent } from './edit-school-modal/edit-school-modal.component';
+import { ActionSuccessModalComponent } from '../../../shared/components/success-modal/success-modal.component';
 
 @Component({
     selector: 'app-schools-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, LucideAngularModule, RouterModule, DeleteConfirmModalComponent],
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        LucideAngularModule,
+        RouterModule,
+        DeleteConfirmModalComponent,
+        ProfessorManagementComponent,
+        StudentManagementComponent,
+        EditSchoolModalComponent,
+        ActionSuccessModalComponent
+    ],
     templateUrl: './schools-list.component.html',
     styleUrls: ['./schools-list.component.css']
 })
-export class SchoolsListComponent implements OnInit {
-    icons = { Plus, Search, Pencil, Trash2, Building2, ChevronLeft, ChevronRight, RefreshCw };
-    allSchools: any[] = [];
-    filteredSchools: any[] = [];
-    isLoading = true;
+export class SchoolsListComponent implements OnInit, OnDestroy {
+    icons = { Search, Pencil, Trash2, ChevronLeft, BarChart2, Users, Plus, X, Check, ArrowLeft, ChevronDown, TrendingUp };
+
+    selectedSchool: any | null = null;
+    dashboardStats: any = null;
+    isLoading = false;
+
+    // Subscription
+    private schoolSub?: Subscription;
+
+    // Turmas List State
+    turmas: any[] = [];
+    filteredTurmas: any[] = [];
+    searchTermTurma: string = '';
+    selectedTurma: any | null = null;
+
+    // Tab State
+    currentTab: 'dados' | 'professors' | 'students' = 'dados';
+
+    // Turma Form
+    turmaForm: FormGroup;
+    isSubmitting = false;
+
+    // Delete School
     showDeleteModal = false;
-    schoolToDeleteId: string | null = null;
     deleteLoading = false;
 
-    // Filters & Pagination
-    searchTerm: string = '';
-    statusFilter: string = '';
-    currentPage: number = 1;
-    pageSize: number = 10;
-    protected Math = Math;
+    // Toast
+    showToast = false;
+    toastMessage = '';
 
-    // Modal state
-    isReactivationMode = false;
-    modalActionType: 'delete' | 'inactivate' | 'reactivate' = 'delete';
+    // Modals Extras
+    showEditModal = false;
+    showSuccessModal = false;
+    successModalTitle = '';
+    successModalMessage = '';
 
     constructor(
         private schoolService: SchoolManagementService,
         private dashboardService: AdminDashboardService,
         private globalSchoolService: GlobalSchoolService,
-        private router: Router
-    ) { }
+        private router: Router,
+        private fb: FormBuilder
+    ) {
+        this.turmaForm = this.fb.group({
+            nome: ['', Validators.required],
+            estagio: ['', Validators.required],
+            periodo: ['', Validators.required],
+            serie: ['', Validators.required],
+            quantidade_alunos: [0, Validators.required],
+            data_inicio: [new Date().toISOString().split('T')[0], Validators.required],
+            status: [true]
+        });
+    }
 
     ngOnInit(): void {
-        this.loadSchools();
+        this.schoolSub = this.globalSchoolService.selectedSchool$.subscribe(school => {
+            if (school) {
+                this.loadSchoolFullData(school.id);
+            }
+        });
     }
 
-    loadSchools() {
+    ngOnDestroy(): void {
+        this.schoolSub?.unsubscribe();
+    }
+
+    async loadSchoolFullData(schoolId: string) {
         this.isLoading = true;
-        this.schoolService.getSchools().subscribe({
-            next: async (data) => {
-                const schoolsWithStats = await Promise.all(data.map(async (school) => {
+        try {
+            // Pegar os dados reais da escola
+            this.schoolService.getSchoolById(schoolId).subscribe({
+                next: async (schoolData) => {
+                    this.selectedSchool = schoolData;
+
+                    // Dashboard stats
                     try {
-                        const stats = await this.dashboardService.getDashboardStats(school.id, '12 meses');
-                        return { ...school, stats };
-                    } catch {
-                        return { ...school, stats: null };
+                        this.dashboardStats = await this.dashboardService.getDashboardStats(schoolId, '12 meses');
+                    } catch (e) {
+                        this.dashboardStats = null;
                     }
-                }));
-                this.allSchools = schoolsWithStats;
-                this.applyFilters();
-                this.isLoading = false;
+
+                    this.loadTurmas();
+                    this.isLoading = false;
+                },
+                error: (e) => {
+                    console.error(e);
+                    this.isLoading = false;
+                }
+            });
+        } catch (e) {
+            console.error(e);
+            this.isLoading = false;
+        }
+    }
+
+    loadTurmas() {
+        if (!this.selectedSchool) return;
+        this.schoolService.getTurmasBySchool(this.selectedSchool.id).subscribe({
+            next: (data) => {
+                this.turmas = data;
+                this.filterTurmas();
             },
-            error: (err) => {
-                console.error('Error loading schools:', err);
-                this.isLoading = false;
-            }
+            error: (err) => console.error(err)
         });
     }
 
-    applyFilters() {
-        this.filteredSchools = this.allSchools.filter(school => {
-            const matchesSearch = !this.searchTerm ||
-                school.nome_fantasia?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                school.cnpj?.includes(this.searchTerm) ||
-                school.email_contato?.toLowerCase().includes(this.searchTerm.toLowerCase());
-
-            let matchesStatus = true;
-            if (!this.statusFilter) {
-                // "Todos" -> Mostrar ativos e inativos, ocultar deletados
-                matchesStatus = !school.deletado;
-            } else if (this.statusFilter === 'active') {
-                // "Ativo" -> Apenas ativos (nunca deletados)
-                matchesStatus = school.status === 'active' && !school.deletado;
-            } else if (this.statusFilter === 'inactive') {
-                // "Inativo" -> Inativos OU Deletados
-                matchesStatus = school.status === 'inactive' || school.deletado === true;
-            }
-
-            return matchesSearch && matchesStatus;
-        });
-        this.currentPage = 1; // Reset to first page on filter change
-    }
-
-    get paginatedSchools() {
-        const startIndex = (this.currentPage - 1) * this.pageSize;
-        return this.filteredSchools.slice(startIndex, startIndex + this.pageSize);
-    }
-
-    get totalPages() {
-        return Math.ceil(this.filteredSchools.length / this.pageSize);
-    }
-
-    nextPage() {
-        if (this.currentPage < this.totalPages) {
-            this.currentPage++;
-        }
-    }
-
-    prevPage() {
-        if (this.currentPage > 1) {
-            this.currentPage--;
-        }
-    }
-
-    onEdit(school: School) {
-        // This will open a modal or navigate to a details page
-        this.router.navigate(['/admin/escolas', school.id]);
-    }
-
-    onDelete(school: any) {
-        this.schoolToDeleteId = school.id;
-
-        if (school.deletado || school.status === 'inactive') {
-            this.isReactivationMode = true;
-            this.modalActionType = 'reactivate';
+    filterTurmas() {
+        if (!this.searchTermTurma) {
+            this.filteredTurmas = this.turmas;
         } else {
-            this.isReactivationMode = false;
-            this.modalActionType = 'inactivate';
+            this.filteredTurmas = this.turmas.filter(t =>
+                t.nome?.toLowerCase().includes(this.searchTermTurma.toLowerCase())
+            );
         }
-
-        this.showDeleteModal = true;
     }
 
-    confirmDelete() {
-        if (this.schoolToDeleteId) {
-            this.deleteLoading = true;
+    onSearchTurmaChange() {
+        this.filterTurmas();
+    }
 
-            const action = this.isReactivationMode
-                ? this.schoolService.updateSchool(this.schoolToDeleteId, { deletado: false, status: 'active' })
-                : this.schoolService.deleteSchool(this.schoolToDeleteId);
+    selectTurmaToEdit(turma: any | null) {
+        this.selectedTurma = turma;
+        this.currentTab = 'dados';
+        if (turma) {
+            this.turmaForm.patchValue(turma);
+        } else {
+            this.turmaForm.reset({
+                status: true,
+                quantidade_alunos: 0,
+                data_inicio: new Date().toISOString().split('T')[0]
+            });
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-            action.subscribe({
+    saveTurma() {
+        if (!this.selectedSchool) return;
+        if (this.turmaForm.valid) {
+            this.isSubmitting = true;
+            const data = { ...this.turmaForm.value, escola_id: this.selectedSchool.id };
+
+            const obs = this.selectedTurma?.id
+                ? this.schoolService.updateTurma(this.selectedTurma.id, data)
+                : this.schoolService.createTurma(data);
+
+            obs.subscribe({
                 next: () => {
-                    this.deleteLoading = false;
-                    this.showDeleteModal = false;
-                    this.schoolToDeleteId = null;
-                    this.loadSchools();
-                    this.globalSchoolService.loadSchools();
+                    this.isSubmitting = false;
+                    const msg = this.selectedTurma?.id ? 'Turma atualizada com sucesso' : 'Turma cadastrada com sucesso';
+                    this.toastMessage = msg;
+                    this.showToast = true;
+                    setTimeout(() => this.showToast = false, 3000);
+
+                    this.selectedTurma = null;
+                    this.turmaForm.reset({ status: true, quantidade_alunos: 0, data_inicio: new Date().toISOString().split('T')[0] });
+                    this.loadTurmas();
                 },
                 error: (err) => {
-                    this.deleteLoading = false;
-                    console.error('Erro ao processar ação:', err);
+                    this.isSubmitting = false;
+                    alert('Erro ao salvar turma: ' + err.message);
+                }
+            });
+        } else {
+            this.turmaForm.markAllAsTouched();
+        }
+    }
+
+    deleteTurma(turma: any, event: Event) {
+        event.stopPropagation();
+        if (confirm(`Excluir a turma ${turma.nome}?`)) {
+            this.schoolService.deleteTurma(turma.id).subscribe({
+                next: () => {
+                    if (this.selectedTurma?.id === turma.id) {
+                        this.selectTurmaToEdit(null);
+                    }
+                    this.loadTurmas();
                 }
             });
         }
     }
 
-    cancelDelete() {
-        this.showDeleteModal = false;
-        this.schoolToDeleteId = null;
+    onDeleteSchool() {
+        this.showDeleteModal = true;
     }
 
-    getStatusClass(status: string) {
-        return status === 'active'
-            ? 'bg-green-100 text-green-600'
-            : 'bg-red-100 text-red-600';
+    confirmDeleteSchool() {
+        if (!this.selectedSchool) return;
+        this.deleteLoading = true;
+        this.schoolService.deleteSchool(this.selectedSchool.id).subscribe({
+            next: () => {
+                this.deleteLoading = false;
+                this.showDeleteModal = false;
+                // Exibir o modal de sucesso!
+                this.successModalTitle = 'Escola excluída!';
+                this.successModalMessage = 'A escola foi excluída com sucesso!';
+                this.showSuccessModal = true;
+                this.globalSchoolService.loadSchools(); // Reload globais e mudará a escola selecionada autmático
+            },
+            error: (err) => {
+                this.deleteLoading = false;
+                console.error(err);
+            }
+        });
+    }
+
+    cancelDeleteSchool() {
+        this.showDeleteModal = false;
+    }
+
+    // Edição Modal
+    openEditModal() {
+        if (this.selectedSchool) {
+            this.showEditModal = true;
+        }
+    }
+
+    closeEditModal() {
+        this.showEditModal = false;
+    }
+
+    onEditSuccess() {
+        this.showEditModal = false;
+        this.successModalTitle = 'Escola editada!';
+        this.successModalMessage = 'A escola foi editada com sucesso!';
+        this.showSuccessModal = true;
+        this.globalSchoolService.loadSchools(); // Update global list with new name
+    }
+
+    closeSuccessModal() {
+        this.showSuccessModal = false;
     }
 
     formatCurrency(value: number | undefined): string {
-        if (value === undefined) return '---';
+        if (value === undefined) return 'R$ 0,00';
         return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
     }
 }
