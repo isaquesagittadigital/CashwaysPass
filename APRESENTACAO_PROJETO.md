@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="capa-github.png" width="800" alt="CashwaysPass Cover"/>
+</div>
+
 # Apresentação do Projeto: CashwaysPass
 
 Bem-vindo ao repositório do **CashwaysPass** (também referenciado como Pass 2.0). Este é um sistema robusto de gerenciamento de saldos, turmas e escolas, projetado para fornecer aos administradores e consultores uma visão transparente e detalhada sobre o engajamento financeiro e educacional da plataforma.
