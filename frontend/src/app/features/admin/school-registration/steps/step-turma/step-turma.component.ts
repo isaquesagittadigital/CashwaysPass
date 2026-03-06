@@ -38,9 +38,9 @@ export class StepTurmaComponent implements OnInit {
             estagio: ['', Validators.required],
             periodo: ['', Validators.required],
             serie: ['', Validators.required],
-            professorId: ['', Validators.required],
-            quantidadeAlunos: [0, [Validators.required, Validators.min(1)]],
-            dataEntrada: ['', Validators.required]
+            professor_id: ['', Validators.required],
+            quantidade_alunos: [0, [Validators.required, Validators.min(1)]],
+            data_inicio: ['', Validators.required]
         });
     }
 
@@ -56,7 +56,7 @@ export class StepTurmaComponent implements OnInit {
             this.turmaForm.reset({
                 estagio: '',
                 periodo: '',
-                professorId: ''
+                professor_id: ''
             });
         } else {
             this.turmaForm.markAllAsTouched();
@@ -69,7 +69,7 @@ export class StepTurmaComponent implements OnInit {
 
     getProfessorName(id: string, professors: any[] | null): string {
         if (!professors) return 'Desconhecido';
-        const prof = professors.find(p => p.id === id);
+        const prof = professors.find(p => (p.id === id || p.usuario_id === id));
         return prof ? prof.nome : 'Desconhecido';
     }
 

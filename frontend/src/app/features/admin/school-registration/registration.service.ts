@@ -41,9 +41,9 @@ export interface TurmaData {
     estagio: string;
     periodo: string;
     serie: string;
-    professorId: string;
-    quantidadeAlunos: number;
-    dataEntrada: string;
+    professor_id: string;
+    quantidade_alunos: number;
+    data_inicio: string;
     status: boolean;
 }
 
@@ -178,31 +178,47 @@ export class SchoolRegistrationService {
                 .single();
 
             if (schoolError) throw schoolError;
-            const schoolId = schoolResp.id;
+            const schoolId = schoolResp.id as string;
 
-            // 2. Insert Professors (as Users)
+            // 2. Insert Professors
             const profs = this.professors.value;
             if (profs.length > 0) {
-                const professorInserts = profs.map(p => ({
+                // a. Insert into Professor table
+                const professorTableInserts = profs.map(p => ({
+                    nome: p.nome,
+                    especialidade: p.escolaridade, // Used in professor table
+                    escola_id: schoolId
+                }));
+
+                const { data: profsTableData, error: profsTableError } = await supabase
+                    .from('professor')
+                    .insert(professorTableInserts)
+                    .select();
+
+                if (profsTableError) throw profsTableError;
+
+                // b. Insert into Usuarios table
+                const professorUserInserts = profs.map(p => ({
                     nome_completo: p.nome,
                     nome: p.nome,
                     email: p.email,
                     tipo_acesso: 'Professor',
                     status: 'active',
-                    escola_id: schoolId
+                    escola_id: schoolId,
+                    grau_escolaridade: p.escolaridade // Also store in usuarios for management page
                 }));
 
-                const { data: profsResp, error: profsError } = await supabase
+                const { data: profsUserResp, error: profsUserError } = await supabase
                     .from('usuarios')
-                    .insert(professorInserts)
+                    .insert(professorUserInserts)
                     .select();
 
-                if (profsError) throw profsError;
+                if (profsUserError) throw profsUserError;
 
-                // Map local temp UUIDs to real DB IDs
+                // Map local temp UUIDs to real DB user IDs (though not strictly needed currently for turmas as they use name)
                 const profIdMap = new Map();
                 profs.forEach((p, i) => {
-                    if (p.id) profIdMap.set(p.id, profsResp[i].id);
+                    if (p.id) profIdMap.set(p.id, profsUserResp[i].id);
                 });
 
                 // 3. Insert Classes
@@ -213,10 +229,10 @@ export class SchoolRegistrationService {
                         estagio: t.estagio,
                         Periodos: t.periodo,
                         serie: t.serie,
-                        professor: profs.find(p => p.id === t.professorId)?.nome || '',
-                        quantidade_alunos: t.quantidadeAlunos,
-                        data_inicio: t.dataEntrada,
-                        data_entrada: t.dataEntrada,
+                        professor: profs.find(p => p.id === t.professor_id)?.nome || '',
+                        quantidade_alunos: t.quantidade_alunos,
+                        data_inicio: t.data_inicio,
+                        data_entrada: t.data_inicio,
                         escola_id: schoolId,
                         status: true
                     }));
@@ -244,7 +260,9 @@ export class SchoolRegistrationService {
                             tipo_acesso: 'Aluno',
                             status: 'active',
                             escola_id: schoolId,
-                            turmaID: turmaIdMap.get(s.turmaId)
+                            turmaID: turmaIdMap.get(s.turmaId),
+                            nome_mae: s.responsavel,
+                            ra: s.numeroCarteira
                         }));
 
                         const { data: studentsUserResp, error: studentsUserError } = await supabase
@@ -259,7 +277,9 @@ export class SchoolRegistrationService {
                             escola_id: schoolId,
                             turma_id: turmaIdMap.get(s.turmaId),
                             nome: s.nome,
-                            email: s.emailResponsavel
+                            email: s.emailResponsavel,
+                            nome_mae: s.responsavel,
+                            ra: s.numeroCarteira
                         }));
 
                         const { error: alunoError } = await supabase
@@ -270,7 +290,7 @@ export class SchoolRegistrationService {
 
                         // 5. Insert Wallet (Carteira)
                         const carteiraInserts = students.map((s, i) => ({
-                            Usuario: studentsUserResp[i].id,
+                            Usuario: studentsUserResp[i].id, // BigInt
                             carteira_code: s.numeroCarteira,
                             turmaID: turmaIdMap.get(s.turmaId),
                             escola_id: schoolId

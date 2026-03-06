@@ -9,10 +9,19 @@ export interface School {
     cnpj: string;
     razao_social: string;
     modelo_contratacao: string;
-    serie: string;
+    tipo_escola: string;
     status: 'active' | 'inactive';
-    email: string;
-    telefone: string;
+    email_contato: string;
+    telefone_contato: string;
+    whatsapp: string;
+    endereco: string;
+    responsavel_direcao: string;
+    nome_secretariado: string;
+    email_secretaria_admin: string;
+    cep: string;
+    complemento: string;
+    valor_carteira: number;
+    valor_transferencia: number;
     created_at: string;
     [key: string]: any;
 }

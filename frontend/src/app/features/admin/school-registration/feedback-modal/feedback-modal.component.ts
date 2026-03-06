@@ -1,16 +1,16 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideAngularModule, Check, HelpCircle, AlertCircle } from 'lucide-angular';
 
 @Component({
-    selector: 'app-feedback-modal',
-    standalone: true,
-    imports: [CommonModule, LucideAngularModule],
-    template: `
+  selector: 'app-feedback-modal',
+  standalone: true,
+  imports: [CommonModule, LucideAngularModule],
+  template: `
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300">
       <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 text-center animate-in zoom-in duration-300">
         <div [class]="iconBg" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-          <i-lucide [name]="icon" [class]="iconColor" class="w-10 h-10"></i-lucide>
+          <lucide-icon [img]="icon" [class]="iconColor" class="w-10 h-10"></lucide-icon>
         </div>
         
         <h2 class="text-2xl font-black text-gray-900 mb-2 font-primary">{{ title }}</h2>
@@ -27,45 +27,47 @@ import { LucideAngularModule } from 'lucide-angular';
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     :host { display: block; }
   `]
 })
 export class FeedbackModalComponent {
-    @Input() type: 'success' | 'confirm' | 'error' = 'success';
-    @Input() title = 'Sucesso!';
-    @Input() message = 'Operação realizada com sucesso.';
-    @Input() confirmLabel = 'Continuar';
-    @Input() cancelLabel = 'Cancelar';
-    @Input() showCancel = false;
+  icons = { Check, HelpCircle, AlertCircle };
 
-    @Output() confirm = new EventEmitter<void>();
-    @Output() cancel = new EventEmitter<void>();
+  @Input() type: 'success' | 'confirm' | 'error' = 'success';
+  @Input() title = 'Sucesso!';
+  @Input() message = 'Operação realizada com sucesso.';
+  @Input() confirmLabel = 'Continuar';
+  @Input() cancelLabel = 'Cancelar';
+  @Input() showCancel = false;
 
-    get icon(): string {
-        switch (this.type) {
-            case 'success': return 'check';
-            case 'confirm': return 'help-circle';
-            case 'error': return 'alert-circle';
-            default: return 'check';
-        }
+  @Output() confirm = new EventEmitter<void>();
+  @Output() cancel = new EventEmitter<void>();
+
+  get icon(): any {
+    switch (this.type) {
+      case 'success': return this.icons.Check;
+      case 'confirm': return this.icons.HelpCircle;
+      case 'error': return this.icons.AlertCircle;
+      default: return this.icons.Check;
     }
+  }
 
-    get iconBg(): string {
-        switch (this.type) {
-            case 'success': return 'bg-green-100';
-            case 'confirm': return 'bg-blue-100';
-            case 'error': return 'bg-red-100';
-            default: return 'bg-green-100';
-        }
+  get iconBg(): string {
+    switch (this.type) {
+      case 'success': return 'bg-green-100';
+      case 'confirm': return 'bg-blue-100';
+      case 'error': return 'bg-red-100';
+      default: return 'bg-green-100';
     }
+  }
 
-    get iconColor(): string {
-        switch (this.type) {
-            case 'success': return 'text-green-600';
-            case 'confirm': return 'text-blue-600';
-            case 'error': return 'text-red-600';
-            default: return 'text-green-600';
-        }
+  get iconColor(): string {
+    switch (this.type) {
+      case 'success': return 'text-green-600';
+      case 'confirm': return 'text-blue-600';
+      case 'error': return 'text-red-600';
+      default: return 'text-green-600';
     }
+  }
 }

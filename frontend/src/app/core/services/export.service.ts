@@ -16,7 +16,7 @@ export class ExportService {
         stats: any[];
         turmas: any[];
         donutChartId: string;
-        barChartId: string;
+        barChartId?: string;
     }) {
         const doc = new jsPDF('p', 'mm', 'a4');
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -65,20 +65,22 @@ export class ExportService {
         currentY += 5;
 
         const donutEl = document.getElementById(data.donutChartId);
-        const barEl = document.getElementById(data.barChartId);
+        const barEl = data.barChartId ? document.getElementById(data.barChartId) : null;
 
-        if (donutEl && barEl) {
+        if (donutEl) {
             try {
                 const donutCanvas = await html2canvas(donutEl, { scale: 2 } as any);
-                const barCanvas = await html2canvas(barEl, { scale: 2 } as any);
-
                 const donutImg = donutCanvas.toDataURL('image/png');
-                const barImg = barCanvas.toDataURL('image/png');
 
-                // Distribution of space: 2 charts side by side or one after another
                 const chartWidth = (pageWidth - 2 * margin - 10) / 2;
                 doc.addImage(donutImg, 'PNG', margin, currentY, chartWidth, 60);
-                doc.addImage(barImg, 'PNG', margin + chartWidth + 10, currentY, chartWidth, 60);
+
+                if (barEl) {
+                    const barCanvas = await html2canvas(barEl, { scale: 2 } as any);
+                    const barImg = barCanvas.toDataURL('image/png');
+                    doc.addImage(barImg, 'PNG', margin + chartWidth + 10, currentY, chartWidth, 60);
+                }
+
                 currentY += 70;
             } catch (e) {
                 console.error('Error capturing charts:', e);

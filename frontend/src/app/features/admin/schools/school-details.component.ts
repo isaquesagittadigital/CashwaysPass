@@ -47,7 +47,7 @@ export class SchoolDetailsComponent implements OnInit {
         private fb: FormBuilder
     ) {
         this.schoolForm = this.fb.group({
-            nome: ['', Validators.required],
+            nome_fantasia: ['', Validators.required],
             cnpj: ['', Validators.required],
             razao_social: ['', Validators.required],
             modelo_contratacao: ['Full', Validators.required],
@@ -57,16 +57,16 @@ export class SchoolDetailsComponent implements OnInit {
             valor_unitario_equipamento: [0],
             cobra_transacoes: [true, Validators.required],
             valor_unitario_transacao: [0],
-            serie: ['', Validators.required],
-            nome_direcao: ['', Validators.required],
+            tipo_escola: ['', Validators.required],
+            responsavel_direcao: ['', Validators.required],
             nome_secretariado: ['', Validators.required],
-            email: ['', [Validators.required, Validators.email]],
+            email_contato: ['', [Validators.required, Validators.email]],
             email_secretaria_admin: ['', [Validators.required, Validators.email]],
-            telefone: ['', Validators.required],
+            telefone_contato: ['', Validators.required],
             whatsapp: ['', Validators.required],
             cep: ['', Validators.required],
             complemento: [''],
-            endereco_completo: ['', Validators.required],
+            endereco: ['', Validators.required],
             valor_carteira: [0, Validators.required],
             valor_transferencia: [0, Validators.required],
             status: ['active', Validators.required]

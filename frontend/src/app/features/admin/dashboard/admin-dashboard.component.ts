@@ -18,7 +18,9 @@ import {
     Unlock,
     Tag,
     Download,
-    ChevronDown
+    ChevronDown,
+    ArrowUpDown,
+    Eye
 } from 'lucide-angular';
 import { AdminDashboardService, DashboardStats, TransactionDay } from '../../../core/services/admin-dashboard.service';
 import { SchoolService } from '../../../core/services/school.service';
@@ -38,37 +40,47 @@ interface ChartSegment {
     standalone: true,
     imports: [CommonModule, LucideAngularModule, RouterModule],
     templateUrl: './admin-dashboard.component.html',
+    styleUrls: ['./admin-dashboard.component.css']
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
     icons = {
         Building2, Users, CreditCard, TrendingUp, ArrowUpRight, ArrowDownRight, CalendarDays, Clock,
-        Share2, Plus, ShoppingBag, Unlock, Tag, Download, ChevronDown
+        Share2, Plus, ShoppingBag, Unlock, Tag, Download, ChevronDown, ArrowUpDown, Eye
     };
 
     activeFilter = '7 dias';
     filters = ['12 meses', '30 dias', '7 dias', '24 horas'];
 
     stats = [
-        { label: 'Total investido', value: 'R$ 0,00', points: '0pts', icon: TrendingUp, color: 'blue', bg: 'bg-blue-50', iconColor: 'text-blue-600' },
-        { label: 'Total gasto', value: 'R$ 0,00', points: '0pts', icon: ShoppingBag, color: 'coral', bg: 'bg-orange-50', iconColor: 'text-orange-600' },
-        { label: 'Saldo livre', value: 'R$ 0,00', points: '0pts', icon: Unlock, color: 'purple', bg: 'bg-purple-50', iconColor: 'text-purple-600' },
-        { label: 'Saldo em propósitos', value: 'R$ 0,00', points: '0pts', icon: Tag, color: 'green', bg: 'bg-green-50', iconColor: 'text-green-600' },
-        { label: 'Total de Alunos', value: '0', points: '0 cadastros', icon: Users, color: 'indigo', bg: 'bg-indigo-50', iconColor: 'text-indigo-600' },
+        { label: 'Total investido', value: 'R$ 0,00', points: '0pts', id: 'invested', icon: 'assets/icons/total-investido.svg' },
+        { label: 'Total gasto', value: 'R$ 0,00', points: '0pts', id: 'spent', icon: 'assets/icons/total-gasto.svg' },
+        { label: 'Saldo livre', value: 'R$ 0,00', points: '0pts', id: 'freeBalance', icon: 'assets/icons/saldo-livre.svg' },
+        { label: 'Saldo em propósitos', value: 'R$ 0,00', points: '0pts', id: 'purposeBalance', icon: 'assets/icons/saldo-propositos.svg' }
     ];
 
     turmasSummary: any[] = [];
 
     // Dynamic Donut Data
     distributionData: ChartSegment[] = [
-        { label: 'Total investido', value: 0, percentage: 0, color: '#4facfe', dashArray: '0 100', dashOffset: 0 },
-        { label: 'Total gasto', value: 0, percentage: 0, color: '#fbc2eb', dashArray: '0 100', dashOffset: 0 },
-        { label: 'Saldo livre', value: 0, percentage: 0, color: '#a18cd1', dashArray: '0 100', dashOffset: 0 },
-        { label: 'Saldo em propósito', value: 0, percentage: 0, color: '#84fab0', dashArray: '0 100', dashOffset: 0 }
+        { label: 'Total investido', value: 0, percentage: 0, color: '#00a8e8', dashArray: '0 100', dashOffset: 0 },
+        { label: 'Total gasto', value: 0, percentage: 0, color: '#ffb088', dashArray: '0 100', dashOffset: 0 },
+        { label: 'Saldo livre', value: 0, percentage: 0, color: '#7a5af8', dashArray: '0 100', dashOffset: 0 },
+        { label: 'Saldo em propósitos', value: 0, percentage: 0, color: '#Bdec24', dashArray: '0 100', dashOffset: 0 }
     ];
 
-    // Dynamic Bar Data
-    transactionsData: any[] = [];
+    // Bar chart data
+    transactionsData: TransactionDay[] = [
+        { day: 'Seg', transacted: 8200, transferred: 4100 },
+        { day: 'Ter', transacted: 6700, transferred: 3350 },
+        { day: 'Qua', transacted: 6700, transferred: 3350 },
+        { day: 'Qui', transacted: 7800, transferred: 3900 },
+        { day: 'Sex', transacted: 7800, transferred: 3900 },
+        { day: 'Sáb', transacted: 9800, transferred: 4900 },
+        { day: 'Dom', transacted: 7100, transferred: 3550 }
+    ];
     maxTransactionValue = 16000;
+    scaleValues = [16000, 12800, 8000, 4000, 0];
+
     isExporting = false;
 
     private selectionSub?: Subscription;
@@ -106,9 +118,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
                 spent: this.formatCurrency(t.spent),
                 balance: this.formatCurrency(t.balance)
             }));
-
-            const transactions = await this.dashboardService.getTransactionsSummary(schoolId, filter);
-            this.updateBarChart(transactions);
         } catch (error) {
             console.error('Error loading dashboard data:', error);
         }
@@ -120,32 +129,26 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
                 label: 'Total investido',
                 value: this.formatCurrency(data.totalInvested),
                 points: `${Math.floor(data.totalInvested)}pts`,
-                icon: TrendingUp, color: 'blue', bg: 'bg-blue-50', iconColor: 'text-blue-600'
+                id: 'invested', icon: 'assets/icons/total-investido.svg'
             },
             {
                 label: 'Total gasto',
                 value: this.formatCurrency(data.totalSpent),
                 points: `${Math.floor(data.totalSpent)}pts`,
-                icon: ShoppingBag, color: 'coral', bg: 'bg-orange-50', iconColor: 'text-orange-600'
+                id: 'spent', icon: 'assets/icons/total-gasto.svg'
             },
             {
                 label: 'Saldo livre',
                 value: this.formatCurrency(data.freeBalance),
                 points: `${Math.floor(data.freeBalance)}pts`,
-                icon: Unlock, color: 'purple', bg: 'bg-purple-50', iconColor: 'text-purple-600'
+                id: 'freeBalance', icon: 'assets/icons/saldo-livre.svg'
             },
             {
                 label: 'Saldo em propósitos',
                 value: this.formatCurrency(data.purposeBalance),
                 points: `${Math.floor(data.purposeBalance)}pts`,
-                icon: Tag, color: 'green', bg: 'bg-green-50', iconColor: 'text-green-600'
-            },
-            {
-                label: 'Total de Alunos',
-                value: data.totalStudents.toString(),
-                points: `${data.totalStudents} cadastros`,
-                icon: Users, color: 'indigo', bg: 'bg-indigo-50', iconColor: 'text-indigo-600'
-            },
+                id: 'purposeBalance', icon: 'assets/icons/saldo-propositos.svg'
+            }
         ];
     }
 
@@ -174,19 +177,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         });
     }
 
-    updateBarChart(transactions: TransactionDay[]) {
-        // Calculate max value for scale
-        const maxDayTotal = Math.max(...transactions.map(t => t.transferred + t.transacted), 100);
-        this.maxTransactionValue = Math.ceil(maxDayTotal / 1000) * 1000;
-        if (this.maxTransactionValue < 4000) this.maxTransactionValue = 4000;
-
-        this.transactionsData = transactions.map(t => ({
-            ...t,
-            transferredHeight: (t.transferred / this.maxTransactionValue) * 100,
-            transactedHeight: (t.transacted / this.maxTransactionValue) * 100
-        }));
-    }
-
     formatCurrency(value: number): string {
         return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
     }
@@ -195,17 +185,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.activeFilter = filter;
         const currentSchool = this.schoolService.getSelectedSchool();
         this.loadDashboardData(currentSchool?.id);
-    }
-
-    get scaleValues() {
-        const step = this.maxTransactionValue / 4;
-        return [
-            this.formatNumber(this.maxTransactionValue),
-            this.formatNumber(this.maxTransactionValue - step),
-            this.formatNumber(this.maxTransactionValue - 2 * step),
-            this.formatNumber(this.maxTransactionValue - 3 * step),
-            '0'
-        ];
     }
 
     async exportToPdf() {
@@ -227,9 +206,5 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         } finally {
             this.isExporting = false;
         }
-    }
-
-    private formatNumber(val: number): string {
-        return val >= 1000 ? (val / 1000).toFixed(val % 1000 === 0 ? 0 : 1) + 'k' : val.toString();
     }
 }

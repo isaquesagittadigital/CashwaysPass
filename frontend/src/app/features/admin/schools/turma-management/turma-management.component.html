@@ -45,10 +45,9 @@
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex justify-center">
-                            <span
-                                [class]="turma.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'"
+                            <span [class]="turma.status ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'"
                                 class="px-3 py-1 text-[10px] font-bold rounded-full uppercase">
-                                {{ turma.status === 'active' ? 'Ativo' : 'Inativo' }}
+                                {{ turma.status ? 'Ativo' : 'Inativo' }}
                             </span>
                         </div>
                     </td>
@@ -138,8 +137,8 @@
                     <div class="form-group">
                         <label>Status</label>
                         <select formControlName="status" class="form-input">
-                            <option value="active">Ativo</option>
-                            <option value="inactive">Inativo</option>
+                            <option [value]="true">Ativo</option>
+                            <option [value]="false">Inativo</option>
                         </select>
                     </div>
                 </div>

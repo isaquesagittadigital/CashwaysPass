@@ -36,7 +36,7 @@ export class TurmaManagementComponent implements OnInit {
             professor_id: [''],
             quantidade_alunos: [0, Validators.required],
             data_inicio: [''],
-            status: ['active']
+            status: [true]
         });
     }
 
@@ -69,7 +69,7 @@ export class TurmaManagementComponent implements OnInit {
     openAddModal() {
         this.isEditing = false;
         this.editingId = null;
-        this.turmaForm.reset({ status: 'active', quantidade_alunos: 0 });
+        this.turmaForm.reset({ status: true, quantidade_alunos: 0 });
         this.showModal = true;
     }
 
