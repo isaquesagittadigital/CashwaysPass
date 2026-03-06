@@ -1,0 +1,17 @@
+name: Increment App Version
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Supabase RPC to Increment Version
+        run: |
+          curl -X POST '${{ secrets.SUPABASE_URL }}/rest/v1/rpc/increment_app_version' \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Content-Type: application/json"

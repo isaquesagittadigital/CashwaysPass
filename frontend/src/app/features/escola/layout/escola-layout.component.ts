@@ -28,6 +28,7 @@ import {
 } from 'lucide-angular';
 import { LogoComponent } from '../../../components/logo/logo.component';
 import { SchoolService, School } from '../../../core/services/school.service';
+import { supabase } from '../../../core/supabase';
 
 @Component({
     selector: 'app-escola-layout',
@@ -66,6 +67,7 @@ export class EscolaLayoutComponent implements OnInit, OnDestroy {
     canChangeSchool = true;
     currentUser: any = null;
     isSchoolUser = false;
+    appVersion: string = 'Carregando...';
     private searchSub?: Subscription;
 
     menuItems = [
@@ -129,6 +131,27 @@ export class EscolaLayoutComponent implements OnInit, OnDestroy {
         ).subscribe((event: any) => {
             this.updateActiveRoute(event.urlAfterRedirects);
         });
+
+        this.loadAppVersion();
+    }
+
+    async loadAppVersion() {
+        try {
+            const { data, error } = await supabase
+                .from('versionamento')
+                .select('version_string')
+                .eq('id', 1)
+                .single();
+
+            if (data && !error) {
+                this.appVersion = 'VERSÃO ' + data.version_string;
+            } else {
+                this.appVersion = 'VERSÃO INDISPONÍVEL';
+            }
+        } catch (e) {
+            console.error('Erro ao buscar versão', e);
+            this.appVersion = 'VERSÃO INDISPONÍVEL';
+        }
     }
 
     private updateActiveRoute(url: string) {

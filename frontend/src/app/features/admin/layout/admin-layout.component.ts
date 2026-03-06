@@ -27,6 +27,7 @@ import {
 } from 'lucide-angular';
 import { LogoComponent } from '../../../components/logo/logo.component';
 import { SchoolService, School } from '../../../core/services/school.service';
+import { supabase } from '../../../core/supabase';
 
 @Component({
     selector: 'app-admin-layout',
@@ -37,6 +38,7 @@ import { SchoolService, School } from '../../../core/services/school.service';
 export class AdminLayoutComponent implements OnInit, OnDestroy {
     sidebarOpen = true;
     activeRoute = 'dashboard';
+    appVersion: string = 'Carregando...';
 
     icons = {
         LayoutDashboard, Users, Building2, Settings, LogOut, Bell, Search,
@@ -62,7 +64,17 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     constructor(
         private router: Router,
         private schoolService: SchoolService
-    ) { }
+    ) {
+        // Select first school by default if none selected
+        this.schoolService.schools$.subscribe(schools => {
+            this.schools = schools;
+            if (schools.length > 0 && !this.selectedSchool) {
+                this.onSchoolChange(schools[0]);
+            }
+        });
+
+        this.loadAppVersion();
+    }
 
     ngOnInit() {
         this.schoolService.schools$.subscribe(s => this.schools = s);
@@ -75,6 +87,25 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         ).subscribe((event: any) => {
             this.updateActiveRoute(event.urlAfterRedirects);
         });
+    }
+
+    async loadAppVersion() {
+        try {
+            const { data, error } = await supabase
+                .from('versionamento')
+                .select('version_string')
+                .eq('id', 1)
+                .single();
+
+            if (data && !error) {
+                this.appVersion = 'VERSÃO ' + data.version_string;
+            } else {
+                this.appVersion = 'VERSÃO INDISPONÍVEL';
+            }
+        } catch (e) {
+            console.error('Erro ao buscar versão', e);
+            this.appVersion = 'VERSÃO INDISPONÍVEL';
+        }
     }
 
     private updateActiveRoute(url: string) {
