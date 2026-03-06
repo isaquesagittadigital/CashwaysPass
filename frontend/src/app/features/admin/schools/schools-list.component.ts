@@ -19,6 +19,7 @@ export class SchoolsListComponent implements OnInit {
     isLoading = true;
     showDeleteModal = false;
     schoolToDeleteId: string | null = null;
+    deleteLoading = false;
 
     constructor(
         private schoolService: SchoolManagementService,
@@ -64,10 +65,18 @@ export class SchoolsListComponent implements OnInit {
 
     confirmDelete() {
         if (this.schoolToDeleteId) {
-            this.schoolService.deleteSchool(this.schoolToDeleteId).subscribe(() => {
-                this.loadSchools();
-                this.showDeleteModal = false;
-                this.schoolToDeleteId = null;
+            this.deleteLoading = true;
+            this.schoolService.deleteSchool(this.schoolToDeleteId).subscribe({
+                next: () => {
+                    this.deleteLoading = false;
+                    this.showDeleteModal = false;
+                    this.schoolToDeleteId = null;
+                    this.loadSchools();
+                },
+                error: (err) => {
+                    this.deleteLoading = false;
+                    console.error('Erro ao excluir escola:', err);
+                }
             });
         }
     }

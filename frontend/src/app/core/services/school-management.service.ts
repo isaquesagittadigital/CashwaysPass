@@ -37,6 +37,7 @@ export class SchoolManagementService {
             supabase
                 .from('escola')
                 .select('*')
+                .eq('deletado', false)
                 .order('nome_fantasia', { ascending: true })
         ).pipe(
             map(resp => {
@@ -52,6 +53,7 @@ export class SchoolManagementService {
                 .from('escola')
                 .select('*')
                 .eq('id', id)
+                .eq('deletado', false)
                 .single()
         ).pipe(
             map(resp => {
@@ -74,7 +76,7 @@ export class SchoolManagementService {
         return from(
             supabase
                 .from('escola')
-                .delete()
+                .update({ deletado: true })
                 .eq('id', id)
         );
     }

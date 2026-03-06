@@ -25,7 +25,8 @@ export class SchoolService {
         try {
             const { data, error } = await supabase
                 .from('escola')
-                .select('id, nome_fantasia');
+                .select('id, nome_fantasia')
+                .eq('deletado', false);
 
             if (error) throw error;
 
