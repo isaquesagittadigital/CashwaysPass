@@ -226,13 +226,8 @@
 
 
 <!-- ===================== DELETE CONFIRM MODAL ===================== -->
-<app-delete-confirm-modal
-    entityName="produto"
-    entityArticle="o"
-    [isVisible]="showDeleteModal"
-    [isLoading]="deleteLoading"
-    (confirm)="confirmDelete()"
-    (cancel)="closeDeleteModal()">
+<app-delete-confirm-modal entityName="produto" entityArticle="o" [isVisible]="showDeleteModal"
+    [isLoading]="deleteLoading" (onConfirm)="confirmDelete()" (onCancel)="closeDeleteModal()">
 </app-delete-confirm-modal>
 
 

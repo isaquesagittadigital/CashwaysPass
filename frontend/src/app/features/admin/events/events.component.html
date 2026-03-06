@@ -291,5 +291,5 @@
 
 <!-- ===================== MODAL: EXCLUSÃO ===================== -->
 <app-delete-confirm-modal entityName="evento" entityArticle="o" [isVisible]="showDeleteModal"
-    [isLoading]="deleteLoading" (confirm)="confirmDelete()" (cancel)="showDeleteModal = false">
+    [isLoading]="deleteLoading" (onConfirm)="confirmDelete()" (onCancel)="showDeleteModal = false">
 </app-delete-confirm-modal>

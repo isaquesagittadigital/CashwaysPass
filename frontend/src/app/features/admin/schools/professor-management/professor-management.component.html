@@ -126,6 +126,6 @@
 
     <!-- Delete Confirm Modal -->
     <app-delete-confirm-modal entityName="professor" entityArticle="o" [isVisible]="showDeleteModal"
-        [isLoading]="deleteLoading" (confirm)="confirmDelete()" (cancel)="cancelDelete()">
+        [isLoading]="deleteLoading" (onConfirm)="confirmDelete()" (onCancel)="cancelDelete()">
     </app-delete-confirm-modal>
 </div>
