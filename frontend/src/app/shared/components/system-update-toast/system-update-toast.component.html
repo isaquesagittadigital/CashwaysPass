@@ -1,0 +1,52 @@
+<div *ngIf="hasUpdate" class="fixed bottom-6 right-6 z-[9999] animate-in slide-in-from-bottom-10 fade-in duration-500">
+    <div
+        class="bg-white rounded-2xl shadow-2xl border border-blue-100 p-5 max-w-sm flex items-start gap-4 ring-1 ring-black/5 overflow-hidden relative">
+        <!-- Decoration element -->
+        <div class="absolute top-0 left-0 w-1 h-full bg-blue-600"></div>
+
+        <!-- Icon Container -->
+        <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <lucide-icon [img]="icons.RefreshCw" class="w-5 h-5 text-blue-600 animate-spin-slow"></lucide-icon>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1">
+            <h3 class="text-sm font-bold text-gray-900 mb-1">Nova versão disponível!</h3>
+            <p class="text-xs text-gray-500 leading-relaxed mb-4">
+                Uma nova versão do sistema foi lançada. Atualize agora para aproveitar as melhorias.
+            </p>
+
+            <div class="flex items-center gap-3">
+                <button (click)="reloadApp()"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">
+                    Atualizar Agora
+                </button>
+                <button (click)="dismiss()"
+                    class="px-3 py-2 text-gray-400 hover:text-gray-600 text-xs font-medium transition-colors">
+                    Depois
+                </button>
+            </div>
+        </div>
+
+        <!-- Close Button -->
+        <button (click)="dismiss()" class="text-gray-300 hover:text-gray-400 transition-colors">
+            <lucide-icon [img]="icons.X" class="w-4 h-4"></lucide-icon>
+        </button>
+    </div>
+</div>
+
+<style>
+    @keyframes spin-slow {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .animate-spin-slow {
+        animation: spin-slow 8s linear infinite;
+    }
+</style>

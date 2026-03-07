@@ -48,7 +48,7 @@
                 <span *ngIf="sidebarOpen">Sair</span>
             </button>
             <div *ngIf="sidebarOpen" class="w-full text-center mt-6">
-                <span class="text-[12px] font-extrabold text-[#111827]">{{ appVersion }}</span>
+                <span class="text-[10px] font-extrabold text-[#111827]">{{ appVersion }}</span>
             </div>
         </div>
     </aside>
@@ -79,7 +79,7 @@
 
             <div class="flex items-center gap-3 md:gap-6">
                 <!-- School Selector -->
-                <div class="relative min-w-[140px] md:min-w-[200px]">
+                <div class="hidden relative min-w-[140px] md:min-w-[200px]">
                     <select [(ngModel)]="selectedSchool" (ngModelChange)="onSchoolChange($event)"
                         [disabled]="!canChangeSchool"
                         [ngClass]="{'opacity-75 cursor-not-allowed bg-gray-50': !canChangeSchool}"
