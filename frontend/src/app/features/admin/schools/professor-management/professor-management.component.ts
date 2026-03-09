@@ -128,6 +128,7 @@ export class ProfessorManagementComponent implements OnInit {
         this.showModal = false;
         this.isEditing = false;
         this.editingId = null;
+        this.professorForm.reset({ status: 'active' });
     }
 
     openAddModal() {
@@ -170,6 +171,7 @@ export class ProfessorManagementComponent implements OnInit {
                         this.successModalMessage = 'O professor foi cadastrada com sucesso!'; // Following image typo intentionally if that's what was shown, but normally "cadastrado"
                     }
                     this.showSuccessModal = true;
+                    this.closeModal();
 
                     this.loadProfessors();
                 },

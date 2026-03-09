@@ -83,8 +83,8 @@ export class LoginComponent {
       const userType = data.tipo_acesso;
 
       if (this.role === 'admin') {
-        if (userType !== 'Administrador') {
-          this.errorMessage = 'Acesso negado. Este usuário não possui privilégios de Administrador.';
+        if (userType !== 'Admin' && userType !== 'Administrador') {
+          this.errorMessage = 'Acesso negado. Este usuário não possui privilégios de Administrador. Verifique os dados e tente novamente.';
           this.isLoading = false;
           return;
         }
