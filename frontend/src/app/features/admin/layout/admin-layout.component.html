@@ -23,19 +23,14 @@
             </div>
         </div>
 
-        <!-- Menu label -->
-        <div *ngIf="sidebarOpen" class="px-5 pt-6 pb-2">
-            <p class="text-[10px] font-semibold text-gray-300 uppercase tracking-widest">Menu principal</p>
-        </div>
-
         <!-- Navigation -->
-        <nav class="flex-1 px-3 space-y-1 overflow-y-auto" [ngClass]="{ 'pt-4': !sidebarOpen }">
+        <nav class="flex-1 px-3 pt-6 space-y-1 overflow-y-auto">
             <button *ngFor="let item of menuItems" (click)="setActive(item.route)" [ngClass]="item.active
           ? 'bg-gradient-to-r from-[#005bb5]/10 to-[#1a73e8]/5 text-[#005bb5] border-l-[3px] border-[#005bb5]'
-          : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600 border-l-[3px] border-transparent'"
-                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-r-lg text-sm font-medium transition-all duration-200 group">
+          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 border-l-[3px] border-transparent'"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-r-lg text-sm font-semibold transition-all duration-200 group">
                 <lucide-icon [img]="item.icon" class="w-[18px] h-[18px] flex-shrink-0"
-                    [ngClass]="item.active ? 'text-[#005bb5]' : 'text-gray-300 group-hover:text-gray-500'"></lucide-icon>
+                    [ngClass]="item.active ? 'text-[#005bb5]' : 'text-gray-400 group-hover:text-gray-600'"></lucide-icon>
                 <span *ngIf="sidebarOpen" class="truncate">{{ item.label }}</span>
             </button>
         </nav>
@@ -89,8 +84,9 @@
                 <!-- User profile details -->
                 <div class="flex items-center gap-3 border-l border-gray-100 pl-3 md:pl-6">
                     <div class="text-right hidden sm:block leading-tight">
-                        <p class="text-sm font-bold text-gray-800">Admin</p>
-                        <p class="text-[11px] text-gray-400">admin&#64;exemplo.com</p>
+                        <p class="text-sm font-bold text-gray-800">{{ currentUser?.nome_completo || currentUser?.nome ||
+                            'Admin' }}</p>
+                        <p class="text-[11px] text-gray-400">{{ currentUser?.email || 'admin@exemplo.com' }}</p>
                     </div>
                     <div
                         class="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center border border-gray-200 shadow-sm overflow-hidden group hover:border-[#00609b] transition-all cursor-pointer">

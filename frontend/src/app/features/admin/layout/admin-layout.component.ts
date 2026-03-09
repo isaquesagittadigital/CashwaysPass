@@ -19,11 +19,14 @@ import {
     FileText,
     CreditCard,
     BarChart3,
+    BarChart4,
+    LineChart,
     Shield,
     CalendarDays,
     Wallet,
     Package,
-    UserCircle
+    UserCircle,
+    User
 } from 'lucide-angular';
 import { LogoComponent } from '../../../components/logo/logo.component';
 import { SchoolService, School } from '../../../core/services/school.service';
@@ -39,11 +42,12 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     sidebarOpen = true;
     activeRoute = 'dashboard';
     appVersion: string = 'Carregando...';
+    currentUser: any = null;
 
     icons = {
         LayoutDashboard, Users, Building2, Settings, LogOut, Bell, Search,
-        Menu, X, ChevronDown, FileText, CreditCard, BarChart3, Shield, CalendarDays,
-        Wallet, Package, UserCircle
+        Menu, X, ChevronDown, FileText, CreditCard, BarChart3, BarChart4, LineChart, Shield, CalendarDays,
+        Wallet, Package, UserCircle, User
     };
 
     schools: School[] = [];
@@ -51,14 +55,14 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     private searchSub?: Subscription;
 
     menuItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', route: 'dashboard', active: false },
+        { icon: BarChart4, label: 'Dashboard', route: 'dashboard', active: false },
+        { icon: Building2, label: 'Escolas', route: 'escolas', active: false },
         { icon: Wallet, label: 'Carteira', route: 'carteira', active: false },
         { icon: Package, label: 'Produtos', route: 'produtos', active: false },
         { icon: CalendarDays, label: 'Eventos', route: 'eventos', active: false },
-        { icon: Building2, label: 'Escolas', route: 'escolas', active: false },
         { icon: Users, label: 'Usuários', route: 'usuarios', active: false },
-        { icon: BarChart3, label: 'Relatórios', route: 'relatorios', active: false },
-        { icon: UserCircle, label: 'Perfil', route: 'perfil', active: false },
+        { icon: LineChart, label: 'Relatórios', route: 'relatorios', active: false },
+        { icon: User, label: 'Perfil', route: 'perfil', active: false },
     ];
 
     constructor(
@@ -77,6 +81,15 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+            try {
+                this.currentUser = JSON.parse(storedUser);
+            } catch (e) {
+                console.error('Error parsing user data', e);
+            }
+        }
+
         this.schoolService.schools$.subscribe(s => this.schools = s);
         this.schoolService.selectedSchool$.subscribe(s => this.selectedSchool = s);
 

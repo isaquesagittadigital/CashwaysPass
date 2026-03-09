@@ -20,7 +20,9 @@ import {
     Download,
     ChevronDown,
     ArrowUpDown,
-    Eye
+    Eye,
+    PieChart,
+    BarChart
 } from 'lucide-angular';
 import { AdminDashboardService, DashboardStats, TransactionDay } from '../../../core/services/admin-dashboard.service';
 import { SchoolService } from '../../../core/services/school.service';
@@ -45,7 +47,7 @@ interface ChartSegment {
 export class AdminDashboardComponent implements OnInit, OnDestroy {
     icons = {
         Building2, Users, CreditCard, TrendingUp, ArrowUpRight, ArrowDownRight, CalendarDays, Clock,
-        Share2, Plus, ShoppingBag, Unlock, Tag, Download, ChevronDown, ArrowUpDown, Eye
+        Share2, Plus, ShoppingBag, Unlock, Tag, Download, ChevronDown, ArrowUpDown, Eye, PieChart, BarChart
     };
 
     activeFilter = '7 dias';
@@ -59,7 +61,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     ];
 
     turmasSummary: any[] = [];
-    transactionFilter: '7 dias' | '12 meses' = '7 dias';
+
+    hasDonutData = false;
+    hasBarData = false;
 
     // Dynamic Donut Data
     distributionData: ChartSegment[] = [
@@ -150,6 +154,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     updateDonutChart(data: DashboardStats) {
         const total = data.totalInvested + data.totalSpent + data.freeBalance + data.purposeBalance;
 
+        this.hasDonutData = total > 0;
+
         if (total === 0) {
             this.distributionData.forEach(segment => {
                 segment.percentage = 0;
@@ -184,13 +190,17 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     async loadTransactions(schoolId?: string) {
         try {
-            const data = await this.dashboardService.getTransactionsSummary(schoolId, this.transactionFilter);
+            const filter = this.activeFilter as any;
+            const data = await this.dashboardService.getTransactionsSummary(schoolId, filter);
             this.transactionsData = data || [];
 
             // Calculate max value to build the Y-axis scale dynamically
             let maxVal = 0;
+            this.hasBarData = false;
+
             this.transactionsData.forEach(d => {
                 const dayMax = Math.max(d.transacted || 0, d.transferred || 0);
+                if (dayMax > 0) this.hasBarData = true;
                 if (dayMax > maxVal) maxVal = dayMax;
             });
 
@@ -210,12 +220,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
             console.error('Error loading transactions data:', error);
             this.transactionsData = [];
         }
-    }
-
-    setTransactionFilter(filter: '7 dias' | '12 meses') {
-        this.transactionFilter = filter;
-        const currentSchool = this.schoolService.getSelectedSchool();
-        this.loadTransactions(currentSchool?.id);
     }
 
     async exportToPdf() {

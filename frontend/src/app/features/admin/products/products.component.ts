@@ -21,6 +21,7 @@ import {
 import { ProdutoService, Produto, ProdutoForm } from '../../../core/services/produto.service';
 import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
 import { SchoolService, School } from '../../../core/services/school.service';
+import { supabase } from '../../../core/supabase';
 
 @Component({
     selector: 'app-products',
@@ -36,6 +37,8 @@ export class ProductsComponent implements OnInit, OnDestroy {
     loading = false;
     searchTerm = '';
     selectedSchoolId: string | null = null;
+    turmas: any[] = [];
+    selectedTurma: string = '';
     private schoolSub?: Subscription;
 
     // Form Modal
@@ -66,6 +69,8 @@ export class ProductsComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.schoolSub = this.schoolService.selectedSchool$.subscribe(s => {
             this.selectedSchoolId = s?.id || null;
+            this.selectedTurma = '';
+            this.loadTurmas();
             this.loadProducts();
         });
     }
@@ -95,6 +100,17 @@ export class ProductsComponent implements OnInit, OnDestroy {
             this.searchTerm
         );
         this.loading = false;
+    }
+
+    async loadTurmas() {
+        this.turmas = [];
+        if (!this.selectedSchoolId) return;
+        try {
+            const { data } = await supabase.from('turma').select('id, serie, nome').eq('escola_id', this.selectedSchoolId);
+            this.turmas = data || [];
+        } catch (error) {
+            console.error('Error loading turmas', error);
+        }
     }
 
     onSearch() {

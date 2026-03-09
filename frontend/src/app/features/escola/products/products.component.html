@@ -33,8 +33,10 @@
         <!-- Filter Bar -->
         <div class="flex items-center justify-between gap-4 mb-6 flex-wrap">
             <div class="flex items-center gap-3 flex-1">
-                <select class="px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 bg-white">
-                    <option>Todas as turmas</option>
+                <select [(ngModel)]="selectedTurma" (change)="onSearch()"
+                    class="px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 bg-white">
+                    <option value="">Todas as turmas</option>
+                    <option *ngFor="let turma of turmas" [value]="turma.id">{{ turma.serie }} {{ turma.nome }}</option>
                 </select>
                 <div class="relative flex-1 max-w-sm">
                     <lucide-icon [img]="icons.Search"
