@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { SchoolRegistrationService, AlunoData } from '../../registration.service';
+import { SchoolService } from '../../../../../core/services/school.service';
 import { LucideAngularModule, Upload, Plus, Trash2, Edit } from 'lucide-angular';
 import { Papa } from 'ngx-papaparse';
 import { Router } from '@angular/router';
@@ -26,7 +27,8 @@ export class StepAlunoComponent implements OnInit {
         private fb: FormBuilder,
         private registrationService: SchoolRegistrationService,
         private papa: Papa,
-        private router: Router
+        private router: Router,
+        private schoolService: SchoolService
     ) {
         this.alunoForm = this.fb.group({
             turmaId: ['', Validators.required],
@@ -95,6 +97,7 @@ export class StepAlunoComponent implements OnInit {
     }
 
     onFinish() {
+        this.schoolService.loadSchools(); // Reload the schools so the dashboard dropdown updates
         this.router.navigate(['/admin/dashboard']);
     }
 }

@@ -78,6 +78,7 @@
                 <!-- School Selector -->
                 <div class="relative min-w-[140px] md:min-w-[200px]">
                     <select [(ngModel)]="selectedSchool" (ngModelChange)="onSchoolChange($event)"
+                        [compareWith]="compareSchools"
                         class="w-full bg-white border border-gray-200 rounded-lg px-2 md:px-4 py-2 text-xs md:text-sm font-semibold text-gray-700 outline-none appearance-none focus:border-[#00609b] transition-all cursor-pointer shadow-sm pr-8 md:pr-10">
                         <option *ngFor="let school of schools" [ngValue]="school">{{ school.name }}</option>
                     </select>

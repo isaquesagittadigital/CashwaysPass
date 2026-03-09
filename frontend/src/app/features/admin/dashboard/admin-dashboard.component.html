@@ -21,7 +21,7 @@
                 Exportar
             </button>
 
-            <button class="btn-add">
+            <button class="btn-add" routerLink="/admin/escolas/cadastro">
                 <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
                 Cadastrar escola
             </button>
@@ -79,9 +79,10 @@
             <p class="chart-subtitle">Valor transferido vs transacionado no período.</p>
 
             <div class="flex items-center gap-6 mt-6 border-b border-gray-100 pb-2">
-                <span
-                    class="text-sm font-semibold text-[#00609b] border-b-2 border-[#00609b] pb-2 cursor-pointer">Semanal</span>
-                <span class="text-sm font-medium text-gray-400 cursor-pointer hover:text-gray-600 pb-2">Mensal</span>
+                <span (click)="setTransactionFilter('7 dias')" class="text-sm font-semibold cursor-pointer pb-2"
+                    [ngClass]="transactionFilter === '7 dias' ? 'text-[#00609b] border-b-2 border-[#00609b]' : 'text-gray-400 hover:text-gray-600'">Semanal</span>
+                <span (click)="setTransactionFilter('12 meses')" class="text-sm font-medium cursor-pointer pb-2"
+                    [ngClass]="transactionFilter === '12 meses' ? 'text-[#00609b] border-b-2 border-[#00609b]' : 'text-gray-400 hover:text-gray-600'">Mensal</span>
             </div>
 
             <div class="flex items-center justify-end gap-6 mt-6">

@@ -32,7 +32,7 @@
                         </div>
                         <div>
                             <label class="block text-[13px] font-bold text-gray-700 mb-1.5">CNPJ *</label>
-                            <input type="text" formControlName="cnpj"
+                            <input type="text" formControlName="cnpj" mask="00.000.000/0001-00"
                                 class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm"
                                 placeholder="00.000.000/0001-00">
                         </div>
@@ -89,12 +89,12 @@
                         </div>
                         <div>
                             <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Telefone Comercial *</label>
-                            <input type="tel" formControlName="telefone_contato"
+                            <input type="tel" formControlName="telefone_contato" mask="(00) 00000-0000||(00) 0000-0000"
                                 class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm">
                         </div>
                         <div>
                             <label class="block text-[13px] font-bold text-gray-700 mb-1.5">WhatsApp *</label>
-                            <input type="tel" formControlName="whatsapp"
+                            <input type="tel" formControlName="whatsapp" mask="(00) 00000-0000||(00) 0000-0000"
                                 class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm">
                         </div>
                     </div>
@@ -106,7 +106,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
                             <label class="block text-[13px] font-bold text-gray-700 mb-1.5">CEP *</label>
-                            <input type="text" formControlName="cep"
+                            <input type="text" formControlName="cep" mask="00000-000"
                                 class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm">
                         </div>
                         <div class="md:col-span-2">

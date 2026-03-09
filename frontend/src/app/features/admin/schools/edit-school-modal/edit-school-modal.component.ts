@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule, X, Save } from 'lucide-angular';
 import { SchoolManagementService } from '../../../../core/services/school-management.service';
+import { NgxMaskDirective } from 'ngx-mask';
 
 @Component({
     selector: 'app-edit-school-modal',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+    imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, NgxMaskDirective],
     templateUrl: './edit-school-modal.component.html',
     styleUrls: ['./edit-school-modal.component.css']
 })

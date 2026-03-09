@@ -4,11 +4,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { SchoolRegistrationService } from '../../registration.service';
 import { LucideAngularModule } from 'lucide-angular';
 import { Router } from '@angular/router';
+import { NgxMaskDirective } from 'ngx-mask';
 
 @Component({
     selector: 'app-step-school',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+    imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, NgxMaskDirective],
     templateUrl: './step-school.component.html',
     styleUrls: ['./step-school.component.css']
 })

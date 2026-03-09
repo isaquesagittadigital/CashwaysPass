@@ -8,7 +8,7 @@
         </div>
         <div class="form-group">
             <label>CNPJ *</label>
-            <input type="text" formControlName="cnpj" (input)="applyCnpjMask($event)" class="form-input"
+            <input type="text" formControlName="cnpj" mask="00.000.000/0001-00" class="form-input"
                 placeholder="00.000.000/0001-00">
             <p *ngIf="schoolForm.get('cnpj')?.touched && schoolForm.get('cnpj')?.hasError('required')"
                 class="text-[10px] text-red-500 mt-1 animate-in fade-in slide-in-from-top-1">Campo obrigatório</p>
@@ -163,22 +163,21 @@
         </div>
         <div class="form-group">
             <label>Telefone *</label>
-            <input type="text" formControlName="telefone" (input)="applyPhoneMask('telefone', $event)"
-                class="form-input" placeholder="(DDD)">
+            <input type="text" formControlName="telefone" mask="(00) 00000-0000||(00) 0000-0000" class="form-input"
+                placeholder="(DDD)">
             <p *ngIf="schoolForm.get('telefone')?.touched && schoolForm.get('telefone')?.hasError('required')"
                 class="text-[10px] text-red-500 mt-1">Campo obrigatório</p>
         </div>
         <div class="form-group">
             <label>Whatsapp *</label>
-            <input type="text" formControlName="whatsapp" (input)="applyPhoneMask('whatsapp', $event)"
-                class="form-input" placeholder="(DDD)">
+            <input type="text" formControlName="whatsapp" mask="(00) 00000-0000||(00) 0000-0000" class="form-input"
+                placeholder="(DDD)">
             <p *ngIf="schoolForm.get('whatsapp')?.touched && schoolForm.get('whatsapp')?.hasError('required')"
                 class="text-[10px] text-red-500 mt-1">Campo obrigatório</p>
         </div>
         <div class="form-group">
             <label>CEP *</label>
-            <input type="text" formControlName="cep" (input)="applyCepMask($event)" class="form-input"
-                placeholder="01234-567">
+            <input type="text" formControlName="cep" mask="00000-000" class="form-input" placeholder="01234-567">
             <p *ngIf="schoolForm.get('cep')?.touched && schoolForm.get('cep')?.hasError('required')"
                 class="text-[10px] text-red-500 mt-1">Campo obrigatório</p>
         </div>

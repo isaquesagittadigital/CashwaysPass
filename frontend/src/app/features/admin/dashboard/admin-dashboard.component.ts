@@ -59,6 +59,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     ];
 
     turmasSummary: any[] = [];
+    transactionFilter: '7 dias' | '12 meses' = '7 dias';
 
     // Dynamic Donut Data
     distributionData: ChartSegment[] = [
@@ -69,15 +70,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     ];
 
     // Bar chart data
-    transactionsData: TransactionDay[] = [
-        { day: 'Seg', transacted: 8200, transferred: 4100 },
-        { day: 'Ter', transacted: 6700, transferred: 3350 },
-        { day: 'Qua', transacted: 6700, transferred: 3350 },
-        { day: 'Qui', transacted: 7800, transferred: 3900 },
-        { day: 'Sex', transacted: 7800, transferred: 3900 },
-        { day: 'Sáb', transacted: 9800, transferred: 4900 },
-        { day: 'Dom', transacted: 7100, transferred: 3550 }
-    ];
+    transactionsData: TransactionDay[] = [];
     maxTransactionValue = 16000;
     scaleValues = [16000, 12800, 8000, 4000, 0];
 
@@ -118,6 +111,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
                 spent: this.formatCurrency(t.spent),
                 balance: this.formatCurrency(t.balance)
             }));
+
+            await this.loadTransactions(schoolId);
         } catch (error) {
             console.error('Error loading dashboard data:', error);
         }
@@ -185,6 +180,42 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.activeFilter = filter;
         const currentSchool = this.schoolService.getSelectedSchool();
         this.loadDashboardData(currentSchool?.id);
+    }
+
+    async loadTransactions(schoolId?: string) {
+        try {
+            const data = await this.dashboardService.getTransactionsSummary(schoolId, this.transactionFilter);
+            this.transactionsData = data || [];
+
+            // Calculate max value to build the Y-axis scale dynamically
+            let maxVal = 0;
+            this.transactionsData.forEach(d => {
+                const dayMax = Math.max(d.transacted || 0, d.transferred || 0);
+                if (dayMax > maxVal) maxVal = dayMax;
+            });
+
+            // Give some padding at the top of the chart (e.g. 20% extra) and ensure it's at least > 0
+            this.maxTransactionValue = maxVal > 0 ? (maxVal * 1.2) : 1000;
+
+            // Generate 5 points on the scale
+            this.scaleValues = [
+                this.maxTransactionValue,
+                this.maxTransactionValue * 0.75,
+                this.maxTransactionValue * 0.5,
+                this.maxTransactionValue * 0.25,
+                0
+            ];
+
+        } catch (error) {
+            console.error('Error loading transactions data:', error);
+            this.transactionsData = [];
+        }
+    }
+
+    setTransactionFilter(filter: '7 dias' | '12 meses') {
+        this.transactionFilter = filter;
+        const currentSchool = this.schoolService.getSelectedSchool();
+        this.loadTransactions(currentSchool?.id);
     }
 
     async exportToPdf() {
