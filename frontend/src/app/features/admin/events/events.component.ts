@@ -126,14 +126,8 @@ export class EventsComponent implements OnInit, OnDestroy {
     }
 
     // --- Helpers ---
-    getEventStatus(data: string): { label: string, class: string } {
-        if (!data) return { label: 'Agendado', class: 'bg-blue-100 text-blue-700' };
-
-        const eventDate = new Date(data + 'T00:00:00');
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (eventDate < today) {
+    getEventStatus(ativo: boolean): { label: string, class: string } {
+        if (!ativo) {
             return { label: 'Realizado', class: 'bg-gray-100 text-gray-500' };
         }
         return { label: 'Agendado', class: 'bg-blue-100 text-blue-700' };

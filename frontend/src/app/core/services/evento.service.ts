@@ -36,10 +36,9 @@ export class EventoService {
             }
 
             if (status === 'Agendado') {
-                // Simplification: logic for agendado vs realizado could be date based
-                query = query.gte('data_evento', new Date().toISOString().split('T')[0]);
+                query = query.eq('ativo', true);
             } else if (status === 'Realizado') {
-                query = query.lt('data_evento', new Date().toISOString().split('T')[0]);
+                query = query.eq('ativo', false);
             }
 
             const { data, error } = await query;
