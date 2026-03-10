@@ -85,12 +85,16 @@ export class EscolaLayoutComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit() {
-        const userStr = localStorage.getItem('currentUser');
+        const userStr = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
         let userEscolaId: string | null = null;
         let isSchoolUser = false;
 
         if (userStr) {
             this.currentUser = JSON.parse(userStr);
+            if (this.currentUser.sessionExpiration && new Date().getTime() > this.currentUser.sessionExpiration) {
+                this.logout();
+                return;
+            }
             this.isSchoolUser = this.currentUser.tipo_acesso === 'Escola';
             userEscolaId = this.currentUser.escola_id;
             this.canChangeSchool = !this.isSchoolUser;
@@ -181,6 +185,7 @@ export class EscolaLayoutComponent implements OnInit, OnDestroy {
 
     logout() {
         localStorage.removeItem('currentUser');
+        sessionStorage.removeItem('currentUser');
         this.router.navigate(['/']);
     }
 

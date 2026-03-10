@@ -37,9 +37,13 @@ export class WalletComponent implements OnInit, OnDestroy {
     loading = false;
 
     // Filters
-    turmaFilter = '';
-    searchTerm = '';
     turmas: any[] = [];
+    listOfStudents: any[] = [];
+    turmaFilter = '';
+    alunoFilter = '';
+    searchTerm = '';
+    statusFilter = 'Todos';
+    schoolFilter = '';
 
     // Schools
     schools: School[] = [];
@@ -84,8 +88,11 @@ export class WalletComponent implements OnInit, OnDestroy {
         this.schoolSub = this.schoolService.schools$.subscribe(s => this.schools = s);
         this.selectedSchoolSub = this.schoolService.selectedSchool$.subscribe(s => {
             this.selectedSchoolId = s?.id || null;
-            if (this.selectedSchoolId) {
-                this.loadTurmas(this.selectedSchoolId);
+            if (!this.schoolFilter && this.selectedSchoolId) {
+                this.schoolFilter = this.selectedSchoolId;
+            }
+            if (this.schoolFilter) {
+                this.loadTurmas(this.schoolFilter);
             }
             this.loadStudents();
         });
@@ -103,15 +110,23 @@ export class WalletComponent implements OnInit, OnDestroy {
             return;
         }
         this.loading = true;
+        
+        // Use schoolFilter if set, otherwise use the global selectedSchoolId
+        const activeSchoolId = this.schoolFilter || this.selectedSchoolId;
+
         const { students, total } = await this.carteiraService.getStudentsWallet(
-            this.selectedSchoolId,
-            'Todos',
+            activeSchoolId || undefined,
+            this.statusFilter,
             this.searchTerm,
             this.currentPage,
             this.pageSize,
             this.turmaFilter || undefined
         );
-        this.students = students;
+        
+        this.students = this.alunoFilter 
+            ? students.filter(s => s.id === this.alunoFilter || s.aluno_id === this.alunoFilter)
+            : students;
+
         this.totalStudents = total;
         this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
         this.loading = false;
@@ -124,6 +139,10 @@ export class WalletComponent implements OnInit, OnDestroy {
             },
             error: (err) => console.error('Error loading turmas:', err)
         });
+
+        // Also load all students names for the aluno filter
+        const { students } = await this.carteiraService.getStudentsWallet(schoolId, 'Todos', '', 1, 1000);
+        this.listOfStudents = students.map(s => ({ id: s.id, aluno_id: s.aluno_id, nome: s.nome }));
     }
 
     onFilterChange() {
@@ -137,12 +156,34 @@ export class WalletComponent implements OnInit, OnDestroy {
     }
 
     get hasFilters(): boolean {
-        return !!this.searchTerm || !!this.turmaFilter;
+        return !!this.searchTerm || !!this.turmaFilter || this.statusFilter !== 'Todos' || !!this.schoolFilter || !!this.alunoFilter;
+    }
+
+    onAlunoChange() {
+        this.currentPage = 1;
+        this.loadStudents();
+    }
+
+    onSchoolChange() {
+        if (this.schoolFilter) {
+            this.loadTurmas(this.schoolFilter);
+            this.turmaFilter = ''; // Reset turma when school changes
+        } else {
+            this.turmas = [];
+            this.turmaFilter = '';
+        }
+        this.onFilterChange();
+    }
+
+    onStatusChange() {
+        this.onFilterChange();
     }
 
     clearFilters() {
         this.searchTerm = '';
         this.turmaFilter = '';
+        this.statusFilter = 'Todos';
+        this.schoolFilter = this.selectedSchoolId || '';
         this.currentPage = 1;
         this.loadStudents();
     }

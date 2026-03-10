@@ -97,7 +97,7 @@
 
                 <!-- Footer Actions -->
                 <div class="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100">
-                    <button (click)="openEditModal(ev)"
+                    <button (click)="openDetailsModal(ev)"
                         class="flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition">
                         <lucide-icon [img]="icons.Eye" class="w-4 h-4"></lucide-icon>
                         Ver evento
@@ -293,3 +293,70 @@
 <app-delete-confirm-modal entityName="evento" entityArticle="o" [isVisible]="showDeleteModal"
     [isLoading]="deleteLoading" (onConfirm)="confirmDelete()" (onCancel)="showDeleteModal = false">
 </app-delete-confirm-modal>
+
+<!-- ===================== MODAL: DETALHES DO EVENTO ===================== -->
+<div *ngIf="showDetailsModal && selectedDetailsEvent" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto flex flex-col animate-scale-up">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+            <h2 class="text-lg font-bold text-gray-900">Detalhes do evento</h2>
+            <button (click)="closeDetailsModal()" class="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+                <lucide-icon [img]="icons.X" class="w-5 h-5 text-gray-400"></lucide-icon>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 space-y-6">
+            <!-- Capa and Status -->
+            <div class="relative w-full h-48 bg-gray-100 rounded-xl overflow-hidden">
+                <img *ngIf="selectedDetailsEvent.capa_url" [src]="selectedDetailsEvent.capa_url" class="w-full h-full object-cover">
+                <div *ngIf="!selectedDetailsEvent.capa_url" class="w-full h-full flex items-center justify-center">
+                    <lucide-icon [img]="icons.CalendarDays" class="w-12 h-12 text-gray-300"></lucide-icon>
+                </div>
+                <!-- Status Badge -->
+                <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] font-bold shadow-sm"
+                     [ngClass]="selectedDetailsEvent.ativo ? 'text-[#005bb5]' : 'text-gray-500'">
+                    {{ selectedDetailsEvent.ativo ? 'Agendado' : 'Realizado' }}
+                </div>
+            </div>
+
+            <!-- Title & Description -->
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">{{ selectedDetailsEvent.nome }}</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">{{ selectedDetailsEvent.descricao_curta }}</p>
+            </div>
+
+            <!-- Data do evento Card -->
+            <div class="bg-white border border-gray-200 rounded-xl p-4">
+                <h4 class="text-xs font-bold text-gray-900 mb-3">Data do evento</h4>
+                <div class="flex items-center gap-3">
+                    <lucide-icon [img]="icons.CalendarDays" class="w-5 h-5 text-[#005bb5]"></lucide-icon>
+                    <span class="text-sm text-gray-600">{{ formatDate(selectedDetailsEvent.data_evento) }}</span>
+                </div>
+            </div>
+
+            <!-- Lojistas Vinculados Card -->
+            <div class="bg-gray-50/50 border border-gray-100 rounded-xl p-4">
+                <h4 class="text-xs font-bold text-gray-900 mb-3">
+                    Lojista(s) vinculado(s) ({{ selectedDetailsEvent.lojistas_convidados?.length || 0 }})
+                </h4>
+                
+                <div class="space-y-2" *ngIf="(selectedDetailsEvent.lojistas_convidados?.length || 0) > 0">
+                    <div *ngFor="let email of selectedDetailsEvent.lojistas_convidados" class="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <lucide-icon [img]="icons.Users" class="w-4 h-4 text-[#005bb5]"></lucide-icon>
+                            <span class="text-sm text-gray-700">{{ email }}</span>
+                        </div>
+                        <span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200">
+                            Convite enviado
+                        </span>
+                    </div>
+                </div>
+
+                <div *ngIf="(selectedDetailsEvent.lojistas_convidados?.length || 0) === 0" class="text-center py-4 text-sm text-gray-400">
+                    Nenhum lojista vinculado a este evento.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

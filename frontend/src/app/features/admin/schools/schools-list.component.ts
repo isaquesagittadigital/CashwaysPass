@@ -95,7 +95,7 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        const userStr = localStorage.getItem('currentUser');
+        const userStr = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
         if (userStr) {
             const user = JSON.parse(userStr);
             if (user.tipo_acesso === 'Escola') {

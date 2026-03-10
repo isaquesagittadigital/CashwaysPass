@@ -13,6 +13,8 @@ export interface Produto {
     data_vigencia_final: string;
     limite_por_aluno: number;
     status: boolean;
+    turma_ids: string[];
+    quantidade: number;
 }
 
 export interface ProdutoForm {
@@ -25,6 +27,8 @@ export interface ProdutoForm {
     data_vigencia_final: string;
     limite_por_aluno: number;
     status: boolean;
+    turma_ids: string[];
+    quantidade: number;
 }
 
 @Injectable({
@@ -65,6 +69,8 @@ export class ProdutoService {
                 data_vigencia_final: p['Data_vigencia_final'] || '',
                 limite_por_aluno: Number(p['limete_por_aluno']) || 0,
                 status: p['Status'] ?? true,
+                turma_ids: p.turma_ids || [],
+                quantidade: Number(p.quantidade) || 0,
             }));
         } catch (error) {
             console.error('Error fetching products:', error);
@@ -94,6 +100,8 @@ export class ProdutoService {
                 data_vigencia_final: data['Data_vigencia_final'] || '',
                 limite_por_aluno: Number(data['limete_por_aluno']) || 0,
                 status: data['Status'] ?? true,
+                turma_ids: data.turma_ids || [],
+                quantidade: Number(data.quantidade) || 0,
             };
         } catch (error) {
             console.error('Error fetching product:', error);
@@ -114,7 +122,9 @@ export class ProdutoService {
                     'Data_vigencia_incio': product.data_vigencia_inicio,
                     'Data_vigencia_final': product.data_vigencia_final,
                     'limete_por_aluno': product.limite_por_aluno,
-                    'Status': product.status
+                    'Status': product.status,
+                    turma_ids: product.turma_ids,
+                    quantidade: product.quantidade
                 });
 
             if (error) throw error;
@@ -137,7 +147,9 @@ export class ProdutoService {
                     'Data_vigencia_incio': product.data_vigencia_inicio,
                     'Data_vigencia_final': product.data_vigencia_final,
                     'limete_por_aluno': product.limite_por_aluno,
-                    'Status': product.status
+                    'Status': product.status,
+                    turma_ids: product.turma_ids,
+                    quantidade: product.quantidade
                 })
                 .eq('id', id);
 

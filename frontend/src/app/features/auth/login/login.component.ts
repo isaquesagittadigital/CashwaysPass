@@ -89,7 +89,15 @@ export class LoginComponent {
           return;
         }
 
-        localStorage.setItem('currentUser', JSON.stringify(data));
+        const userData = { ...data };
+        if (this.rememberMe) {
+          userData.sessionExpiration = new Date().getTime() + 30 * 24 * 60 * 60 * 1000;
+          localStorage.setItem('currentUser', JSON.stringify(userData));
+          sessionStorage.removeItem('currentUser');
+        } else {
+          sessionStorage.setItem('currentUser', JSON.stringify(userData));
+          localStorage.removeItem('currentUser');
+        }
         this.router.navigate(['/admin']);
       } else if (this.role === 'school') {
         if (userType !== 'Escola') {
@@ -98,7 +106,15 @@ export class LoginComponent {
           return;
         }
 
-        localStorage.setItem('currentUser', JSON.stringify(data));
+        const userData = { ...data };
+        if (this.rememberMe) {
+          userData.sessionExpiration = new Date().getTime() + 30 * 24 * 60 * 60 * 1000;
+          localStorage.setItem('currentUser', JSON.stringify(userData));
+          sessionStorage.removeItem('currentUser');
+        } else {
+          sessionStorage.setItem('currentUser', JSON.stringify(userData));
+          localStorage.removeItem('currentUser');
+        }
         this.router.navigate(['/escola']);
       }
     } catch (err) {

@@ -86,3 +86,17 @@ body {
 .animate-slide-in-right {
   animation: slideInRight 0.3s ease-out forwards;
 }
+
+/* Chrome, Safari, Edge, Opera - Remove spin buttons */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+/* Firefox - Remove spin buttons */
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

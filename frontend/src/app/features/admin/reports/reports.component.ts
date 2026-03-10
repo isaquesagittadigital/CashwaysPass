@@ -91,7 +91,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
         try {
             this.metrics = await this.reportService.getReportMetrics(this.selectedSchoolId || undefined, this.activeFilter);
             this.transactionPoints = await this.reportService.getTransactionHistory(this.selectedSchoolId || undefined, this.activeFilter);
-            this.billingPoints = await this.reportService.getBillingHistory(this.selectedSchoolId || undefined, this.billingModel);
+            this.billingPoints = await this.reportService.getBillingHistory(this.selectedSchoolId || undefined, this.billingModel, this.activeFilter);
         } catch (error) {
             console.error('Error loading report data:', error);
         } finally {
@@ -118,6 +118,11 @@ export class ReportsComponent implements OnInit, OnDestroy {
         this.router.navigate(['/admin/dashboard']);
     }
 
+    openCustomDateFilter() {
+        // Logica para abrir o filtro de data personalizado
+        console.log('Filtro de data personalizado clicado');
+    }
+
     formatCurrency(value: number): string {
         return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
     }
@@ -126,16 +131,40 @@ export class ReportsComponent implements OnInit, OnDestroy {
         return new Intl.NumberFormat('pt-BR').format(value);
     }
 
+    get transactionXLabel(): string {
+        if (this.activeFilter === '24 horas') return 'Horas';
+        if (this.activeFilter === '30 dias') return 'Semanas';
+        if (this.activeFilter === '12 meses') return 'Meses';
+        return 'Dia da semana';
+    }
+
+    get billingXLabel(): string {
+        if (this.activeFilter === '24 horas') return 'Horas';
+        if (this.activeFilter === '7 dias') return 'Dia da semana';
+        if (this.activeFilter === '30 dias') return 'Semanas';
+        return 'Meses';
+    }
+
     // --- Chart Logic ---
+
+    get hasTransactionData(): boolean {
+        return this.transactionPoints.some(p => p.transacted > 0 || p.transferred > 0);
+    }
+
+    get hasBillingData(): boolean {
+        return this.billingPoints.some(p => p.revenue > 0 || p.totalTransfer > 0 || p.transferProvision > 0);
+    }
 
     get maxBarValue(): number {
         const vals = this.transactionPoints.flatMap(p => [p.transacted, p.transferred]);
-        return Math.max(...vals, 16000);
+        const max = Math.max(...vals, 0);
+        return max > 0 ? max * 1.2 : 16000;
     }
 
     get maxLineValue(): number {
         const vals = this.billingPoints.flatMap(p => [p.revenue, p.totalTransfer, p.transferProvision]);
-        return Math.max(...vals, 16000);
+        const max = Math.max(...vals, 0);
+        return max > 0 ? max * 1.2 : 16000;
     }
 
     getBarHeight(value: number): number {

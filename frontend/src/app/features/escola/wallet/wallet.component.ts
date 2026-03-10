@@ -37,9 +37,12 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
     loading = false;
 
     // Filters
-    turmaFilter = '';
-    searchTerm = '';
     turmas: any[] = [];
+    listOfStudents: any[] = [];
+    turmaFilter = '';
+    alunoFilter = '';
+    searchTerm = '';
+    statusFilter = 'Todos';
 
     // Schools
     schools: School[] = [];
@@ -105,13 +108,17 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
         this.loading = true;
         const { students, total } = await this.carteiraService.getStudentsWallet(
             this.selectedSchoolId,
-            'Todos',
+            this.statusFilter,
             this.searchTerm,
             this.currentPage,
             this.pageSize,
             this.turmaFilter || undefined
         );
-        this.students = students;
+        
+        this.students = this.alunoFilter 
+            ? students.filter(s => s.id === this.alunoFilter || s.aluno_id === this.alunoFilter)
+            : students;
+
         this.totalStudents = total;
         this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
         this.loading = false;
@@ -124,6 +131,10 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
             },
             error: (err) => console.error('Error loading turmas:', err)
         });
+
+        // Load students for the filter
+        const { students } = await this.carteiraService.getStudentsWallet(schoolId, 'Todos', '', 1, 1000);
+        this.listOfStudents = students.map(s => ({ id: s.id, aluno_id: s.aluno_id, nome: s.nome }));
     }
 
     onFilterChange() {
@@ -137,12 +148,23 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
     }
 
     get hasFilters(): boolean {
-        return !!this.searchTerm || !!this.turmaFilter;
+        return !!this.searchTerm || !!this.turmaFilter || this.statusFilter !== 'Todos' || !!this.alunoFilter;
+    }
+
+    onAlunoChange() {
+        this.currentPage = 1;
+        this.loadStudents();
+    }
+
+    onStatusChange() {
+        this.onFilterChange();
     }
 
     clearFilters() {
         this.searchTerm = '';
         this.turmaFilter = '';
+        this.statusFilter = 'Todos';
+        this.alunoFilter = '';
         this.currentPage = 1;
         this.loadStudents();
     }

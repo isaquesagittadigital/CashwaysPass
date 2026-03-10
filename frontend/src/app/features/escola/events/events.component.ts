@@ -77,6 +77,10 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
     successTitle = '';
     successMessage = '';
 
+    // Details Modal
+    showDetailsModal = false;
+    selectedDetailsEvent: Evento | null = null;
+
     constructor(
         private eventoService: EventoService,
         private schoolService: SchoolService,
@@ -155,6 +159,16 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
         this.editingEventId = null;
         this.resetForm();
         this.showFormModal = true;
+    }
+
+    openDetailsModal(event: Evento) {
+        this.selectedDetailsEvent = event;
+        this.showDetailsModal = true;
+    }
+
+    closeDetailsModal() {
+        this.showDetailsModal = false;
+        this.selectedDetailsEvent = null;
     }
 
     async openEditModal(event: Evento) {

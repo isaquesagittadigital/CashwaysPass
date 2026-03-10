@@ -81,10 +81,14 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        const storedUser = localStorage.getItem('currentUser');
+        const storedUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
         if (storedUser) {
             try {
                 this.currentUser = JSON.parse(storedUser);
+                if (this.currentUser.sessionExpiration && new Date().getTime() > this.currentUser.sessionExpiration) {
+                    this.logout();
+                    return;
+                }
             } catch (e) {
                 console.error('Error parsing user data', e);
             }
@@ -147,6 +151,8 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     }
 
     logout() {
+        localStorage.removeItem('currentUser');
+        sessionStorage.removeItem('currentUser');
         this.router.navigate(['/']);
     }
 

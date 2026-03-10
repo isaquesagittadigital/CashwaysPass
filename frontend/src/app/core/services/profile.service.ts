@@ -29,7 +29,7 @@ export class ProfileService {
                 .single();
         } else {
             // Fallback to localStorage (manual login)
-            const storedUser = localStorage.getItem('currentUser');
+            const storedUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
             if (!storedUser) return null;
             const userData = JSON.parse(storedUser);
             profileQuery = supabase
@@ -57,7 +57,7 @@ export class ProfileService {
         if (user) {
             userId = user.id;
         } else {
-            const storedUser = localStorage.getItem('currentUser');
+            const storedUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
             if (storedUser) {
                 const userData = JSON.parse(storedUser);
                 const { error } = await supabase
@@ -97,7 +97,7 @@ export class ProfileService {
         if (user) {
             targetId = user.id;
         } else {
-            const storedUser = localStorage.getItem('currentUser');
+            const storedUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
             if (!storedUser) throw new Error('Usuário não autenticado');
             targetId = JSON.parse(storedUser).id;
             queryField = 'id';
@@ -129,7 +129,7 @@ export class ProfileService {
 
     async changePassword(newPassword: string): Promise<void> {
         // In the current implementation, login is manual via 'senha' column in 'usuarios'
-        const storedUser = localStorage.getItem('currentUser');
+        const storedUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
         if (storedUser) {
             const userData = JSON.parse(storedUser);
             const { error } = await supabase

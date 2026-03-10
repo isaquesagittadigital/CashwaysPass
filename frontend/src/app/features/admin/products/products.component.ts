@@ -12,11 +12,13 @@ import {
     Pencil,
     Trash2,
     X,
-    CalendarDays,
+    PlusCircle,
     Users,
-    CheckCircle2,
+    Image,
+    Package,
+    Calendar,
     Upload,
-    Package
+    CheckCircle2
 } from 'lucide-angular';
 import { ProdutoService, Produto, ProdutoForm } from '../../../core/services/produto.service';
 import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
@@ -30,7 +32,7 @@ import { supabase } from '../../../core/supabase';
     templateUrl: './products.component.html',
 })
 export class ProductsComponent implements OnInit, OnDestroy {
-    icons = { ArrowLeft, Search, Plus, Eye, Pencil, Trash2, X, CalendarDays, Users, CheckCircle2, Upload, Package };
+    icons = { ArrowLeft, Search, Plus, Eye, Pencil, Trash2, X, PlusCircle, Users, Image, Package, Calendar, Upload, CheckCircle2 };
 
     // Data
     products: Produto[] = [];
@@ -39,6 +41,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
     selectedSchoolId: string | null = null;
     turmas: any[] = [];
     selectedTurma: string = '';
+    selectedTurmaId: string = ''; // Used for the form select
     private schoolSub?: Subscription;
 
     // Form Modal
@@ -54,6 +57,10 @@ export class ProductsComponent implements OnInit, OnDestroy {
     showDeleteModal = false;
     deleteProductId: string | null = null;
     deleteLoading = false;
+
+    // Details Modal
+    showDetailsModal = false;
+    selectedDetailsProduct: Produto | null = null;
 
     // Success Toast
     showSuccessToast = false;
@@ -89,7 +96,9 @@ export class ProductsComponent implements OnInit, OnDestroy {
             data_vigencia_inicio: '',
             data_vigencia_final: '',
             limite_por_aluno: 2,
-            status: true
+            status: true,
+            turma_ids: [],
+            quantidade: 0
         };
     }
 
@@ -121,6 +130,22 @@ export class ProductsComponent implements OnInit, OnDestroy {
         this.router.navigate(['/admin/dashboard']);
     }
 
+    getTurmaName(turmaId: string): string {
+        const turma = this.turmas.find(t => t.id === turmaId);
+        return turma ? `${turma.serie ? turma.serie + ' ' : ''}${turma.nome}` : 'Turma desconhecida';
+    }
+
+    addTurma() {
+        if (this.selectedTurmaId && !this.form.turma_ids.includes(this.selectedTurmaId)) {
+            this.form.turma_ids.push(this.selectedTurmaId);
+        }
+        this.selectedTurmaId = '';
+    }
+
+    removeTurma(id: string) {
+        this.form.turma_ids = this.form.turma_ids.filter(t => t !== id);
+    }
+
     // --- Currency formatting ---
     formatCurrency(value: number): string {
         return `R$${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -143,6 +168,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
         this.form = this.getEmptyForm();
         this.imageFile = null;
         this.imagePreview = '';
+        this.selectedTurmaId = '';
         this.showFormModal = true;
     }
 
@@ -158,11 +184,24 @@ export class ProductsComponent implements OnInit, OnDestroy {
             data_vigencia_inicio: product.data_vigencia_inicio,
             data_vigencia_final: product.data_vigencia_final,
             limite_por_aluno: product.limite_por_aluno,
-            status: product.status
+            status: product.status,
+            turma_ids: [...(product.turma_ids || [])],
+            quantidade: product.quantidade || 0
         };
+        this.selectedTurmaId = '';
         this.imageFile = null;
         this.imagePreview = product.url_imagem || '';
         this.showFormModal = true;
+    }
+
+    openDetailsModal(product: Produto) {
+        this.selectedDetailsProduct = product;
+        this.showDetailsModal = true;
+    }
+
+    closeDetailsModal() {
+        this.showDetailsModal = false;
+        this.selectedDetailsProduct = null;
     }
 
     closeFormModal() {
