@@ -11,6 +11,7 @@ export interface Usuario {
     nome?: string;
     email: string;
     cpf: string;
+    telefone?: string;
     escola_id: string;
     turmaID?: string;
     tipo_acesso: UserTipoAcesso;
@@ -150,9 +151,14 @@ export class UsuarioService {
         try {
             const { data, error } = await supabase
                 .from('escola')
-                .select('id, nome');
+                .select('id, nome_fantasia');
             if (error) throw error;
-            return data || [];
+            
+            // Map nome_fantasia to nome for consistency in the UI dropdowns if needed
+            return (data || []).map(s => ({
+                id: s.id,
+                nome: s.nome_fantasia || 'Sem Nome'
+            }));
         } catch (error) {
             console.error('Error fetching schools:', error);
             return [];
@@ -171,6 +177,28 @@ export class UsuarioService {
         } catch (error) {
             console.error('Error fetching turmas:', error);
             return [];
+        }
+    }
+
+    async sendWelcomeEmail(email: string, name: string): Promise<{ success: boolean; error?: any }> {
+        try {
+            const response = await fetch('http://localhost:3000/email/welcome', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, name })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText);
+            }
+
+            return { success: true };
+        } catch (error: any) {
+            console.error('Error sending welcome email:', error);
+            return { success: false, error };
         }
     }
 }

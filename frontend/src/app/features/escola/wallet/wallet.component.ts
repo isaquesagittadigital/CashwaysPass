@@ -13,20 +13,23 @@ import {
     X as XIcon,
     RefreshCw,
     CreditCard,
-    Filter
+    Filter,
+    Plus
 } from 'lucide-angular';
 import { CarteiraService, WalletStudent, Purpose, InventoryItem, Transaction, StudentFinancialProfile } from '../../../core/services/carteira.service';
 import { SchoolService, School } from '../../../core/services/school.service';
 import { SchoolManagementService } from '../../../core/services/school-management.service';
 
+import { NgxMaskDirective } from 'ngx-mask';
+
 @Component({
     selector: 'app-escola-wallet',
     standalone: true,
-    imports: [CommonModule, FormsModule, LucideAngularModule],
+    imports: [CommonModule, FormsModule, LucideAngularModule, NgxMaskDirective],
     templateUrl: './wallet.component.html',
 })
 export class EscolaWalletComponent implements OnInit, OnDestroy {
-    public icons: any = { ArrowLeft, Search, Download, Eye, ChevronDown, X: XIcon, RefreshCw, CreditCard, Filter };
+    public icons: any = { ArrowLeft, Search, Download, Eye, ChevronDown, X: XIcon, RefreshCw, CreditCard, Filter, Plus };
 
     // Student list
     students: WalletStudent[] = [];
@@ -62,6 +65,13 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
     transactions: Transaction[] = [];
     transactionsTotal = 0;
     transactionMonth = '';
+    
+    // Manual Balance
+    showAddBalanceForm = false;
+    showSuccessModal = false;
+    addBalanceAmountFormatted: string = '';
+    addBalanceLoading = false;
+    lastAddedAmount = 0;
 
     // Redeem Modal
     showRedeemModal = false;
@@ -106,6 +116,7 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
             return;
         }
         this.loading = true;
+        
         const { students, total } = await this.carteiraService.getStudentsWallet(
             this.selectedSchoolId,
             this.statusFilter,
@@ -115,10 +126,7 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
             this.turmaFilter || undefined
         );
         
-        this.students = this.alunoFilter 
-            ? students.filter(s => s.id === this.alunoFilter || s.aluno_id === this.alunoFilter)
-            : students;
-
+        this.students = students;
         this.totalStudents = total;
         this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
         this.loading = false;
@@ -148,7 +156,7 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
     }
 
     get hasFilters(): boolean {
-        return !!this.searchTerm || !!this.turmaFilter || this.statusFilter !== 'Todos' || !!this.alunoFilter;
+        return !!this.searchTerm || !!this.turmaFilter || this.statusFilter !== 'Todos';
     }
 
     onAlunoChange() {
@@ -268,6 +276,65 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
     closeProfileModal() {
         this.showProfileModal = false;
         this.selectedProfile = null;
+        this.showAddBalanceForm = false;
+        this.addBalanceAmountFormatted = '';
+    }
+
+    toggleAddBalanceForm() {
+        this.showAddBalanceForm = !this.showAddBalanceForm;
+        if (!this.showAddBalanceForm) {
+            this.addBalanceAmountFormatted = '';
+        }
+    }
+
+    async confirmAddBalance() {
+        if (!this.selectedProfile || !this.addBalanceAmountFormatted) return;
+        
+        let numericValue = Number(this.addBalanceAmountFormatted.replace(/\./g, '').replace(',', '.'));
+        
+        if (isNaN(numericValue) || numericValue <= 0) {
+            alert('Por favor, insira um valor válido.');
+            return;
+        }
+
+        this.addBalanceLoading = true;
+        this.lastAddedAmount = numericValue;
+
+        try {
+            const result = await this.carteiraService.updateStudentWalletBalance(
+                this.selectedProfile.id, 
+                numericValue,
+                this.selectedProfile.nome,
+                this.selectedProfile.turma
+            );
+            
+            this.addBalanceLoading = false;
+
+            if (result.success) {
+                this.showSuccessModal = true;
+                this.showAddBalanceForm = false;
+                this.addBalanceAmountFormatted = '';
+                
+                const student = this.students.find(s => s.id === this.selectedProfile?.id || (s as any).aluno_id === this.selectedProfile?.id);
+                if (student) {
+                    student.saldo_carteira += numericValue;
+                    await this.openProfileModal(student);
+                }
+                
+                this.loadStudents();
+            } else {
+                console.error('Error adding balance (Service result):', result.error);
+                alert('Erro ao adicionar saldo: ' + (result.error?.message || 'Erro desconhecido'));
+            }
+        } catch (err: any) {
+            this.addBalanceLoading = false;
+            console.error('Error adding balance (Component catch):', err);
+            alert('Erro inesperado: ' + err.message);
+        }
+    }
+
+    closeSuccessModal() {
+        this.showSuccessModal = false;
     }
 
     async loadInventory(alunoId?: string) {

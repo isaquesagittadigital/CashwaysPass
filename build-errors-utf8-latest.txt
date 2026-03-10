@@ -1,0 +1,107 @@
+﻿node.exe : - Building...
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecif 
+   ied: (- Building...:String) [], Rem  
+  oteException
+    + FullyQualifiedErrorId : NativeCom 
+   mandError
+ 
+
+Application bundle generation failed. [3.820 seconds]
+
+X [ERROR] Could not resolve "../../../..
+/components/logo/logo.component"
+
+    src/app/features/admin/layout/admin-
+layout.component.ts:6:30:
+      6 Γöé ... LogoComponent } from '..
+/../../../components/logo/logo.component
+';
+        Γò╡                          ~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~
+
+
+X [ERROR] TS2307: Cannot find module '..
+/../../../components/logo/logo.component
+' or its corresponding type 
+declarations. [plugin angular-compiler]
+
+    src/app/features/admin/layout/admin-
+layout.component.ts:22:30:
+      22 Γöé ...LogoComponent } from '..
+/../../../components/logo/logo.component
+';
+         Γò╡                         ~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~
+
+
+X [ERROR] TS-991010: 'imports' must be 
+an array of components, directives, 
+pipes, or NgModules.
+  Value is of type '[CommonModule, 
+LucideAngularModule, (not statically 
+analyzable), RouterModule, 
+RouterOutlet]'. [plugin 
+angular-compiler]
+
+    src/app/features/admin/layout/admin-
+layout.component.ts:27:13:
+      27 Γöé     imports: 
+[CommonModule, LucideAngularModule, 
+LogoComponent, Ro...
+         Γò╡              ~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "../../../..
+/components/logo/logo.component"
+
+    src/app/features/school/layout/schoo
+l-layout.component.ts:6:30:
+      6 Γöé ... LogoComponent } from '..
+/../../../components/logo/logo.component
+';
+        Γò╡                          ~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~
+
+
+X [ERROR] TS2307: Cannot find module '..
+/../../../components/logo/logo.component
+' or its corresponding type 
+declarations. [plugin angular-compiler]
+
+    src/app/features/school/layout/schoo
+l-layout.component.ts:21:30:
+      21 Γöé ...LogoComponent } from '..
+/../../../components/logo/logo.component
+';
+         Γò╡                         ~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~
+
+
+X [ERROR] TS-991010: 'imports' must be 
+an array of components, directives, 
+pipes, or NgModules.
+  Value is of type '[CommonModule, 
+LucideAngularModule, (not statically 
+analyzable), RouterModule, 
+RouterOutlet]'. [plugin 
+angular-compiler]
+
+    src/app/features/school/layout/schoo
+l-layout.component.ts:26:13:
+      26 Γöé     imports: 
+[CommonModule, LucideAngularModule, 
+LogoComponent, Ro...
+         Γò╡              ~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+

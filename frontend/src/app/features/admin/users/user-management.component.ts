@@ -28,15 +28,18 @@ import {
     FilePlus,
     ArrowUpDown,
     ChevronRight,
-    ChevronLeft
+    ChevronLeft,
+    Upload
 } from 'lucide-angular';
+import * as Papa from 'papaparse';
+import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
 import { UsuarioService, Usuario, UserTipoAcesso, UserStatus } from '../../../core/services/usuario.service';
 import { SchoolService, School } from '../../../core/services/school.service';
 
 @Component({
     selector: 'app-user-management',
     standalone: true,
-    imports: [CommonModule, FormsModule, LucideAngularModule],
+    imports: [CommonModule, FormsModule, LucideAngularModule, DeleteConfirmModalComponent],
     templateUrl: './user-management.component.html',
 })
 export class UserManagementComponent implements OnInit, OnDestroy {
@@ -45,7 +48,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         ChevronDown, Key, Save, CheckCircle2, Mail,
         User, Calendar, Phone, Building, Clock, Shield,
         Download, FileSpreadsheet, FilePlus, ArrowUpDown,
-        ChevronRight, ChevronLeft
+        ChevronRight, ChevronLeft, Upload
     };
 
     // Data
@@ -75,9 +78,18 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     showSuccessToast = false;
     showEmailToast = false;
     showEditSuccessToast = false;
+    showDeleteSuccessToast = false;
     showDeleteConfirm = false;
     userToDelete: number | null = null;
     isBulkDelete = false;
+    deleteLoading = false;
+
+    // Bulk Upload Modal
+    showBulkModal = false;
+    bulkLoading = false;
+    bulkProgress = 0;
+    bulkErrorCount = 0;
+    bulkSuccessCount = 0;
 
     // Form State
     isEditing = false;
@@ -86,6 +98,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         tipo_acesso: 'Responsável',
         nome_completo: '',
         cpf: '',
+        telefone: '',
         turmaID: '',
         email: '',
         escola_id: '',
@@ -199,17 +212,11 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     }
 
     // --- Bulk Actions ---
-    async deleteSelected() {
+    deleteSelected() {
         if (this.selectedUsers.size === 0) return;
-        if (confirm(`Deseja realmente excluir ${this.selectedUsers.size} usuários selecionados?`)) {
-            const ids = Array.from(this.selectedUsers);
-            const result = await this.usuarioService.deleteBulkUsuarios(ids);
-            if (result.success) {
-                this.loadUsuarios();
-            } else {
-                alert('Erro ao excluir usuários.');
-            }
-        }
+        this.isBulkDelete = true;
+        this.userToDelete = null;
+        this.showDeleteConfirm = true;
     }
 
     async exportToCSV() {
@@ -240,7 +247,66 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     }
 
     bulkRegister() {
-        alert('Funcionalidade de cadastro em massa será implementada em breve.');
+        this.showBulkModal = true;
+        this.bulkProgress = 0;
+        this.bulkSuccessCount = 0;
+        this.bulkErrorCount = 0;
+    }
+
+    onFileSelected(event: any) {
+        const file = event.target.files[0];
+        if (file) {
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: (results) => {
+                    this.processBulkUpload(results.data);
+                },
+                error: (error) => {
+                    console.error('CSV Parsing error:', error);
+                    alert('Erro ao processar o arquivo CSV.');
+                }
+            });
+        }
+    }
+
+    async processBulkUpload(data: any[]) {
+        if (!this.selectedSchoolId) return;
+        this.bulkLoading = true;
+        this.bulkProgress = 0;
+        this.bulkSuccessCount = 0;
+        this.bulkErrorCount = 0;
+
+        const total = data.length;
+        for (let i = 0; i < total; i++) {
+            const row = data[i];
+            const usuario: Partial<Usuario> = {
+                nome_completo: row.nome_completo,
+                email: row.email,
+                cpf: row.cpf,
+                tipo_acesso: (row.tipo_acesso as UserTipoAcesso) || 'Responsável',
+                escola_id: this.selectedSchoolId,
+                status: 'Ativo'
+            };
+
+            try {
+                const result = await this.usuarioService.createUsuario(usuario);
+                if (result.success) {
+                    this.bulkSuccessCount++;
+                    // Trigger welcome email (fire and forget or wait)
+                    await this.usuarioService.sendWelcomeEmail(usuario.email!, usuario.nome_completo!);
+                } else {
+                    this.bulkErrorCount++;
+                }
+            } catch (err) {
+                this.bulkErrorCount++;
+            }
+
+            this.bulkProgress = Math.round(((i + 1) / total) * 100);
+        }
+
+        this.bulkLoading = false;
+        this.loadUsuarios();
     }
 
     goBack() {
@@ -308,14 +374,36 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         this.showFormModal = true;
     }
 
-    async deleteUser(id: number) {
-        if (confirm('Deseja realmente excluir este usuário?')) {
-            const result = await this.usuarioService.deleteUsuario(id);
-            if (result.success) {
-                this.loadUsuarios();
-            } else {
-                alert('Erro ao excluir usuário.');
+    deleteUser(id: number) {
+        this.isBulkDelete = false;
+        this.userToDelete = id;
+        this.showDeleteConfirm = true;
+    }
+
+    async confirmDelete() {
+        this.deleteLoading = true;
+        try {
+            if (this.isBulkDelete) {
+                const ids = Array.from(this.selectedUsers);
+                const result = await this.usuarioService.deleteBulkUsuarios(ids);
+                if (result.success) {
+                    this.loadUsuarios();
+                    this.showDeleteConfirm = false;
+                    this.showDeleteSuccessToast = true;
+                }
+            } else if (this.userToDelete !== null) {
+                const result = await this.usuarioService.deleteUsuario(this.userToDelete);
+                if (result.success) {
+                    this.loadUsuarios();
+                    this.showDeleteConfirm = false;
+                    this.showDeleteSuccessToast = true;
+                }
             }
+        } catch (error) {
+            console.error('Error deleting:', error);
+            alert('Erro ao excluir usuário(s).');
+        } finally {
+            this.deleteLoading = false;
         }
     }
 
@@ -332,9 +420,11 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
     // --- Utils ---
     getStatusClass(status: string): string {
-        return status === 'Ativo'
-            ? 'bg-green-100 text-green-700'
-            : 'bg-red-100 text-red-700';
+        const s = status?.toLowerCase();
+        if (s === 'ativo' || s === 'active') {
+            return 'bg-green-100 text-green-700';
+        }
+        return 'bg-red-100 text-red-700';
     }
 
     getBadgeClass(tipo: string): string {

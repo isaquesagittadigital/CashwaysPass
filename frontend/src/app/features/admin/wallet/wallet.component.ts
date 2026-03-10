@@ -13,20 +13,23 @@ import {
     X as XIcon,
     RefreshCw,
     CreditCard,
-    Filter
+    Filter,
+    Plus
 } from 'lucide-angular';
 import { CarteiraService, WalletStudent, Purpose, InventoryItem, Transaction, StudentFinancialProfile } from '../../../core/services/carteira.service';
 import { SchoolService, School } from '../../../core/services/school.service';
 import { SchoolManagementService } from '../../../core/services/school-management.service';
 
+import { NgxMaskDirective } from 'ngx-mask';
+
 @Component({
     selector: 'app-wallet',
     standalone: true,
-    imports: [CommonModule, FormsModule, LucideAngularModule],
+    imports: [CommonModule, FormsModule, LucideAngularModule, NgxMaskDirective],
     templateUrl: './wallet.component.html',
 })
 export class WalletComponent implements OnInit, OnDestroy {
-    public icons: any = { ArrowLeft, Search, Download, Eye, ChevronDown, X: XIcon, RefreshCw, CreditCard, Filter };
+    public icons: any = { ArrowLeft, Search, Download, Eye, ChevronDown, X: XIcon, RefreshCw, CreditCard, Filter, Plus };
 
     // Student list
     students: WalletStudent[] = [];
@@ -63,6 +66,13 @@ export class WalletComponent implements OnInit, OnDestroy {
     transactions: Transaction[] = [];
     transactionsTotal = 0;
     transactionMonth = '';
+    
+    // Manual Balance
+    showAddBalanceForm = false;
+    showSuccessModal = false;
+    addBalanceAmountFormatted: string = '';
+    addBalanceLoading = false;
+    lastAddedAmount = 0;
 
     // Redeem Modal
     showRedeemModal = false;
@@ -111,8 +121,12 @@ export class WalletComponent implements OnInit, OnDestroy {
         }
         this.loading = true;
         
-        // Use schoolFilter if set, otherwise use the global selectedSchoolId
+        // Use schoolFilter if set (primarily for Admin), otherwise use the global selectedSchoolId
         const activeSchoolId = this.schoolFilter || this.selectedSchoolId;
+
+        // If alunoFilter is selected, we fetch all students for that specific IDs
+        // or we can pass it if the service supported it. 
+        // For now, let's focus on the Turma filter which is what's in the UI.
 
         const { students, total } = await this.carteiraService.getStudentsWallet(
             activeSchoolId || undefined,
@@ -123,10 +137,7 @@ export class WalletComponent implements OnInit, OnDestroy {
             this.turmaFilter || undefined
         );
         
-        this.students = this.alunoFilter 
-            ? students.filter(s => s.id === this.alunoFilter || s.aluno_id === this.alunoFilter)
-            : students;
-
+        this.students = students;
         this.totalStudents = total;
         this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
         this.loading = false;
@@ -156,7 +167,8 @@ export class WalletComponent implements OnInit, OnDestroy {
     }
 
     get hasFilters(): boolean {
-        return !!this.searchTerm || !!this.turmaFilter || this.statusFilter !== 'Todos' || !!this.schoolFilter || !!this.alunoFilter;
+        const isDefaultSchool = this.schoolFilter === this.selectedSchoolId;
+        return !!this.searchTerm || !!this.turmaFilter || this.statusFilter !== 'Todos' || (!!this.schoolFilter && !isDefaultSchool);
     }
 
     onAlunoChange() {
@@ -183,6 +195,7 @@ export class WalletComponent implements OnInit, OnDestroy {
         this.searchTerm = '';
         this.turmaFilter = '';
         this.statusFilter = 'Todos';
+        this.alunoFilter = '';
         this.schoolFilter = this.selectedSchoolId || '';
         this.currentPage = 1;
         this.loadStudents();
@@ -287,6 +300,70 @@ export class WalletComponent implements OnInit, OnDestroy {
     closeProfileModal() {
         this.showProfileModal = false;
         this.selectedProfile = null;
+        this.showAddBalanceForm = false;
+        this.addBalanceAmountFormatted = '';
+    }
+
+    toggleAddBalanceForm() {
+        this.showAddBalanceForm = !this.showAddBalanceForm;
+        if (!this.showAddBalanceForm) {
+            this.addBalanceAmountFormatted = '';
+        }
+    }
+
+    async confirmAddBalance() {
+        if (!this.selectedProfile || !this.addBalanceAmountFormatted) return;
+        
+        // Convert formatted string (e.g., "1.500,00" or just "1500") to number
+        let numericValue = Number(this.addBalanceAmountFormatted.replace(/\./g, '').replace(',', '.'));
+        
+        if (isNaN(numericValue) || numericValue <= 0) {
+            alert('Por favor, insira um valor válido.');
+            return;
+        }
+
+        this.addBalanceLoading = true;
+        this.lastAddedAmount = numericValue;
+
+        try {
+            const result = await this.carteiraService.updateStudentWalletBalance(
+                this.selectedProfile.id, 
+                numericValue,
+                this.selectedProfile.nome,
+                this.selectedProfile.turma
+            );
+            
+            this.addBalanceLoading = false;
+
+            if (result.success) {
+                // Show success modal
+                this.showSuccessModal = true;
+                this.showAddBalanceForm = false;
+                this.addBalanceAmountFormatted = '';
+                
+                // Refresh local data
+                const student = this.students.find(s => s.id === this.selectedProfile?.id || (s as any).aluno_id === this.selectedProfile?.id);
+                if (student) {
+                    student.saldo_carteira += numericValue;
+                    // Also reload full profile to update history and other components
+                    await this.openProfileModal(student);
+                }
+                
+                // Refresh the main list to reflect in the table
+                this.loadStudents();
+            } else {
+                console.error('Error adding balance (Service result):', result.error);
+                alert('Erro ao adicionar saldo: ' + (result.error?.message || 'Erro desconhecido'));
+            }
+        } catch (err: any) {
+            this.addBalanceLoading = false;
+            console.error('Error adding balance (Component catch):', err);
+            alert('Erro inesperado: ' + err.message);
+        }
+    }
+
+    closeSuccessModal() {
+        this.showSuccessModal = false;
     }
 
     async loadInventory(alunoId?: string) {
