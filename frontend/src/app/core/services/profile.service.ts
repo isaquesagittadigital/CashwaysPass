@@ -17,29 +17,41 @@ export interface UserProfile {
 })
 export class ProfileService {
     async getProfile(): Promise<UserProfile | null> {
+        let profile = null;
+
         // Try Supabase Auth first
         const { data: { user } } = await supabase.auth.getUser();
 
-        let profileQuery;
         if (user) {
-            profileQuery = supabase
+            const { data, error } = await supabase
                 .from('usuarios')
                 .select('id, nome_completo, email, foto_url, cpf, telefone, tipo_acesso')
                 .eq('UserID', user.id)
-                .single();
-        } else {
-            // Fallback to localStorage (manual login)
-            const storedUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
-            if (!storedUser) return null;
-            const userData = JSON.parse(storedUser);
-            profileQuery = supabase
-                .from('usuarios')
-                .select('id, nome_completo, email, foto_url, cpf, telefone, tipo_acesso')
-                .eq('id', userData.id)
-                .single();
+                .maybeSingle(); // maybeSingle para não lançar erro se não encontrar
+
+            if (!error && data) {
+                profile = data;
+            }
         }
 
-        const { data: profile } = await profileQuery;
+        // Se não achou por Auth, tenta pelo localStorage (fallback login manual)
+        if (!profile) {
+            const storedUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+            if (storedUser) {
+                const userData = JSON.parse(storedUser);
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .select('id, nome_completo, email, foto_url, cpf, telefone, tipo_acesso')
+                    .eq('id', userData.id)
+                    .maybeSingle();
+                
+                if (!error && data) {
+                    profile = data;
+                } else {
+                    profile = userData;
+                }
+            }
+        }
 
         if (profile) {
             return {
@@ -51,42 +63,57 @@ export class ProfileService {
     }
 
     async updateProfile(data: Partial<UserProfile>): Promise<void> {
-        let userId;
         const { data: { user } } = await supabase.auth.getUser();
+        
+        let targetId = null;
+        let idColumn = 'id';
 
+        // Tenta achar qual é a coluna do usuário
         if (user) {
-            userId = user.id;
-        } else {
+            const { data: userData } = await supabase.from('usuarios').select('id').eq('UserID', user.id).maybeSingle();
+            if (userData) {
+                targetId = user.id;
+                idColumn = 'UserID';
+            }
+        }
+        
+        // Fallback local storage
+        if (!targetId) {
             const storedUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
             if (storedUser) {
-                const userData = JSON.parse(storedUser);
-                const { error } = await supabase
-                    .from('usuarios')
-                    .update({
-                        nome_completo: data.nome_completo,
-                        email: data.email,
-                        cpf: data.cpf,
-                        telefone: data.telefone
-                    })
-                    .eq('id', userData.id);
-                if (error) throw error;
-                return;
+                targetId = JSON.parse(storedUser).id;
+                idColumn = 'id';
             }
         }
 
-        if (!userId) throw new Error('Usuário não autenticado');
+        if (!targetId) throw new Error('Usuário não encontrado.');
+
+        const updateData = {
+            nome_completo: data.nome_completo,
+            email: data.email,
+            cpf: data.cpf,
+            telefone: data.telefone
+        };
 
         const { error } = await supabase
             .from('usuarios')
-            .update({
-                nome_completo: data.nome_completo,
-                email: data.email,
-                cpf: data.cpf,
-                telefone: data.telefone
-            })
-            .eq('UserID', userId);
+            .update(updateData)
+            .eq(idColumn, targetId);
 
         if (error) throw error;
+
+        // Atualiza a cache no localStorage para refletir em outras partes do app
+        const storedLocal = localStorage.getItem('currentUser');
+        if (storedLocal) {
+            const parsedLocal = JSON.parse(storedLocal);
+            localStorage.setItem('currentUser', JSON.stringify({ ...parsedLocal, ...updateData }));
+        }
+        
+        const storedSession = sessionStorage.getItem('currentUser');
+        if (storedSession) {
+            const parsedSession = JSON.parse(storedSession);
+            sessionStorage.setItem('currentUser', JSON.stringify({ ...parsedSession, ...updateData }));
+        }
     }
 
     async updateAvatar(file: File): Promise<string> {

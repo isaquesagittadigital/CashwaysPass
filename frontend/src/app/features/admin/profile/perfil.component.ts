@@ -11,7 +11,9 @@ import {
     X,
     CheckCircle2,
     Info,
-    HelpCircle
+    HelpCircle,
+    Eye,
+    EyeOff
 } from 'lucide-angular';
 import { ProfileService, UserProfile } from '../../../core/services/profile.service';
 
@@ -23,7 +25,7 @@ import { ProfileService, UserProfile } from '../../../core/services/profile.serv
 })
 export class PerfilComponent implements OnInit {
     icons = {
-        ArrowLeft, Mail, Lock, UploadCloud, X, CheckCircle2, Info, HelpCircle
+        ArrowLeft, Mail, Lock, UploadCloud, X, CheckCircle2, Info, HelpCircle, Eye, EyeOff
     };
 
     profileForm: FormGroup;
@@ -33,6 +35,10 @@ export class PerfilComponent implements OnInit {
     uploading = false;
     showSuccessModal = false;
     showPasswordSuccessModal = false;
+    
+    showCurrentPassword = false;
+    showNewPassword = false;
+    showConfirmPassword = false;
 
     profile?: UserProfile;
     previewUrl?: string;
@@ -68,6 +74,7 @@ export class PerfilComponent implements OnInit {
         this.loading = true;
         try {
             const p = await this.profileService.getProfile();
+            console.log('Profile loaded:', p);
             if (p) {
                 this.profile = p;
                 this.profileForm.patchValue({
@@ -75,9 +82,13 @@ export class PerfilComponent implements OnInit {
                     email: p.email
                 });
                 if (p.foto_url) this.previewUrl = p.foto_url;
+            } else {
+                console.warn('Profile not found for this user.');
             }
         } catch (error) {
             console.error('Error loading profile:', error);
+            // Mostrar o erro via alert provisoriamente para facilitar depuração pelo cliente
+            // alert('Erro ao carregar perfil: ' + (error as Error).message);
         } finally {
             this.loading = false;
         }

@@ -6,14 +6,6 @@
             <span class="ml-2 text-sm font-bold text-gray-400 group-hover:text-gray-900">Voltar</span>
         </button>
     </div>
-    <div class="flex items-center gap-4">
-        <div
-            class="bg-gray-50 px-4 py-1.5 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 border border-gray-100 shadow-sm">
-            <span>{{ isAdmin ? 'Admin' : 'Escola' }}</span>
-            <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-            <span>Painel {{ isAdmin ? 'administrativo' : 'da escola' }}</span>
-        </div>
-    </div>
 </div>
 
 <div class="mb-8">
@@ -61,7 +53,7 @@
                     <lucide-icon [img]="icons.Mail"
                         class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
                     <input type="email" formControlName="email"
-                        class="w-full pl-14 pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
+                        class="w-full pl-[4.5rem] pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
                         placeholder="admin@exemplo.com">
                 </div>
             </div>
@@ -115,7 +107,7 @@
 
         <!-- Passwords Section -->
         <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()"
-            class="space-y-8 mt-12 animate-in slide-in-from-bottom-4 duration-500">
+            class="space-y-8 mt-12">
             <div class="md:w-full">
                 <h3 class="text-lg font-bold text-gray-900 mb-6">Alterar senha</h3>
             </div>
@@ -127,9 +119,13 @@
                 <div class="flex-1 relative">
                     <lucide-icon [img]="icons.Lock"
                         class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
-                    <input type="password" formControlName="current_password"
-                        class="w-full pl-14 pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-mono"
+                    <input [type]="showCurrentPassword ? 'text' : 'password'" formControlName="current_password"
+                        class="w-full pl-14 pr-12 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-mono"
                         placeholder="••••••••">
+                    <button type="button" (click)="showCurrentPassword = !showCurrentPassword"
+                        class="absolute right-5 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                        <lucide-icon [img]="showCurrentPassword ? icons.EyeOff : icons.Eye" class="w-4 h-4"></lucide-icon>
+                    </button>
                 </div>
             </div>
 
@@ -140,9 +136,13 @@
                 <div class="flex-1 relative">
                     <lucide-icon [img]="icons.Lock"
                         class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
-                    <input type="password" formControlName="new_password"
-                        class="w-full pl-14 pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-mono"
+                    <input [type]="showNewPassword ? 'text' : 'password'" formControlName="new_password"
+                        class="w-full pl-14 pr-12 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-mono"
                         placeholder="••••••••">
+                    <button type="button" (click)="showNewPassword = !showNewPassword"
+                        class="absolute right-5 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                        <lucide-icon [img]="showNewPassword ? icons.EyeOff : icons.Eye" class="w-4 h-4"></lucide-icon>
+                    </button>
                 </div>
             </div>
 
@@ -153,9 +153,13 @@
                 <div class="flex-1 relative">
                     <lucide-icon [img]="icons.Lock"
                         class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
-                    <input type="password" formControlName="confirm_password"
-                        class="w-full pl-14 pr-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-mono"
+                    <input [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirm_password"
+                        class="w-full pl-14 pr-12 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-mono"
                         placeholder="••••••••">
+                    <button type="button" (click)="showConfirmPassword = !showConfirmPassword"
+                        class="absolute right-5 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                        <lucide-icon [img]="showConfirmPassword ? icons.EyeOff : icons.Eye" class="w-4 h-4"></lucide-icon>
+                    </button>
                 </div>
             </div>
 
