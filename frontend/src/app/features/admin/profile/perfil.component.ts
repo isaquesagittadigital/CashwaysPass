@@ -131,11 +131,13 @@ export class PerfilComponent implements OnInit {
 
         this.loading = true;
         try {
-            await this.profileService.changePassword(this.passwordForm.value.new_password);
+            const { current_password, new_password } = this.passwordForm.value;
+            await this.profileService.changePassword(current_password, new_password);
             this.showPasswordSuccessModal = true;
             this.passwordForm.reset();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating password:', error);
+            alert(error.message || 'Erro ao atualizar a senha.');
         } finally {
             this.loading = false;
         }

@@ -11,7 +11,9 @@ import {
     X,
     CheckCircle2,
     Info,
-    HelpCircle
+    HelpCircle,
+    Eye,
+    EyeOff
 } from 'lucide-angular';
 import { ProfileService, UserProfile } from '../../../core/services/profile.service';
 
@@ -23,7 +25,7 @@ import { ProfileService, UserProfile } from '../../../core/services/profile.serv
 })
 export class EscolaPerfilComponent implements OnInit {
     icons = {
-        ArrowLeft, Mail, Lock, UploadCloud, X, CheckCircle2, Info, HelpCircle
+        ArrowLeft, Mail, Lock, UploadCloud, X, CheckCircle2, Info, HelpCircle, Eye, EyeOff
     };
 
     profileForm: FormGroup;
@@ -33,6 +35,10 @@ export class EscolaPerfilComponent implements OnInit {
     uploading = false;
     showSuccessModal = false;
     showPasswordSuccessModal = false;
+
+    showCurrentPassword = false;
+    showNewPassword = false;
+    showConfirmPassword = false;
 
     profile?: UserProfile;
     previewUrl?: string;
@@ -120,11 +126,13 @@ export class EscolaPerfilComponent implements OnInit {
 
         this.loading = true;
         try {
-            await this.profileService.changePassword(this.passwordForm.value.new_password);
+            const { current_password, new_password } = this.passwordForm.value;
+            await this.profileService.changePassword(current_password, new_password);
             this.showPasswordSuccessModal = true;
             this.passwordForm.reset();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating password:', error);
+            alert(error.message || 'Erro ao atualizar a senha.');
         } finally {
             this.loading = false;
         }

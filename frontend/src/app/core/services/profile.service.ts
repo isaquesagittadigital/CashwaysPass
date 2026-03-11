@@ -154,20 +154,45 @@ export class ProfileService {
         return publicUrl;
     }
 
-    async changePassword(newPassword: string): Promise<void> {
-        // In the current implementation, login is manual via 'senha' column in 'usuarios'
-        const storedUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
-        if (storedUser) {
-            const userData = JSON.parse(storedUser);
-            const { error } = await supabase
-                .from('usuarios')
-                .update({ senha: newPassword })
-                .eq('id', userData.id);
-            if (error) throw error;
+    async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+        const { data: { user } } = await supabase.auth.getUser();
+        let targetId = null;
+        let idColumn = 'id';
+
+        if (user) {
+            const { data: userData } = await supabase.from('usuarios').select('id, senha').eq('UserID', user.id).maybeSingle();
+            if (userData) {
+                targetId = user.id;
+                idColumn = 'UserID';
+                if (userData.senha !== currentPassword) throw new Error('A senha atual informada está incorreta.');
+            }
+        }
+        
+        if (!targetId) {
+            const storedUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+            if (storedUser) {
+                const userData = JSON.parse(storedUser);
+                targetId = userData.id;
+                idColumn = 'id';
+                
+                const { data: pData } = await supabase.from('usuarios').select('senha').eq('id', targetId).maybeSingle();
+                if (!pData || pData.senha !== currentPassword) {
+                    throw new Error('A senha atual informada está incorreta.');
+                }
+            }
         }
 
-        // Also update Supabase Auth if applicable
-        const { data: { user } } = await supabase.auth.getUser();
+        if (!targetId) throw new Error('Usuário autenticado não encontrado.');
+
+        // Update local auth table
+        const { error } = await supabase
+            .from('usuarios')
+            .update({ senha: newPassword })
+            .eq(idColumn, targetId);
+
+        if (error) throw error;
+
+        // Update Supabase Auth if applicable
         if (user) {
             await supabase.auth.updateUser({
                 password: newPassword
