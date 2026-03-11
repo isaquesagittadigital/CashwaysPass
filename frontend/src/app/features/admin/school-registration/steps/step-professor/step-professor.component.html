@@ -1,66 +1,42 @@
-<div class="space-y-8 animate-in fade-in duration-500">
+<div class="space-y-8">
     <!-- Register New Professor Card -->
-    <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
-        <div class="flex flex-col gap-6">
-            <h3 class="text-xl font-bold text-gray-900 mb-2">Cadastrar novo professor</h3>
+    <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
+        <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary">Cadastrar novo professor</h3>
 
-            <form [formGroup]="professorForm" (ngSubmit)="addProfessor()" class="space-y-6">
-                <!-- Row 1: Nome and Grau -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="form-group">
-                        <label>Nome completo *</label>
-                        <input type="text" formControlName="nome" class="form-input" placeholder="Nome completo">
-                    </div>
-                    <div class="form-group">
-                        <label>Grau de escolaridade *</label>
-                        <select formControlName="escolaridade" class="form-input">
-                            <option value="">Selecione o grau</option>
-                            <option *ngFor="let option of escolaridadeOptions" [value]="option.value">
-                                {{ option.label }}
-                            </option>
-                        </select>
-                    </div>
-                </div>
+        <form [formGroup]="professorForm" (ngSubmit)="addProfessor()" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+            <div class="form-group">
+                <label>Nome completo *</label>
+                <input type="text" formControlName="nome" class="form-input" placeholder="Nome completo">
+            </div>
 
-                <!-- Row 2: Email -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="form-group">
-                        <label>Email do professor *</label>
-                        <input type="email" formControlName="email" class="form-input" placeholder="email@exemplo.com">
-                    </div>
-                </div>
+            <div class="form-group">
+                <label>Grau de escolaridade *</label>
+                <select formControlName="escolaridade" class="form-input">
+                    <option value="">Selecione o grau</option>
+                    <option *ngFor="let option of escolaridadeOptions" [value]="option.value">
+                        {{ option.label }}
+                    </option>
+                </select>
+            </div>
 
-                <!-- Row 3: Add Button, Info Text and Navigation Buttons -->
-                <div class="flex items-center justify-between gap-4 pt-4 border-t border-gray-50/50">
-                    <div class="flex items-center gap-6 flex-1">
-                        <button type="submit"
-                            class="px-6 h-[46px] rounded-xl border border-gray-100 bg-white text-gray-400 font-bold flex items-center gap-2 hover:bg-gray-50 transition-all border-dashed">
-                            <lucide-icon [img]="isEditing ? icons.Edit : icons.Plus" class="w-5 h-5"></lucide-icon>
-                            {{ isEditing ? 'Atualizar professor' : 'Cadastrar professor' }}
-                        </button>
-                        <p class="text-xs text-gray-400 font-medium">Preencha os campos para realizar um novo cadastro.
-                        </p>
-                    </div>
+            <div class="form-group">
+                <label>Email do professor *</label>
+                <input type="email" formControlName="email" class="form-input" placeholder="email@exemplo.com">
+            </div>
 
-                    <div class="flex items-center gap-3">
-                        <button (click)="onBack()" type="button"
-                            class="px-8 h-[46px] rounded-xl border border-gray-100 bg-white text-gray-600 font-bold hover:bg-gray-50 transition-all">
-                            Voltar
-                        </button>
-                        <button (click)="onNext()" type="button"
-                            class="px-8 h-[46px] rounded-xl bg-[#00609b] text-white font-bold hover:bg-[#004d7c] transition-all shadow-lg shadow-blue-900/10">
-                            Prosseguir
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
+            <div class="flex items-center gap-4">
+                <button type="submit" class="btn-secondary h-[46px] w-full flex items-center justify-center gap-2 border-dashed">
+                    <lucide-icon [img]="isEditing ? icons.Edit : icons.Plus" class="w-5 h-5"></lucide-icon>
+                    {{ isEditing ? 'Atualizar professor' : 'Cadastrar professor' }}
+                </button>
+            </div>
+        </form>
+        <div class="text-sm text-gray-400 mt-4 h-5">Preencha os campos para realizar um novo cadastro.</div>
     </div>
 
     <!-- Professors List Card -->
-    <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
-        <div class="flex flex-col gap-6">
-            <h3 class="text-xl font-bold text-gray-900">Professores cadastrados</h3>
+    <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
+        <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary">Professores cadastrados</h3>
 
             <!-- Filters Row -->
             <div class="flex items-center gap-4">
@@ -134,21 +110,22 @@
                 </table>
             </div>
 
-            <!-- Pagination Row -->
-            <div class="flex items-center justify-between pt-6">
-                <span class="text-sm font-medium text-gray-400">Página 1 de 1</span>
-                <div class="flex items-center gap-3">
-                    <button disabled
-                        class="px-6 py-2 rounded-xl border border-gray-100 bg-white text-sm font-bold text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
-                        Anterior
-                    </button>
-                    <button disabled
-                        class="px-6 py-2 rounded-xl border border-gray-100 bg-white text-sm font-bold text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
-                        Próximo
-                    </button>
-                </div>
+        </div>
+        
+        <div class="flex items-center justify-between mt-8 text-sm">
+            <span class="text-gray-400">Página 1 de 1</span>
+            <div class="flex gap-2">
+                <button
+                    class="btn-secondary py-2 px-4 text-xs font-bold opacity-50 cursor-not-allowed">Anterior</button>
+                <button class="btn-secondary py-2 px-4 text-xs font-bold opacity-50 cursor-not-allowed">Próximo</button>
             </div>
         </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-4 pt-8 border-t border-gray-100">
+        <button (click)="onBack()" type="button" class="btn-secondary px-12">Voltar</button>
+        <button (click)="onNext()" type="button" class="btn-primary px-12">Prosseguir</button>
     </div>
 </div>
 
