@@ -208,8 +208,9 @@ export class ProfessorManagementComponent implements OnInit {
                 this.successModalMessage = 'O professor foi excluído com sucesso!';
                 this.showSuccessModal = true;
             },
-            error: () => {
+            error: (err) => {
                 this.deleteLoading = false;
+                alert('Erro na exclusão: ' + (err?.message || JSON.stringify(err)));
             }
         });
     }

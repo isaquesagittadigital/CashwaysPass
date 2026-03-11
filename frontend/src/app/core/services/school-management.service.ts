@@ -170,16 +170,16 @@ export class SchoolManagementService {
         );
     }
 
-    deleteProfessor(id: string): Observable<any> {
+    deleteProfessor(id: string): Observable<void> {
         return from(
             supabase
                 .from('usuarios')
-                .update({ deleted: true, status: 'inactive' })
+                .update({ deleted: true, status: 'inactive', excluido: 'sim' })
                 .eq('id', id)
         ).pipe(
             map(resp => {
                 if (resp.error) throw resp.error;
-                return resp.data;
+                return;
             })
         );
     }
