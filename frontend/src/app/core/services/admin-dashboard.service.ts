@@ -196,15 +196,29 @@ export class AdminDashboardService {
                 };
             });
 
-            // Fetch transacted
-            let salesQuery = supabase
-                .from('lojista_historico')
-                .select('valor, data_hora, aluno!inner(escola_id)')
-                .eq('tipo_operacao', 'VENDA')
-                .gte('data_hora', startDate);
-
-            if (escolaId) salesQuery = salesQuery.eq('aluno.escola_id', escolaId);
-            const { data: sales } = await salesQuery;
+            let salesData: any[] = [];
+            if (escolaId) {
+                const { data: students } = await supabase.from('aluno').select('id').eq('escola_id', escolaId);
+                const studentIds = (students || []).map(a => a.id);
+                
+                if (studentIds.length > 0) {
+                    const { data } = await supabase
+                        .from('lojista_historico')
+                        .select('valor, data_hora')
+                        .eq('tipo_operacao', 'VENDA')
+                        .in('aluno_id', studentIds)
+                        .gte('data_hora', startDate);
+                    salesData = data || [];
+                }
+            } else {
+                const { data } = await supabase
+                    .from('lojista_historico')
+                    .select('valor, data_hora')
+                    .eq('tipo_operacao', 'VENDA')
+                    .gte('data_hora', startDate);
+                salesData = data || [];
+            }
+            const sales = salesData;
 
             // Fetch transferred
             let investmentsQuery = supabase
@@ -252,13 +266,29 @@ export class AdminDashboardService {
             });
         }
 
-        let salesQuery = supabase
-            .from('lojista_historico')
-            .select('valor, data_hora, aluno!inner(escola_id)')
-            .eq('tipo_operacao', 'VENDA')
-            .gte('data_hora', startDate);
-        if (escolaId) salesQuery = salesQuery.eq('aluno.escola_id', escolaId);
-        const { data: sales } = await salesQuery;
+        let salesData: any[] = [];
+        if (escolaId) {
+            const { data: students } = await supabase.from('aluno').select('id').eq('escola_id', escolaId);
+            const studentIds = (students || []).map(a => a.id);
+            
+            if (studentIds.length > 0) {
+                const { data } = await supabase
+                    .from('lojista_historico')
+                    .select('valor, data_hora')
+                    .eq('tipo_operacao', 'VENDA')
+                    .in('aluno_id', studentIds)
+                    .gte('data_hora', startDate);
+                salesData = data || [];
+            }
+        } else {
+            const { data } = await supabase
+                .from('lojista_historico')
+                .select('valor, data_hora')
+                .eq('tipo_operacao', 'VENDA')
+                .gte('data_hora', startDate);
+            salesData = data || [];
+        }
+        const sales = salesData;
 
         let investmentsQuery = supabase
             .from('investimento_aluno')
