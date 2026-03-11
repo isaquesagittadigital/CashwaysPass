@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -105,15 +105,28 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         status: 'Ativo'
     };
 
-    // Detail State
     selectedUser: Usuario | null = null;
     resetLoading = false;
+
+    // Searchable School Selection
+    schoolSearchTerm = '';
+    showSchoolList = false;
+    filteredEscolas: any[] = [];
 
     constructor(
         private usuarioService: UsuarioService,
         private schoolService: SchoolService,
-        private router: Router
+        private router: Router,
+        private cdr: ChangeDetectorRef
     ) { }
+
+    @HostListener('document:click', ['$event'])
+    onDocumentClick(event: MouseEvent) {
+        const target = event.target as HTMLElement;
+        if (target && typeof target.closest === 'function' && !target.closest('.relative')) {
+            this.showSchoolList = false;
+        }
+    }
 
     ngOnInit() {
         this.schoolSub = this.schoolService.selectedSchool$.subscribe(s => {
@@ -153,6 +166,36 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
     async loadSchools() {
         this.escolas = await this.usuarioService.getSchools();
+        this.filteredEscolas = [...this.escolas];
+    }
+
+    filterSchools() {
+        const term = this.schoolSearchTerm.toLowerCase();
+        this.filteredEscolas = this.escolas.filter(e => 
+            e.nome?.toLowerCase().includes(term) || 
+            e.id?.toLowerCase().includes(term)
+        );
+        this.showSchoolList = true;
+    }
+
+    selectSchool(escola: any) {
+        this.form.escola_id = escola.id;
+        this.schoolSearchTerm = escola.nome;
+        this.showSchoolList = false;
+        // Ao trocar de escola, recarrega as turmas dela
+        this.usuarioService.getTurmas(escola.id).then(turmas => {
+            this.turmas = turmas;
+        });
+    }
+
+    onTipoAcessoChange() {
+        if (this.shouldDisablePeriod()) {
+            this.form.turmaID = '';
+        }
+    }
+
+    shouldDisablePeriod(): boolean {
+        return this.form.tipo_acesso === 'Responsável' || this.form.tipo_acesso === 'Lojista' || this.form.tipo_acesso === 'Escola' || this.form.tipo_acesso === 'Administrador';
     }
 
     async loadTurmas() {
@@ -318,10 +361,18 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         this.isEditing = false;
         this.resetForm();
         this.form.escola_id = this.selectedSchoolId || '';
+        if (this.form.escola_id) {
+            const escola = this.escolas.find(e => e.id === this.form.escola_id);
+            this.schoolSearchTerm = escola?.nome || '';
+        } else {
+            this.schoolSearchTerm = '';
+        }
         this.showFormModal = true;
     }
 
     resetForm() {
+        this.schoolSearchTerm = '';
+        this.showSchoolList = false;
         this.form = {
             tipo_acesso: 'Responsável',
             nome_completo: '',
@@ -362,22 +413,29 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
     // --- Detail Actions ---
     viewDetails(user: Usuario) {
-        this.selectedUser = user;
+        this.selectedUser = { ...user };
+        this.showFormModal = false;
         this.showDetailModal = true;
+        this.cdr.detectChanges();
     }
 
     editFromDetails() {
         if (!this.selectedUser) return;
         this.isEditing = true;
         this.form = { ...this.selectedUser };
-        this.showDetailModal = false;
+        const escola = this.escolas.find(e => e.id === this.form.escola_id);
+        this.schoolSearchTerm = escola?.nome || '';
         this.showFormModal = true;
+        this.showDetailModal = false;
     }
 
     deleteUser(id: number) {
         this.isBulkDelete = false;
         this.userToDelete = id;
+        this.showFormModal = false;
+        this.showDetailModal = false;
         this.showDeleteConfirm = true;
+        this.cdr.detectChanges();
     }
 
     async confirmDelete() {

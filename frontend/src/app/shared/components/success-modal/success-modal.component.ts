@@ -30,8 +30,7 @@ import { LucideAngularModule, X, Check } from 'lucide-angular';
         </h3>
 
         <!-- Subtitle -->
-        <p class="text-[15px] text-gray-500 mb-8 leading-relaxed">
-          {{ message }}
+        <p class="text-[15px] text-gray-500 mb-8 leading-relaxed" [innerHTML]="message">
         </p>
 
         <!-- Action Button -->

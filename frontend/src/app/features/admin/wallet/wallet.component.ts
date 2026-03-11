@@ -21,11 +21,12 @@ import { SchoolService, School } from '../../../core/services/school.service';
 import { SchoolManagementService } from '../../../core/services/school-management.service';
 
 import { NgxMaskDirective } from 'ngx-mask';
+import { ActionSuccessModalComponent } from '../../../shared/components/success-modal/success-modal.component';
 
 @Component({
     selector: 'app-wallet',
     standalone: true,
-    imports: [CommonModule, FormsModule, LucideAngularModule, NgxMaskDirective],
+    imports: [CommonModule, FormsModule, LucideAngularModule, NgxMaskDirective, ActionSuccessModalComponent],
     templateUrl: './wallet.component.html',
 })
 export class WalletComponent implements OnInit, OnDestroy {
@@ -70,6 +71,8 @@ export class WalletComponent implements OnInit, OnDestroy {
     // Manual Balance
     showAddBalanceForm = false;
     showSuccessModal = false;
+    successModalTitle = '';
+    successModalMessage = '';
     addBalanceAmountFormatted: string = '';
     addBalanceLoading = false;
     lastAddedAmount = 0;
@@ -98,9 +101,8 @@ export class WalletComponent implements OnInit, OnDestroy {
         this.schoolSub = this.schoolService.schools$.subscribe(s => this.schools = s);
         this.selectedSchoolSub = this.schoolService.selectedSchool$.subscribe(s => {
             this.selectedSchoolId = s?.id || null;
-            if (!this.schoolFilter && this.selectedSchoolId) {
-                this.schoolFilter = this.selectedSchoolId;
-            }
+            this.schoolFilter = this.selectedSchoolId || '';
+            
             if (this.schoolFilter) {
                 this.loadTurmas(this.schoolFilter);
             }
@@ -264,8 +266,14 @@ export class WalletComponent implements OnInit, OnDestroy {
                         return dbP ? dbP : def;
                     });
 
-                    await this.loadInventory(alunoId);
-                    await this.loadTransactions(alunoId);
+                    const now = new Date();
+                    this.transactionMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                    
+                    // Parallelize data loading for better performance
+                    await Promise.all([
+                        this.loadInventory(alunoId),
+                        this.loadTransactions(alunoId)
+                    ]);
                 } else {
                     this.setFallbackProfile(student);
                 }
@@ -314,8 +322,16 @@ export class WalletComponent implements OnInit, OnDestroy {
     async confirmAddBalance() {
         if (!this.selectedProfile || !this.addBalanceAmountFormatted) return;
         
-        // Convert formatted string (e.g., "1.500,00" or just "1500") to number
-        let numericValue = Number(this.addBalanceAmountFormatted.replace(/\./g, '').replace(',', '.'));
+        // Convert formatted string or number to a valid numeric value
+        let numericValue: number;
+        
+        if (typeof this.addBalanceAmountFormatted === 'number') {
+            numericValue = this.addBalanceAmountFormatted;
+        } else {
+            // Ensure it's a string and remove currency/formatting
+            const valueStr = String(this.addBalanceAmountFormatted || '0');
+            numericValue = Number(valueStr.replace(/\./g, '').replace(',', '.'));
+        }
         
         if (isNaN(numericValue) || numericValue <= 0) {
             alert('Por favor, insira um valor válido.');
@@ -337,20 +353,27 @@ export class WalletComponent implements OnInit, OnDestroy {
 
             if (result.success) {
                 // Show success modal
+                this.successModalTitle = 'Saldo adicionado com sucesso!';
+                this.successModalMessage = `O valor de <span class="text-gray-900 font-bold">${this.formatCurrency(numericValue)}</span> foi creditado na carteira de <b>${this.selectedProfile.nome}</b>.`;
                 this.showSuccessModal = true;
                 this.showAddBalanceForm = false;
                 this.addBalanceAmountFormatted = '';
                 
                 // Refresh local data
-                const student = this.students.find(s => s.id === this.selectedProfile?.id || (s as any).aluno_id === this.selectedProfile?.id);
+                const currentId = this.selectedProfile?.id;
+                const student = this.students.find(s => s.aluno_id === currentId || s.id === currentId);
+                
                 if (student) {
-                    student.saldo_carteira += numericValue;
-                    // Also reload full profile to update history and other components
+                    // Update balance and student ID locally (important if it was newly created in DB)
+                    if (result.aluno_id) student.aluno_id = result.aluno_id;
+                    student.saldo_carteira = result.new_balance || (student.saldo_carteira || 0) + numericValue;
+                    
+                    // Reload the full profile modal data with the updated student info
                     await this.openProfileModal(student);
                 }
                 
-                // Refresh the main list to reflect in the table
-                this.loadStudents();
+                // Refresh the main list to reflect in the table background
+                await this.loadStudents();
             } else {
                 console.error('Error adding balance (Service result):', result.error);
                 alert('Erro ao adicionar saldo: ' + (result.error?.message || 'Erro desconhecido'));

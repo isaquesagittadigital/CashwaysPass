@@ -18,9 +18,8 @@ import { LucideAngularModule, X, Trash2 } from 'lucide-angular';
 
         <!-- Icon (Gradient Circle) -->
         <div class="mb-6 flex justify-start">
-            <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-[#fbc2eb] to-[#a6c1ee] flex items-center justify-center shadow-lg transform rotate-[-5deg]"
-                 style="background: linear-gradient(135deg, #FFD3A5 0%, #FD6585 100%);">
-              <lucide-icon [img]="icons.Trash2" class="w-7 h-7 text-white"></lucide-icon>
+            <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center shadow-sm border border-red-100">
+              <lucide-icon [img]="icons.Trash2" class="w-7 h-7 text-red-500"></lucide-icon>
             </div>
         </div>
 

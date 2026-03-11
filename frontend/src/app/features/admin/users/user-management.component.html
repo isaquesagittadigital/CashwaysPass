@@ -166,17 +166,17 @@
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex items-center justify-end gap-1">
-                            <button (click)="deleteUser(u.id)"
+                            <button (click)="deleteUser(u.id); $event.stopPropagation()"
                                 class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                                 title="Excluir">
                                 <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon>
                             </button>
-                            <button (click)="viewDetails(u); editFromDetails()"
+                            <button (click)="viewDetails(u); editFromDetails(); $event.stopPropagation()"
                                 class="p-2 text-gray-400 hover:text-[#005bb5] hover:bg-blue-50 rounded-lg transition-all"
                                 title="Editar">
                                 <lucide-icon [img]="icons.Pencil" class="w-4 h-4"></lucide-icon>
                             </button>
-                            <button (click)="viewDetails(u)"
+                            <button (click)="viewDetails(u); $event.stopPropagation()"
                                 class="p-2 text-gray-400 hover:text-[#005bb5] hover:bg-blue-50 rounded-lg transition-all"
                                 title="Ver detalhes">
                                 <lucide-icon [img]="icons.Eye" class="w-4 h-4"></lucide-icon>
@@ -228,7 +228,7 @@
                 <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Tipo de usuário
                     <span class="text-red-500">*</span></label>
                 <div class="relative">
-                    <select [(ngModel)]="form.tipo_acesso"
+                    <select [(ngModel)]="form.tipo_acesso" (change)="onTipoAcessoChange()"
                         class="w-full appearance-none px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] cursor-pointer">
                         <option value="Administrador">Administrador</option>
                         <option value="Escola">Escola</option>
@@ -270,15 +270,17 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Período</label>
                     <div class="relative">
-                        <select [(ngModel)]="form.turmaID"
+                        <select [(ngModel)]="form.turmaID" [disabled]="shouldDisablePeriod()"
+                            [ngClass]="{'opacity-50 cursor-not-allowed bg-gray-100': shouldDisablePeriod()}"
                             class="w-full appearance-none px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] cursor-pointer">
-                            <option value="">Selecionar</option>
+                            <option value="">{{ shouldDisablePeriod() ? 'N/A' : 'Selecionar' }}</option>
                             <option *ngFor="let t of turmas" [value]="t.id">{{ t.nome }}</option>
                         </select>
                         <lucide-icon [img]="icons.ChevronDown"
                             class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
                     </div>
                 </div>
+            </div>
 
             <!-- Email -->
             <div>
@@ -293,13 +295,29 @@
                 <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Escola vinculada
                     <span class="text-red-500">*</span></label>
                 <div class="relative">
-                    <select [(ngModel)]="form.escola_id"
-                        class="w-full appearance-none px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] cursor-pointer">
-                        <option value="">Selecionar a escola</option>
-                        <option *ngFor="let e of escolas" [value]="e.id">{{ e.nome }}</option>
-                    </select>
-                    <lucide-icon [img]="icons.ChevronDown"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
+                    <div class="relative">
+                        <input type="text" [(ngModel)]="schoolSearchTerm" (input)="filterSchools()" 
+                            (focus)="showSchoolList = true"
+                            placeholder="Pesquisar escola..."
+                            class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] transition-all">
+                        <lucide-icon [img]="icons.Search" 
+                            class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
+                    </div>
+                    
+                    <!-- Dropdown de resultados -->
+                    <div *ngIf="showSchoolList && filteredEscolas.length > 0" 
+                        class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+                        <div *ngFor="let e of filteredEscolas" 
+                            (click)="selectSchool(e)"
+                            class="px-4 py-2.5 hover:bg-gray-50 cursor-pointer text-sm border-b border-gray-50 last:border-none flex flex-col">
+                            <span class="font-bold text-gray-900">{{ e.nome }}</span>
+                            <span class="text-[10px] text-gray-500 uppercase">{{ e.id }}</span>
+                        </div>
+                    </div>
+                    <div *ngIf="showSchoolList && filteredEscolas.length === 0" 
+                        class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-4 text-center text-sm text-gray-400">
+                        Nenhuma escola encontrada
+                    </div>
                 </div>
             </div>
 
@@ -348,9 +366,9 @@
 </div>
 
 <!-- Modal: Detalhes do Usuário -->
-<div *ngIf="showDetailModal && selectedUser"
+<div *ngIf="showDetailModal"
     class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in px-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up">
+    <div *ngIf="selectedUser" class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up">
         <!-- Header -->
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <h2 class="text-lg font-bold text-gray-900">Detalhes do usuário</h2>
@@ -360,98 +378,94 @@
         </div>
 
         <!-- Content -->
-        <div class="p-6 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+        <div class="p-6 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
             <!-- Profile Header -->
-            <div class="bg-gray-50/50 border border-gray-100 rounded-2xl p-6 flex items-center gap-6">
-                <div class="w-20 h-20 rounded-full border-2 border-[#005bb5] p-1">
-                    <div class="w-full h-full rounded-full bg-white flex items-center justify-center">
-                        <lucide-icon [img]="icons.User" class="w-10 h-10 text-gray-300"></lucide-icon>
+            <div class="bg-white border border-gray-200 rounded-xl p-6 flex flex-col md:flex-row items-center md:items-start gap-4 shadow-sm">
+                <div class="w-20 h-20 rounded-full border-2 border-[#005bb5] p-1 bg-white shrink-0 flex items-center justify-center">
+                    <div class="w-full h-full rounded-full bg-gray-50 flex items-center justify-center">
+                        <lucide-icon [img]="icons.User" class="w-10 h-10 text-gray-400"></lucide-icon>
                     </div>
                 </div>
-                <div>
-                    <h3 class="text-xl font-bold text-gray-900">{{ selectedUser.nome_completo }}</h3>
-                    <p class="text-sm text-gray-500 font-medium">{{ selectedUser.tipo_acesso }}</p>
-                    <span
-                        class="inline-block mt-2 px-3 py-1 bg-gray-100 rounded-full text-[10px] font-bold text-gray-500 uppercase">{{
-                        selectedUser.cpf || '---' }}</span>
-                </div>
-            </div>
-
-            <!-- Email, CPF & Telefone -->
-            <div class="space-y-4">
-                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Email</p>
-                    <div class="flex items-center gap-2 text-[#005bb5]">
-                        <lucide-icon [img]="icons.Mail" class="w-4 h-4"></lucide-icon>
-                        <p class="text-sm font-bold">{{ selectedUser.email }}</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">CPF</p>
-                        <div class="flex items-center gap-2 text-[#005bb5]">
-                            <lucide-icon [img]="icons.Shield" class="w-4 h-4"></lucide-icon>
-                            <p class="text-sm font-bold">{{ selectedUser.cpf || '---' }}</p>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Telefone</p>
-                        <div class="flex items-center gap-2 text-[#005bb5]">
-                            <lucide-icon [img]="icons.Phone" class="w-4 h-4"></lucide-icon>
-                            <p class="text-sm font-bold">{{ selectedUser.telefone || '---' }}</p>
-                        </div>
+                <div class="flex-1 text-center md:text-left pt-1">
+                    <h3 class="text-base font-bold text-gray-900 leading-tight">{{ selectedUser.nome_completo }}</h3>
+                    <p class="text-sm text-gray-500 mt-1">{{ getTurmaName(selectedUser.turmaID) }} - {{ selectedUser.grau_escolaridade || 'Sem grau escolar' }}</p>
+                    <div class="mt-2 text-left">
+                        <span class="inline-block px-3 py-1 bg-gray-50 border border-gray-100 rounded-full text-[11px] font-medium text-gray-600">
+                            {{ selectedUser.cpf ? selectedUser.cpf : (selectedUser.id | number:'6.0-0')?.replace(',', '') || '000000' }}
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <!-- Dates -->
+            <!-- Basic Info Grid: CPF and Telefone -->
             <div class="grid grid-cols-2 gap-4">
-                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Data de criação</p>
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <p class="text-xs font-bold text-gray-900 mb-2">CPF</p>
+                    <p class="text-sm font-medium text-gray-600">{{ selectedUser.cpf || '---' }}</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <p class="text-xs font-bold text-gray-900 mb-2">Telefone</p>
+                    <p class="text-sm font-medium text-gray-600">{{ selectedUser.telefone || '---' }}</p>
+                </div>
+            </div>
+
+            <!-- Email (Full Width) -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <p class="text-xs font-bold text-gray-900 mb-2">Email</p>
+                <div class="flex items-center gap-2 text-[#005bb5]">
+                    <lucide-icon [img]="icons.Mail" class="w-5 h-5"></lucide-icon>
+                    <p class="text-sm font-medium text-gray-700">{{ selectedUser.email }}</p>
+                </div>
+            </div>
+
+            <!-- Dates Grid -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <p class="text-xs font-bold text-gray-900 mb-2">Data de criação</p>
                     <div class="flex items-center gap-2 text-[#005bb5]">
-                        <lucide-icon [img]="icons.Calendar" class="w-4 h-4"></lucide-icon>
-                        <p class="text-sm font-bold">{{ formatDate(selectedUser.created_at) }}</p>
+                        <lucide-icon [img]="icons.Calendar" class="w-5 h-5"></lucide-icon>
+                        <p class="text-sm font-medium text-gray-700">{{ formatDate(selectedUser.created_at) }}</p>
                     </div>
                 </div>
-                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Último login</p>
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <p class="text-xs font-bold text-gray-900 mb-2">Último login</p>
                     <div class="flex items-center gap-2 text-[#005bb5]">
-                        <lucide-icon [img]="icons.Clock" class="w-4 h-4"></lucide-icon>
-                        <p class="text-sm font-bold">{{ formatDate(selectedUser.ultimo_login) }}</p>
+                        <lucide-icon [img]="icons.Clock" class="w-5 h-5"></lucide-icon>
+                        <p class="text-sm font-medium text-gray-700">{{ formatDate(selectedUser.ultimo_login) }}</p>
                     </div>
                 </div>
             </div>
 
-            <!-- School & Period -->
+            <!-- System Info Grid -->
             <div class="grid grid-cols-2 gap-4">
-                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Escola vinculada</p>
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <p class="text-xs font-bold text-gray-900 mb-2">Escola vinculada</p>
                     <div class="flex items-center gap-2 text-[#005bb5]">
-                        <lucide-icon [img]="icons.Building" class="w-4 h-4"></lucide-icon>
-                        <p class="text-sm font-bold truncate">{{ getEscolaName(selectedUser.escola_id) }}</p>
+                        <lucide-icon [img]="icons.Building" class="w-5 h-5"></lucide-icon>
+                        <p class="text-sm font-medium text-gray-700 truncate">{{ getEscolaName(selectedUser.escola_id) }}</p>
                     </div>
                 </div>
-                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Período</p>
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <p class="text-xs font-bold text-gray-900 mb-2">Período</p>
                     <div class="flex items-center gap-2 text-[#005bb5]">
-                        <lucide-icon [img]="icons.Shield" class="w-4 h-4"></lucide-icon>
-                        <p class="text-sm font-bold truncate">{{ getTurmaName(selectedUser.turmaID) }}</p>
+                        <!-- Note: Using Clock or similar icon instead of cloud/sun as we don't have weather icons in the list -->
+                        <lucide-icon [img]="icons.Clock" class="w-5 h-5"></lucide-icon>
+                        <p class="text-sm font-medium text-gray-700">{{ getTurmaName(selectedUser.turmaID) }}</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="p-6 border-t border-gray-100 flex gap-4">
+        <div class="p-6 grid grid-cols-2 gap-4">
             <button (click)="resetPassword()" [disabled]="resetLoading"
-                class="flex-1 py-3 px-4 border border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
-                <lucide-icon [img]="icons.Key" class="w-4 h-4"></lucide-icon>
+                class="py-3 px-4 border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all flex items-center justify-center gap-2">
+                <lucide-icon [img]="icons.Key" class="w-4 h-4 text-gray-400"></lucide-icon>
                 Resetar senha
             </button>
             <button (click)="editFromDetails()"
-                class="flex-1 py-3 px-4 border border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
-                <lucide-icon [img]="icons.Pencil" class="w-4 h-4"></lucide-icon>
+                class="py-3 px-4 border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all flex items-center justify-center gap-2">
+                <lucide-icon [img]="icons.Pencil" class="w-4 h-4 text-gray-400"></lucide-icon>
                 Editar
             </button>
         </div>

@@ -17,6 +17,9 @@ export interface Usuario {
     tipo_acesso: UserTipoAcesso;
     status: UserStatus;
     ultimo_login?: string;
+    data_nascimento?: string;
+    nome_mae?: string;
+    grau_escolaridade?: string;
     created_at?: string;
     updated_at?: string;
 }
@@ -40,6 +43,7 @@ export class UsuarioService {
                 .from(this.TABLE)
                 .select('*', { count: 'exact' })
                 .eq('escola_id', escolaId)
+                .or('excluido.eq.no,excluido.is.null')
                 .order('id', { ascending: false });
 
             if (searchTerm) {
@@ -76,7 +80,7 @@ export class UsuarioService {
         try {
             const { error } = await supabase
                 .from(this.TABLE)
-                .delete()
+                .update({ excluido: 'yes' })
                 .eq('id', id);
 
             if (error) throw error;
@@ -91,7 +95,7 @@ export class UsuarioService {
         try {
             const { error } = await supabase
                 .from(this.TABLE)
-                .delete()
+                .update({ excluido: 'yes' })
                 .in('id', ids);
 
             if (error) throw error;
@@ -106,7 +110,7 @@ export class UsuarioService {
         try {
             const { data, error } = await supabase
                 .from(this.TABLE)
-                .insert([usuario])
+                .insert([{ ...usuario, excluido: 'no' }])
                 .select()
                 .single();
 

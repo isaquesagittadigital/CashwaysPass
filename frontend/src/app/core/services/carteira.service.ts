@@ -63,7 +63,7 @@ export class CarteiraService {
             // 1. Query usuarios (Alunos) — no FK joins
             let query = supabase
                 .from('usuarios')
-                .select('id, nome_completo, status, escola_id, turmaID', { count: 'exact' })
+                .select('id, nome_completo, status, escola_id, turmaID, saldo_carteira', { count: 'exact' })
                 .eq('tipo_acesso', 'Aluno');
 
             if (escolaId) {
@@ -82,25 +82,28 @@ export class CarteiraService {
             if (searchTerm && searchTerm.trim()) {
                 const term = searchTerm.trim();
                 
-                // Also search in 'aluno' table for the wallet number
-                const { data: matchedByRA } = await supabase
-                    .from('aluno')
-                    .select('nome')
-                    .ilike('numero_carteira', `%${term}%`);
+                // Search in 'aluno' table for RA and 'Carteira' table for carteira_code
+                const [matchedByRA, matchedByCode] = await Promise.all([
+                    supabase.from('aluno').select('nome').ilike('ra', `%${term}%`),
+                    supabase.from('Carteira').select('Usuario').ilike('carteira_code', `%${term}%`)
+                ]);
                 
-                const matchedNames = (matchedByRA || []).map(a => a.nome).filter(Boolean);
+                const matchedNamesFromRA = (matchedByRA.data || []).map(a => a.nome).filter(Boolean);
+                const matchedUserIdsFromCode = (matchedByCode.data || []).map(c => c.Usuario).filter(Boolean);
                 
-                if (matchedNames.length > 0) {
-                    // Combine name search and wallet number search results
-                    // We can't easily join here without breaking the existing flow, so we build an OR query
-                    // that covers the searchTerm in the name AND any names that matched the RA search.
-                    const matchedNamesSet = [...new Set(matchedNames)];
-                    // Constructing the OR filter: name match OR RA-based name match
-                    // Supabase .or() with .in() inside can be tricky, so we join names
-                    query = query.or(`nome_completo.ilike.%${term}%,nome_completo.in.(${matchedNamesSet.map(n => `"${n}"`).join(',')})`);
-                } else {
-                    query = query.ilike('nome_completo', `%${term}%`);
+                let orConditions = [`nome_completo.ilike.%${term}%`];
+                
+                if (matchedNamesFromRA.length > 0) {
+                    const names = matchedNamesFromRA.map(n => `"${n}"`).join(',');
+                    orConditions.push(`nome_completo.in.(${names})`);
                 }
+                
+                if (matchedUserIdsFromCode.length > 0) {
+                    const ids = matchedUserIdsFromCode.join(',');
+                    orConditions.push(`id.in.(${ids})`);
+                }
+                
+                query = query.or(orConditions.join(','));
             }
 
             const rangeFrom = (page - 1) * pageSize;
@@ -111,12 +114,23 @@ export class CarteiraService {
             if (error) throw error;
             if (!usuarios || usuarios.length === 0) return { students: [], total: count || 0 };
 
-            // 2. Get aluno records for matching escola_ids
+            const userIds = usuarios.map((u: any) => u.id);
             const userEscolaIds = [...new Set(usuarios.map((u: any) => u.escola_id).filter(Boolean))];
-            const { data: alunos } = await supabase
-                .from('aluno')
-                .select('id, nome, numero_carteira, saldo_carteira, escola_id, usuario_id')
-                .in('escola_id', userEscolaIds);
+
+            // 2. Get aluno records and Carteira records in parallel
+            const [alunosRes, carteirasRes] = await Promise.all([
+                supabase
+                    .from('aluno')
+                    .select('id, nome, ra, saldo_carteira, escola_id, usuario_id')
+                    .in('usuario_id', userIds),
+                supabase
+                    .from('Carteira')
+                    .select('carteira_code, Usuario')
+                    .in('Usuario', userIds)
+            ]);
+
+            const alunos = alunosRes.data || [];
+            const carteiras = carteirasRes.data || [];
 
             // 3. Get turma names
             const turmaIds = [...new Set(usuarios.map((u: any) => u.turmaID).filter(Boolean))];
@@ -145,27 +159,35 @@ export class CarteiraService {
                 }, {});
             }
 
-            // 5. Match aluno to usuario by usuario_id OR (nome + escola_id fallback for legacy)
+            // 5. Build lookup maps for speed
+            const carteiraMap = carteiras.reduce((acc: any, c: any) => {
+                acc[c.Usuario] = c.carteira_code;
+                return acc;
+            }, {});
+
+            // 5. Match aluno to usuario
             const students: WalletStudent[] = usuarios.map((u: any) => {
-                // Try matching by usuario_id first, then name + school
-                const matchedAluno = (alunos || []).find(
-                    (a: any) => (a.usuario_id === u.id) || (a.escola_id === u.escola_id && a.nome === u.nome_completo)
-                );
-                
+                const matchedAluno = alunos.find((a: any) => a.usuario_id === u.id);
                 const turma = turmaMap[u.turmaID] || {};
+                
+                // Priority for wallet code: Carteira table > Aluno.ra > Default
+                const walletCode = carteiraMap[u.id] || matchedAluno?.ra || '000000';
+                
+                // Priority for balance: Aluno table > Usuario table (fallback)
+                const balance = matchedAluno ? Number(matchedAluno.saldo_carteira) : (Number(u.saldo_carteira) || 0);
 
                 return {
-                    id: u.id,
+                    id: String(u.id),
                     aluno_id: matchedAluno?.id || null,
-                    numero_carteira: matchedAluno?.numero_carteira || '000000',
+                    numero_carteira: walletCode,
                     nome: u.nome_completo || 'Sem nome',
                     turma_nome: turma.nome || '',
                     turma_serie: turma.serie || '',
                     escola_nome: escolaMap[u.escola_id] || '',
                     escola_id: u.escola_id,
-                    saldo_carteira: Number(matchedAluno?.saldo_carteira) || 0,
+                    saldo_carteira: balance,
                     status: u.status || 'active',
-                    user_id: u.id
+                    user_id: String(u.id)
                 };
             });
 
@@ -178,12 +200,19 @@ export class CarteiraService {
 
     async getStudentFinancialProfile(alunoId: string): Promise<StudentFinancialProfile | null> {
         try {
-            // Get aluno data (no FK joins)
-            const { data: alunoData, error: alunoError } = await supabase
-                .from('aluno')
-                .select('id, nome, saldo_carteira, escola_id')
-                .eq('id', alunoId)
-                .single();
+            // Check if alunoId is a UUID or a numeric ID (usuario_id)
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(alunoId);
+            
+            // Get aluno data
+            let query = supabase.from('aluno').select('id, nome, saldo_carteira, escola_id');
+            
+            if (isUuid) {
+                query = query.eq('id', alunoId);
+            } else {
+                query = query.eq('usuario_id', alunoId);
+            }
+
+            const { data: alunoData, error: alunoError } = await query.single();
 
             if (alunoError) throw alunoError;
 
@@ -257,9 +286,9 @@ export class CarteiraService {
 
             const { data, error, count } = await supabase
                 .from('lojista_historico')
-                .select('id, produto_nome, quantidade, data_hora, status', { count: 'exact' })
+                .select('id, descricao, data_hora', { count: 'exact' })
                 .eq('aluno_id', alunoId)
-                .eq('tipo_operacao', 'COMPRA')
+                .eq('tipo_operacao', 'VENDA')
                 .order('data_hora', { ascending: false })
                 .range(from, to);
 
@@ -267,10 +296,10 @@ export class CarteiraService {
 
             const items: InventoryItem[] = (data || []).map((i: any) => ({
                 id: i.id,
-                produto: i.produto_nome || 'Produto',
-                quantidade: i.quantidade || 1,
+                produto: i.descricao || 'Produto',
+                quantidade: 1, // lojista_historico doesn't have quantity, defaulting to 1
                 data: i.data_hora ? new Date(i.data_hora).toLocaleDateString('pt-BR') : '',
-                status: i.status || 'pendente'
+                status: 'entregue' // lojista_historico doesn't have status, defaulting
             }));
 
             return { items, total: count || 0 };
@@ -291,10 +320,10 @@ export class CarteiraService {
             const to = from + pageSize - 1;
 
             let query = supabase
-                .from('lojista_historico')
-                .select('id, tipo_operacao, produto_nome, valor, data_hora', { count: 'exact' })
+                .from('investimento_aluno')
+                .select('id, titulo, descricao, valor, valor_investido, created_date', { count: 'exact' })
                 .eq('aluno_id', alunoId)
-                .order('data_hora', { ascending: false })
+                .order('created_date', { ascending: false })
                 .range(from, to);
 
             if (month) {
@@ -304,19 +333,26 @@ export class CarteiraService {
                 const endDate = endMonth > 12
                     ? `${parseInt(year) + 1}-01-01`
                     : `${year}-${String(endMonth).padStart(2, '0')}-01`;
-                query = query.gte('data_hora', startDate).lt('data_hora', endDate);
+                query = query.gte('created_date', startDate).lt('created_date', endDate);
             }
 
             const { data, error, count } = await query;
             if (error) throw error;
 
-            const transactions: Transaction[] = (data || []).map((t: any) => ({
-                id: t.id,
-                tipo: t.tipo_operacao || '',
-                descricao: t.produto_nome || t.tipo_operacao || '',
-                valor: Number(t.valor) || 0,
-                data: t.data_hora ? new Date(t.data_hora).toLocaleDateString('pt-BR') : ''
-            }));
+            const transactions: Transaction[] = (data || []).map((t: any) => {
+                const valor = Number(t.valor || t.valor_investido) || 0;
+                // Determine if it's a credit or debit. Aportes are usually credits (+)
+                // For now, let's treat everything in this table as credit unless it's a withdrawal
+                const isCredit = true; 
+
+                return {
+                    id: t.id,
+                    tipo: isCredit ? 'REPOSICAO' : 'VENDA',
+                    descricao: t.descricao || t.titulo || 'Movimentação',
+                    valor: valor,
+                    data: t.created_date ? new Date(t.created_date).toLocaleDateString('pt-BR') : ''
+                };
+            });
 
             return { transactions, total: count || 0 };
         } catch (error) {
@@ -344,44 +380,107 @@ export class CarteiraService {
         amount: number, 
         alunoNome: string = '', 
         alunoTurma: string = ''
-    ): Promise<{ success: boolean; error?: any }> {
+    ): Promise<{ success: boolean; aluno_id?: string; new_balance?: number; error?: any }> {
         try {
-            // 1. Get current balance
-            const { data: aluno, error: getError } = await supabase
-                .from('aluno')
-                .select('saldo_carteira')
-                .eq('id', alunoId)
-                .single();
+            // Check if alunoId is a UUID or a numeric ID (usuario_id)
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(alunoId);
+            
+            // 1. Get current balance and info
+            let query = supabase.from('aluno').select('id, saldo_carteira, usuario_id, escola_id');
+            
+            if (isUuid) {
+                query = query.eq('id', alunoId);
+            } else {
+                query = query.eq('usuario_id', alunoId);
+            }
+            
+            let { data: alunoFound, error: getError } = await query.single();
 
-            if (getError) throw getError;
+            let targetUuid: string;
+            let targetUsuarioId: number | string | null = null;
+            let targetEscolaId: string | null = null;
+            let currentBalance: number = 0;
 
-            const newBalance = (Number(aluno.saldo_carteira) || 0) + amount;
+            if (getError || !alunoFound) {
+                // If not found in 'aluno' table, we MUST find the user in 'usuarios' to get required info
+                const { data: user, error: userError } = await supabase
+                    .from('usuarios')
+                    .select('id, nome_completo, escola_id, turmaID, saldo_carteira')
+                    .eq('id', isUuid ? 0 : alunoId) 
+                    .single();
+                
+                if (userError || !user) throw new Error('Aluno não encontrado para atualização de saldo.');
 
-            // 2. Update balance
-            const { error: updateError } = await supabase
-                .from('aluno')
-                .update({ saldo_carteira: newBalance })
-                .eq('id', alunoId);
+                // Create the aluno record
+                const { data: newAluno, error: createError } = await supabase
+                    .from('aluno')
+                    .insert({
+                        usuario_id: user.id,
+                        nome: user.nome_completo,
+                        escola_id: user.escola_id,
+                        turma_id: user.turmaID,
+                        saldo_carteira: Number(user.saldo_carteira) || 0
+                    })
+                    .select('id, saldo_carteira, usuario_id, escola_id')
+                    .single();
 
-            if (updateError) throw updateError;
+                if (createError || !newAluno) throw createError;
+                
+                alunoFound = newAluno;
+                targetUuid = newAluno.id;
+                targetUsuarioId = newAluno.usuario_id;
+                targetEscolaId = newAluno.escola_id;
+                currentBalance = Number(newAluno.saldo_carteira) || 0;
+            } else {
+                targetUuid = alunoFound.id;
+                targetUsuarioId = alunoFound.usuario_id;
+                targetEscolaId = alunoFound.escola_id;
+                currentBalance = Number(alunoFound.saldo_carteira) || 0;
+            }
 
-            // 3. Add to history
-            const { error: historyError } = await supabase
-                .from('lojista_historico')
-                .insert({
-                    lojista_id: null, // Now nullable per my SQL change
-                    aluno_id: alunoId,
-                    aluno_nome: alunoNome,
-                    aluno_turma: alunoTurma,
-                    tipo_operacao: 'REPOSICAO',
-                    descricao: 'Adição manual de saldo',
-                    valor: amount,
-                    data_hora: new Date().toISOString()
-                });
+            const newBalance = currentBalance + amount;
 
-            if (historyError) throw historyError;
+            // 2. Update balances and History IN PARALLEL for speed
+            const updatePromises: any[] = [];
 
-            return { success: true };
+            // Update aluno table
+            updatePromises.push(
+                supabase.from('aluno').update({ saldo_carteira: newBalance }).eq('id', targetUuid)
+            );
+
+            // Update usuarios table
+            if (targetUsuarioId) {
+                updatePromises.push(
+                    supabase.from('usuarios').update({ saldo_carteira: newBalance }).eq('id', targetUsuarioId)
+                );
+            }
+
+            // Add history record
+            const historyData = {
+                aluno_id: targetUuid,
+                escola_id: targetEscolaId,
+                titulo: 'REPOSICAO',
+                descricao: 'Adição manual de saldo',
+                valor: amount,
+                status_investimento: 'Ativo',
+                created_date: new Date().toISOString(),
+                data_inicio: new Date().toISOString().split('T')[0]
+            };
+            updatePromises.push(supabase.from('investimento_aluno').insert(historyData).then(res => res));
+
+            // Wait for all operations to complete
+            const results = await Promise.all(updatePromises);
+            
+            // Check for errors in parallel results
+            for (const res of results) {
+                if (res.error) throw res.error;
+            }
+
+            return { 
+                success: true, 
+                aluno_id: targetUuid,
+                new_balance: newBalance 
+            };
         } catch (error) {
             console.error('Error updating student balance:', error);
             return { success: false, error };
