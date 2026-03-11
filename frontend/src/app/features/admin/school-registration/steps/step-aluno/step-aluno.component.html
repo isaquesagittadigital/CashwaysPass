@@ -4,6 +4,9 @@
         <div class="flex items-center justify-between mb-6">
             <h3 class="text-xl font-bold text-gray-900 font-primary">Cadastrar novo aluno</h3>
             <div class="flex items-center gap-4">
+                <button type="button" (click)="downloadCsvTemplate()" class="text-[#00609b] text-sm font-bold hover:underline transition-all">
+                    Baixar modelo
+                </button>
                 <label class="btn-secondary flex items-center gap-2 cursor-pointer py-2 px-4 shadow-sm h-11">
                     <lucide-icon [img]="icons.Upload" class="w-4 h-4"></lucide-icon>
                     <span class="text-xs font-bold">Importar via CSV</span>

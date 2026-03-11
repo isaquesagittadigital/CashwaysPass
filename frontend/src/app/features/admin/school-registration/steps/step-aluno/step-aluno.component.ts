@@ -153,6 +153,21 @@ export class StepAlunoComponent implements OnInit {
         }
     }
 
+    downloadCsvTemplate() {
+        const csvContent = 'Nome,Responsavel,Email,Email Aluno,Carteira\nExemplo Silva,Maria Silva,maria@exemplo.com,exemplo@exemplo.com,12345678\n';
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'modelo_alunos.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
     getTurmaName(id: string, turmas: any[] | null): string {
         if (!turmas) return 'N/A';
         const t = turmas.find(x => x.id === id);
