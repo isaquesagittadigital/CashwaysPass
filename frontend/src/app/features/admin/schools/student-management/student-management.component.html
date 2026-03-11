@@ -132,30 +132,57 @@
             <form [formGroup]="studentForm" (ngSubmit)="onSubmit()" class="space-y-5">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
-                        <label>Turma *</label>
+                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Turma *</label>
                         <div class="relative">
-                            <select formControlName="turmaId" class="form-input appearance-none pr-10">
+                            <select formControlName="turmaId"
+                                class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] appearance-none pr-10 text-sm bg-white transition-colors"
+                                [ngClass]="{'border-red-500': studentForm.get('turmaId')?.invalid && studentForm.get('turmaId')?.touched}">
                                 <option value="">Selecionar</option>
                                 <option *ngFor="let t of turmas" [value]="t.id">{{ t.serie }} {{ t.nome }}</option>
                             </select>
                             <lucide-icon [img]="icons.ChevronDown"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
                         </div>
+                        <div *ngIf="studentForm.get('turmaId')?.invalid && studentForm.get('turmaId')?.touched" class="text-red-500 text-xs mt-1 font-medium flex items-center gap-1">
+                            <lucide-icon [img]="icons.X" class="w-3 h-3"></lucide-icon>
+                            Campo obrigatório
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>Carteira</label>
-                        <input type="text" formControlName="numeroCarteira" class="form-input" placeholder="Ex: AA0001">
+                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Carteira</label>
+                        <input type="text" formControlName="numeroCarteira" maxlength="8"
+                            class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] transition-colors text-sm"
+                            [ngClass]="{'border-red-500': studentForm.get('numeroCarteira')?.invalid && studentForm.get('numeroCarteira')?.touched}"
+                            placeholder="Ex: 12345678">
+                        <div *ngIf="studentForm.get('numeroCarteira')?.invalid && studentForm.get('numeroCarteira')?.touched" class="text-red-500 text-xs mt-1 font-medium flex items-center gap-1">
+                            <lucide-icon [img]="icons.X" class="w-3 h-3"></lucide-icon>
+                            Máximo de 8 números
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Nome do aluno *</label>
-                    <input type="text" formControlName="nome" class="form-input" placeholder="Nome completo">
+                    <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Nome do aluno *</label>
+                    <input type="text" formControlName="nome"
+                        class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] transition-colors text-sm"
+                        [ngClass]="{'border-red-500': studentForm.get('nome')?.invalid && studentForm.get('nome')?.touched}"
+                        placeholder="Nome completo">
+                    <div *ngIf="studentForm.get('nome')?.invalid && studentForm.get('nome')?.touched" class="text-red-500 text-xs mt-1 font-medium flex items-center gap-1">
+                        <lucide-icon [img]="icons.X" class="w-3 h-3"></lucide-icon>
+                        Campo obrigatório
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Email do aluno *</label>
-                    <input type="email" formControlName="email" class="form-input" placeholder="email@exemplo.com">
+                    <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Email do aluno *</label>
+                    <input type="email" formControlName="email"
+                        class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] transition-colors text-sm"
+                        [ngClass]="{'border-red-500': studentForm.get('email')?.invalid && studentForm.get('email')?.touched}"
+                        placeholder="email@exemplo.com">
+                    <div *ngIf="studentForm.get('email')?.invalid && studentForm.get('email')?.touched" class="text-red-500 text-xs mt-1 font-medium flex items-center gap-1">
+                        <lucide-icon [img]="icons.X" class="w-3 h-3"></lucide-icon>
+                        <span>{{ studentForm.get('email')?.errors?.['required'] ? 'Campo obrigatório' : 'Email inválido' }}</span>
+                    </div>
                 </div>
 
                 <!-- Status Toggle (Same as professor) -->

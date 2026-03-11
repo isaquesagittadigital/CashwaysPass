@@ -66,7 +66,7 @@ export class StudentManagementComponent implements OnInit, OnChanges {
             email: ['', [Validators.required, Validators.email]],
             telefone: [''],
             data_nascimento: [''],
-            numeroCarteira: [''],
+            numeroCarteira: ['', [Validators.maxLength(8)]],
             status: ['active']
         });
     }
