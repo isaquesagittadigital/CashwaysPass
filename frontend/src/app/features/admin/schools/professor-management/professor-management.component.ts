@@ -95,6 +95,9 @@ export class ProfessorManagementComponent implements OnInit {
 
     applyFilters() {
         this.filteredProfessors = this.allProfessors.filter(prof => {
+            // Filter out softly deleted professors just in case the backend query returns them
+            if (prof.deleted === true || prof.excluido === 'sim') return false;
+
             const matchesSearch = !this.searchTerm ||
                 prof.nome_completo?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
                 prof.email?.toLowerCase().includes(this.searchTerm.toLowerCase());

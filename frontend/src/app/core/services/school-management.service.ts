@@ -176,6 +176,11 @@ export class SchoolManagementService {
                 .from('usuarios')
                 .update({ deleted: true, status: 'inactive' })
                 .eq('id', id)
+        ).pipe(
+            map(resp => {
+                if (resp.error) throw resp.error;
+                return resp.data;
+            })
         );
     }
 
