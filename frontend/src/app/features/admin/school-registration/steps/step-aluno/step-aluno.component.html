@@ -15,38 +15,46 @@
         <form [formGroup]="alunoForm" (ngSubmit)="addStudent()" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
             <div class="form-group">
                 <label>Turma *</label>
-                <select formControlName="turmaId" class="form-input">
+                <select formControlName="turmaId" class="form-input" [class.input-error]="alunoForm.get('turmaId')?.invalid && alunoForm.get('turmaId')?.touched">
                     <option value="">Selecione a turma</option>
                     <option *ngFor="let turma of turmas$ | async" [value]="turma.id">{{ turma.serie }} {{ turma.nome }}
                     </option>
                 </select>
+                <p *ngIf="alunoForm.get('turmaId')?.touched && alunoForm.get('turmaId')?.hasError('required')" class="error-text">Campo obrigatório</p>
             </div>
 
             <div class="form-group">
                 <label>Nome do aluno *</label>
-                <input type="text" formControlName="nome" class="form-input" placeholder="Nome completo">
+                <input type="text" formControlName="nome" class="form-input" [class.input-error]="alunoForm.get('nome')?.invalid && alunoForm.get('nome')?.touched" placeholder="Nome completo">
+                <p *ngIf="alunoForm.get('nome')?.touched && alunoForm.get('nome')?.hasError('required')" class="error-text">Campo obrigatório</p>
             </div>
 
             <div class="form-group">
                 <label>Responsável *</label>
-                <input type="text" formControlName="responsavel" class="form-input" placeholder="Nome do responsável">
+                <input type="text" formControlName="responsavel" class="form-input" [class.input-error]="alunoForm.get('responsavel')?.invalid && alunoForm.get('responsavel')?.touched" placeholder="Nome do responsável">
+                <p *ngIf="alunoForm.get('responsavel')?.touched && alunoForm.get('responsavel')?.hasError('required')" class="error-text">Campo obrigatório</p>
             </div>
 
             <div class="form-group">
                 <label>Email do aluno *</label>
-                <input type="email" formControlName="emailAluno" class="form-input"
+                <input type="email" formControlName="emailAluno" class="form-input" [class.input-error]="alunoForm.get('emailAluno')?.invalid && alunoForm.get('emailAluno')?.touched"
                     placeholder="aluno@exemplo.com">
+                <p *ngIf="alunoForm.get('emailAluno')?.touched && alunoForm.get('emailAluno')?.hasError('required')" class="error-text">Campo obrigatório</p>
+                <p *ngIf="alunoForm.get('emailAluno')?.touched && alunoForm.get('emailAluno')?.hasError('email')" class="error-text">Email inválido</p>
             </div>
 
             <div class="form-group">
                 <label>Email do responsável *</label>
-                <input type="email" formControlName="emailResponsavel" class="form-input"
+                <input type="email" formControlName="emailResponsavel" class="form-input" [class.input-error]="alunoForm.get('emailResponsavel')?.invalid && alunoForm.get('emailResponsavel')?.touched"
                     placeholder="email@exemplo.com">
+                <p *ngIf="alunoForm.get('emailResponsavel')?.touched && alunoForm.get('emailResponsavel')?.hasError('required')" class="error-text">Campo obrigatório</p>
+                <p *ngIf="alunoForm.get('emailResponsavel')?.touched && alunoForm.get('emailResponsavel')?.hasError('email')" class="error-text">Email inválido</p>
             </div>
 
             <div class="form-group">
                 <label>Número da carteira *</label>
-                <input type="text" formControlName="numeroCarteira" class="form-input" placeholder="000.000.000-00">
+                <input type="text" formControlName="numeroCarteira" maxlength="8" class="form-input" [class.input-error]="alunoForm.get('numeroCarteira')?.invalid && alunoForm.get('numeroCarteira')?.touched" placeholder="8 dígitos numéricos...">
+                <p *ngIf="alunoForm.get('numeroCarteira')?.touched && alunoForm.get('numeroCarteira')?.hasError('required')" class="error-text">Campo obrigatório</p>
             </div>
 
             <div class="flex items-center gap-4">
