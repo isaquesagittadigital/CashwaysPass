@@ -246,7 +246,7 @@ export class SchoolRegistrationService {
                     const turmaInserts = turmas.map(t => ({
                         nome: t.nome,
                         estagio: t.estagio,
-                        Periodos: t.periodo,
+                        periodo: t.periodo,
                         serie: t.serie,
                         professor: profs.find(p => p.id === t.professor_id)?.nome || '',
                         quantidade_alunos: t.quantidade_alunos,
@@ -297,7 +297,6 @@ export class SchoolRegistrationService {
                             turma_id: turmaIdMap.get(s.turmaId),
                             nome: s.nome,
                             email: s.emailAluno,
-                            email_responsavel: s.emailResponsavel,
                             nome_mae: s.responsavel,
                             ra: s.numeroCarteira
                         }));
