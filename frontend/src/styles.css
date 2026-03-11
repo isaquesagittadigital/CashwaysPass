@@ -139,3 +139,20 @@ input[type=number] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+/* Form Validation Styles */
+.input-error {
+  border-color: #ef4444 !important;
+}
+.input-error:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+}
+
+.error-text {
+  font-size: 11px;
+  color: #ef4444;
+  margin-top: 6px;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease-out forwards;
+}

@@ -135,7 +135,8 @@ export class SchoolManagementService {
             .from('usuarios')
             .select('*')
             .eq('escola_id', schoolId)
-            .eq('tipo_acesso', 'Professor');
+            .eq('tipo_acesso', 'Professor')
+            .not('deleted', 'eq', true);
 
         if (turmaId) {
             // Se houver lógica de vinculação professor_turma, aplicar aqui. 
@@ -173,7 +174,7 @@ export class SchoolManagementService {
         return from(
             supabase
                 .from('usuarios')
-                .delete()
+                .update({ deleted: true, status: 'inactive' })
                 .eq('id', id)
         );
     }
