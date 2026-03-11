@@ -53,6 +53,7 @@ export interface AlunoData {
     nome: string;
     responsavel: string;
     emailResponsavel: string;
+    emailAluno: string;
     numeroCarteira: string;
 }
 
@@ -102,6 +103,15 @@ export class SchoolRegistrationService {
         this.professors.next([...current, { ...professor, id: crypto.randomUUID() }]);
     }
 
+    updateProfessor(id: string, professor: ProfessorData) {
+        const current = this.professors.value;
+        const index = current.findIndex(p => p.id === id);
+        if (index !== -1) {
+            current[index] = { ...professor, id };
+            this.professors.next([...current]);
+        }
+    }
+
     removeProfessor(id: string) {
         const current = this.professors.value;
         this.professors.next(current.filter(p => p.id !== id));
@@ -126,6 +136,15 @@ export class SchoolRegistrationService {
         const current = this.students.value;
         const withIds = students.map(s => ({ ...s, id: crypto.randomUUID() }));
         this.students.next([...current, ...withIds]);
+    }
+
+    updateStudent(id: string, student: AlunoData) {
+        const current = this.students.value;
+        const index = current.findIndex(s => s.id === id);
+        if (index !== -1) {
+            current[index] = { ...student, id };
+            this.students.next([...current]);
+        }
     }
 
     removeStudent(id: string) {
@@ -256,7 +275,7 @@ export class SchoolRegistrationService {
                         const studentUserInserts = students.map(s => ({
                             nome_completo: s.nome,
                             nome: s.nome,
-                            email: s.emailResponsavel,
+                            email: s.emailAluno, // Ensure student logs in with their own email
                             tipo_acesso: 'Aluno',
                             status: 'active',
                             escola_id: schoolId,
@@ -277,7 +296,8 @@ export class SchoolRegistrationService {
                             escola_id: schoolId,
                             turma_id: turmaIdMap.get(s.turmaId),
                             nome: s.nome,
-                            email: s.emailResponsavel,
+                            email: s.emailAluno,
+                            email_responsavel: s.emailResponsavel,
                             nome_mae: s.responsavel,
                             ra: s.numeroCarteira
                         }));

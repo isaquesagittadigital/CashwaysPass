@@ -35,8 +35,8 @@
                     <div class="flex items-center gap-6 flex-1">
                         <button type="submit"
                             class="px-6 h-[46px] rounded-xl border border-gray-100 bg-white text-gray-400 font-bold flex items-center gap-2 hover:bg-gray-50 transition-all border-dashed">
-                            <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
-                            Cadastrar professor
+                            <lucide-icon [img]="isEditing ? icons.Edit : icons.Plus" class="w-5 h-5"></lucide-icon>
+                            {{ isEditing ? 'Atualizar professor' : 'Cadastrar professor' }}
                         </button>
                         <p class="text-xs text-gray-400 font-medium">Preencha os campos para realizar um novo cadastro.
                         </p>
@@ -116,7 +116,7 @@
                                         title="Excluir">
                                         <lucide-icon [img]="icons.Trash2" class="w-5 h-5"></lucide-icon>
                                     </button>
-                                    <button
+                                    <button (click)="editProfessor(professor)"
                                         class="p-2 text-gray-300 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all border border-gray-50"
                                         title="Editar">
                                         <lucide-icon [img]="icons.Edit" class="w-5 h-5"></lucide-icon>
@@ -149,5 +149,34 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Modal: Confirmar Exclusão -->
+<app-delete-confirm-modal 
+    [isVisible]="showDeleteConfirm"
+    [entityName]="'este professor'"
+    [entityArticle]="'o'"
+    (onConfirm)="confirmDelete()"
+    (onCancel)="cancelDelete()">
+</app-delete-confirm-modal>
+
+<!-- Toast de Sucesso -->
+<div *ngIf="showSuccessToast"
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in px-4">
+    <div
+        class="bg-white rounded-3xl shadow-2xl w-full max-w-[320px] p-8 flex flex-col items-center text-center animate-scale-up">
+        <div
+            class="w-20 h-20 rounded-full bg-gradient-to-br from-[#005bb5] to-[#00aaff] flex items-center justify-center mb-6 shadow-lg shadow-blue-100">
+            <lucide-icon [img]="icons.CheckCircle2" class="w-10 h-10 text-white"></lucide-icon>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Sucesso</h3>
+        <p class="text-sm text-gray-500 mb-8 leading-relaxed">
+            {{ toastMessage }}
+        </p>
+        <button (click)="closeToast()"
+            class="w-full py-3.5 bg-white border border-gray-100 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+            Fechar
+        </button>
     </div>
 </div>
