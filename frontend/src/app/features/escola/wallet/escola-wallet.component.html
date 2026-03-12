@@ -1,0 +1,405 @@
+<!-- Header -->
+<div class="mb-6">
+    <button (click)="goBack()"
+        class="flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm mb-2 transition-colors">
+        <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4"></lucide-icon>
+        Voltar
+    </button>
+    <h1 class="text-[32px] font-semibold text-gray-900">Carteira digital</h1>
+    <p class="text-sm text-gray-500 mt-1">Visualize o saldo e histórico de cada aluno.</p>
+</div>
+
+<!-- Main Card -->
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm">
+
+    <!-- Filters Bar -->
+    <div class="p-6 border-b border-gray-100">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <h2 class="text-lg font-bold text-gray-900">
+                Alunos <span class="text-gray-400 font-normal">({{ totalStudents }})</span>
+            </h2>
+
+            <div class="flex items-center gap-3 flex-wrap">
+                <!-- Turma Filter -->
+                <div class="relative group">
+                    <select [(ngModel)]="turmaFilter" (ngModelChange)="onFilterChange()"
+                        class="bg-white border border-gray-200 rounded-lg px-4 py-2 pr-9 text-sm text-gray-700 appearance-none cursor-pointer focus:outline-none focus:border-blue-400 hover:border-gray-300 transition-all font-medium min-w-[140px]">
+                        <option value="">Todas as turmas</option>
+                        <option *ngFor="let t of turmas" [value]="t.id">{{ t.serie }} {{ t.nome }}</option>
+                    </select>
+                    <lucide-icon [img]="icons.ChevronDown"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors"></lucide-icon>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="relative group">
+                    <select [(ngModel)]="statusFilter" (ngModelChange)="onStatusChange()"
+                        class="bg-white border border-gray-200 rounded-lg px-4 py-2 pr-9 text-sm text-gray-700 appearance-none cursor-pointer focus:outline-none focus:border-blue-400 hover:border-gray-300 transition-all font-medium min-w-[100px]">
+                        <option value="Todos">Todos</option>
+                        <option value="Ativo">Ativo</option>
+                        <option value="Inativo">Inativo</option>
+                    </select>
+                    <lucide-icon [img]="icons.ChevronDown"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors"></lucide-icon>
+                </div>
+
+
+
+                <!-- Search -->
+                <div class="relative">
+                    <lucide-icon [img]="icons.Search"
+                        class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+                    <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" (ngModelChange)="onSearch()"
+                        placeholder="Buscar aluno, carteira ou turma"
+                        class="bg-white border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm text-gray-700 w-[280px] focus:outline-none focus:border-blue-400 transition-all placeholder:text-gray-400 shadow-sm hover:border-gray-300">
+                </div>
+
+                <!-- Export -->
+                <button (click)="exportToCSV()"
+                    class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-all shadow-sm active:scale-95">
+                    <lucide-icon [img]="icons.Download" class="w-4 h-4"></lucide-icon>
+                    Exportar
+                </button>
+
+                <!-- Clear Filters -->
+                <button *ngIf="hasFilters" (click)="clearFilters()"
+                    class="flex items-center gap-1.5 px-2 py-1 text-[11px] font-bold text-gray-400 hover:text-gray-600 transition-all group active:scale-95">
+                    <lucide-icon [img]="icons.RefreshCw"
+                        class="w-3 h-3 group-hover:rotate-180 transition-transform duration-500"></lucide-icon>
+                    Limpar filtros
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="border-b border-gray-100">
+                    <th class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
+                        Carteira</th>
+                    <th class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
+                        Nome do aluno</th>
+                    <th class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
+                        Turma</th>
+                    <th class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
+                        Escola</th>
+                    <th class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
+                        Saldo atual</th>
+                    <th class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
+                        Status</th>
+                    <th class="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
+                        Ações
+                        <lucide-icon [img]="icons.ChevronDown"
+                            class="w-3 h-3 inline-block ml-1 text-gray-300"></lucide-icon>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Loading state -->
+                <tr *ngIf="loading">
+                    <td colspan="7" class="text-center py-16 text-gray-400 text-sm">
+                        <lucide-icon [img]="icons.RefreshCw"
+                            class="w-6 h-6 mx-auto mb-2 animate-spin text-blue-400"></lucide-icon>
+                        Carregando...
+                    </td>
+                </tr>
+
+                <!-- Empty state -->
+                <tr *ngIf="!loading && students.length === 0">
+                    <td colspan="7" class="text-center py-16 text-gray-400 text-sm">
+                        <lucide-icon [img]="icons.CreditCard" class="w-8 h-8 mx-auto mb-3 text-gray-300"></lucide-icon>
+                        Nenhum aluno encontrado.
+                    </td>
+                </tr>
+
+                <!-- Students -->
+                <tr *ngFor="let student of students"
+                    class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                    <td class="px-6 py-4 text-sm text-gray-500 font-mono">{{ student.numero_carteira }}</td>
+                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ student.nome }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">{{ student.turma_serie }} {{ student.turma_nome }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">{{ student.escola_nome }}</td>
+                    <td class="px-6 py-4 text-sm font-semibold"
+                        [ngClass]="student.saldo_carteira >= 0 ? 'text-green-600' : 'text-red-500'">
+                        {{ formatCurrency(student.saldo_carteira) }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                            [ngClass]="getStatusClass(student.status)">
+                            {{ getStatusLabel(student.status) }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+
+                            <button (click)="openProfileModal(student)"
+                                class="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                title="Ver perfil financeiro">
+                                <lucide-icon [img]="icons.Eye" class="w-4 h-4"></lucide-icon>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+        <p class="text-sm text-gray-500">
+            Página {{ currentPage }} de {{ totalPages }}
+        </p>
+        <div class="flex gap-2">
+            <button (click)="prevPage()" [disabled]="currentPage <= 1"
+                class="px-5 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                Anterior
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage >= totalPages"
+                class="px-5 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                Próximo
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== STUDENT FINANCIAL PROFILE MODAL ===================== -->
+<div *ngIf="showProfileModal" class="fixed inset-0 z-50 flex justify-end">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="closeProfileModal()"></div>
+
+    <!-- Slide-in Panel -->
+    <div class="relative w-full max-w-md bg-white shadow-2xl overflow-y-auto animate-slide-in-right">
+
+        <!-- Close button -->
+        <button (click)="closeProfileModal()"
+            class="absolute top-5 right-5 p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors z-10">
+            <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+        </button>
+
+        <div class="p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-6">Perfil financeiro do aluno</h2>
+
+            <!-- Loading -->
+            <div *ngIf="profileLoading" class="flex items-center justify-center py-20">
+                <lucide-icon [img]="icons.RefreshCw" class="w-6 h-6 animate-spin text-blue-400"></lucide-icon>
+            </div>
+
+            <div *ngIf="!profileLoading && selectedProfile">
+                <!-- Student Card (blue gradient) -->
+                <div
+                    class="rounded-2xl bg-gradient-to-br from-[#003d7a] to-[#1a73e8] p-5 text-white mb-6 relative overflow-hidden">
+                    <!-- Decorative circle -->
+                    <div class="absolute -top-6 -right-6 w-32 h-32 bg-white/5 rounded-full"></div>
+
+                    <div class="flex items-center gap-4 mb-5">
+                        <div class="w-14 h-14 bg-white/15 rounded-full flex items-center justify-center">
+                            <lucide-icon [img]="icons.CreditCard" class="w-7 h-7 text-white/80"></lucide-icon>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">{{ selectedProfile.nome }}</h3>
+                            <p class="text-white/70 text-sm">{{ selectedProfile.turma }}</p>
+                        </div>
+                        <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                            {{ getStatusLabel(selectedProfile.status) }}
+                        </span>
+                    </div>
+
+                    <!-- Balance Cards -->
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
+                                    <span class="text-[10px] font-bold text-yellow-800">$</span>
+                                </div>
+                                <span class="text-white/70 text-xs">Saldo atual</span>
+                            </div>
+                            <p class="text-xl font-bold">{{ formatCurrency(selectedProfile.saldo_carteira) }}</p>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
+                                    <span class="text-[10px] font-bold text-yellow-800">$</span>
+                                </div>
+                                <span class="text-white/70 text-xs">Saldo em propósitos</span>
+                            </div>
+                            <p class="text-xl font-bold">{{ formatCurrency(selectedProfile.saldo_propositos) }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Add Balance Action -->
+                    <div *ngIf="!showAddBalanceForm" class="flex justify-center">
+                        <button (click)="toggleAddBalanceForm()"
+                            class="flex items-center gap-2 px-6 py-2 bg-white/20 hover:bg-white/30 rounded-full text-sm font-semibold transition-all">
+                            <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
+                            Adicionar saldo
+                        </button>
+                    </div>
+
+                    <!-- Add Balance Form -->
+                    <div *ngIf="showAddBalanceForm" class="bg-white/10 rounded-xl p-4 animate-in fade-in slide-in-from-top-4 duration-300 border border-white/5 shadow-inner">
+                        <label class="text-[11px] font-bold text-white/60 uppercase tracking-wider mb-2 block">Valor a adicionar</label>
+                        <div class="relative mb-4">
+                            <input type="text" [(ngModel)]="addBalanceAmountFormatted" 
+                                mask="separator.2" thousandSeparator="." decimalMarker="," prefix="R$ "
+                                class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:border-yellow-400/50 transition-all font-bold text-lg"
+                                placeholder="R$ 0,00">
+                        </div>
+                        <div class="flex gap-2">
+                            <button (click)="confirmAddBalance()" [disabled]="addBalanceLoading || !addBalanceAmountFormatted"
+                                class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold py-3 rounded-xl text-sm transition-all shadow-lg hover:shadow-yellow-400/20 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                                <lucide-icon *ngIf="!addBalanceLoading" [img]="icons.CreditCard" class="w-4 h-4"></lucide-icon>
+                                <lucide-icon *ngIf="addBalanceLoading" [img]="icons.RefreshCw" class="w-4 h-4 animate-spin"></lucide-icon>
+                                {{ addBalanceLoading ? 'Processando...' : 'Confirmar depósito' }}
+                            </button>
+                            <button (click)="toggleAddBalanceForm()"
+                                class="px-4 py-3 border border-white/20 rounded-xl text-sm font-bold hover:bg-white/10 transition-all text-white active:scale-95">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Purpose Distribution -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-bold text-gray-900 mb-4">Distribuição de propósitos</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div *ngFor="let purpose of purposes; let i = index" class="rounded-xl p-4 text-white"
+                            [ngClass]="getPurposeColor(purpose.nome, i) + ' ' + getPurposeBorderClass(i)">
+                            <p class="text-sm font-medium text-white/80 mb-1">{{ purpose.nome }}</p>
+                            <p class="text-lg font-bold">{{ formatCurrency(purpose.saldo) }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-bold text-gray-900 mb-4">Inventário</h3>
+                    <table class="w-full" *ngIf="inventory.length > 0">
+                        <thead>
+                            <tr class="border-b border-gray-100">
+                                <th class="text-left text-[11px] font-semibold text-gray-400 uppercase pb-3">Produto
+                                </th>
+                                <th class="text-left text-[11px] font-semibold text-gray-400 uppercase pb-3">Quantidade
+                                </th>
+                                <th class="text-left text-[11px] font-semibold text-gray-400 uppercase pb-3">Data</th>
+                                <th class="text-right text-[11px] font-semibold text-gray-400 uppercase pb-3">
+                                    Ações
+                                    <lucide-icon [img]="icons.ChevronDown"
+                                        class="w-3 h-3 inline-block ml-1 text-gray-300"></lucide-icon>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of inventory" class="border-b border-gray-50">
+                                <td class="py-3 text-sm text-gray-700">{{ item.produto }}</td>
+                                <td class="py-3 text-sm text-gray-500">{{ item.quantidade }}</td>
+                                <td class="py-3 text-sm text-gray-500">{{ item.data }}</td>
+                                <td class="py-3 text-right">
+                                    <button *ngIf="item.status !== 'resgatado'" (click)="openRedeemModal(item.id)"
+                                        class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                                        Resgatar
+                                    </button>
+                                    <span *ngIf="item.status === 'resgatado'"
+                                        class="text-sm text-gray-400">Resgatado</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div *ngIf="inventory.length === 0" class="text-center py-6 text-gray-400 text-sm">
+                        Nenhum item no inventário.
+                    </div>
+
+                    <!-- Inventory Pagination -->
+                    <div *ngIf="inventoryTotalPages > 1" class="flex items-center justify-between pt-3 mt-2">
+                        <p class="text-xs text-gray-400">Página {{ inventoryPage }} de {{ inventoryTotalPages }}</p>
+                        <div class="flex gap-2">
+                            <button (click)="inventoryPrevPage()" [disabled]="inventoryPage <= 1"
+                                class="px-3 py-1 border border-gray-200 rounded text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40">
+                                Anterior
+                            </button>
+                            <button (click)="inventoryNextPage()" [disabled]="inventoryPage >= inventoryTotalPages"
+                                class="px-3 py-1 border border-gray-200 rounded text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40">
+                                Próximo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction History -->
+                <div>
+                    <h3 class="text-sm font-bold text-gray-900 mb-4">Histórico de movimentações</h3>
+
+                    <div class="mb-4">
+                        <label class="text-xs text-gray-500 mb-1 block">Mês</label>
+                        <input type="month" [(ngModel)]="transactionMonth" (ngModelChange)="onTransactionMonthChange()"
+                            class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-blue-400 transition-colors w-full">
+                    </div>
+
+                    <div *ngIf="transactions.length > 0" class="space-y-3">
+                        <div *ngFor="let tx of transactions"
+                            class="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">{{ tx.descricao }}</p>
+                                <p class="text-xs text-gray-400">{{ tx.data }}</p>
+                            </div>
+                            <span class="text-sm font-semibold"
+                                [ngClass]="tx.tipo === 'VENDA' ? 'text-red-500' : 'text-green-600'">
+                                {{ tx.tipo === 'VENDA' ? '-' : '+' }}{{ formatCurrency(tx.valor) }}
+                            </span>
+                        </div>
+                    </div>
+                    <div *ngIf="transactions.length === 0" class="text-center py-6 text-gray-400 text-sm">
+                        Nenhuma movimentação encontrada.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== REDEEM CONFIRMATION MODAL ===================== -->
+<div *ngIf="showRedeemModal" class="fixed inset-0 z-[60] flex items-center justify-center">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="closeRedeemModal()"></div>
+
+    <!-- Modal Card -->
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center mx-4">
+        <!-- Close -->
+        <button (click)="closeRedeemModal()"
+            class="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 transition-colors">
+            <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+        </button>
+
+        <!-- Alert icon -->
+        <div
+            class="w-16 h-16 mx-auto mb-5 rounded-full bg-gradient-to-br from-orange-200 to-yellow-200 flex items-center justify-center">
+            <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+        </div>
+
+        <h3 class="text-lg font-bold text-gray-900 mb-1">Deseja confirmar o resgate?</h3>
+        <p class="text-sm text-gray-500 mb-6">A ação não poderá ser desfeita.</p>
+
+        <button (click)="confirmRedeem()" [disabled]="redeemLoading"
+            class="w-full bg-[#005bb5] text-white font-semibold py-3 rounded-xl hover:bg-[#004a94] transition-colors mb-3 disabled:opacity-60">
+            {{ redeemLoading ? 'Confirmando...' : 'Sim, confirmar' }}
+        </button>
+        <button (click)="closeRedeemModal()"
+            class="w-full border border-gray-200 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-50 transition-colors">
+            Cancelar
+        </button>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<app-action-success-modal 
+    [isVisible]="showSuccessModal" 
+    [title]="successModalTitle" 
+    [message]="successModalMessage"
+    (onClose)="closeSuccessModal()">
+</app-action-success-modal>

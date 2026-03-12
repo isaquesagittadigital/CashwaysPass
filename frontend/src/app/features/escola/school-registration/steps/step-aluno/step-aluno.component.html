@@ -1,0 +1,164 @@
+<div class="space-y-8">
+    <!-- Register New Student -->
+    <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-900 font-primary">Cadastrar novo aluno</h3>
+            <div class="flex items-center gap-4">
+                <button type="button" (click)="downloadCsvTemplate()" class="text-[#00609b] text-sm font-bold hover:underline transition-all">
+                    Baixar modelo
+                </button>
+                <label class="btn-secondary flex items-center gap-2 cursor-pointer py-2 px-4 shadow-sm h-11">
+                    <lucide-icon [img]="icons.Upload" class="w-4 h-4"></lucide-icon>
+                    <span class="text-xs font-bold">Importar via CSV</span>
+                    <input type="file" (change)="onFileChange($event)" accept=".csv" class="hidden">
+                </label>
+            </div>
+        </div>
+
+        <form [formGroup]="alunoForm" (ngSubmit)="addStudent()" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+            <div class="form-group">
+                <label>Turma *</label>
+                <select formControlName="turmaId" class="form-input" [class.input-error]="alunoForm.get('turmaId')?.invalid && alunoForm.get('turmaId')?.touched">
+                    <option value="">Selecione a turma</option>
+                    <option *ngFor="let turma of turmas$ | async" [value]="turma.id">{{ turma.serie }} {{ turma.nome }}
+                    </option>
+                </select>
+                <p *ngIf="alunoForm.get('turmaId')?.touched && alunoForm.get('turmaId')?.hasError('required')" class="error-text">Campo obrigatório</p>
+            </div>
+
+            <div class="form-group">
+                <label>Nome do aluno *</label>
+                <input type="text" formControlName="nome" class="form-input" [class.input-error]="alunoForm.get('nome')?.invalid && alunoForm.get('nome')?.touched" placeholder="Nome completo">
+                <p *ngIf="alunoForm.get('nome')?.touched && alunoForm.get('nome')?.hasError('required')" class="error-text">Campo obrigatório</p>
+            </div>
+
+            <div class="form-group">
+                <label>Responsável *</label>
+                <input type="text" formControlName="responsavel" class="form-input" [class.input-error]="alunoForm.get('responsavel')?.invalid && alunoForm.get('responsavel')?.touched" placeholder="Nome do responsável">
+                <p *ngIf="alunoForm.get('responsavel')?.touched && alunoForm.get('responsavel')?.hasError('required')" class="error-text">Campo obrigatório</p>
+            </div>
+
+            <div class="form-group">
+                <label>Email do aluno *</label>
+                <input type="email" formControlName="emailAluno" class="form-input" [class.input-error]="alunoForm.get('emailAluno')?.invalid && alunoForm.get('emailAluno')?.touched"
+                    placeholder="aluno@exemplo.com">
+                <p *ngIf="alunoForm.get('emailAluno')?.touched && alunoForm.get('emailAluno')?.hasError('required')" class="error-text">Campo obrigatório</p>
+                <p *ngIf="alunoForm.get('emailAluno')?.touched && alunoForm.get('emailAluno')?.hasError('email')" class="error-text">Email inválido</p>
+            </div>
+
+            <div class="form-group">
+                <label>Email do responsável *</label>
+                <input type="email" formControlName="emailResponsavel" class="form-input" [class.input-error]="alunoForm.get('emailResponsavel')?.invalid && alunoForm.get('emailResponsavel')?.touched"
+                    placeholder="email@exemplo.com">
+                <p *ngIf="alunoForm.get('emailResponsavel')?.touched && alunoForm.get('emailResponsavel')?.hasError('required')" class="error-text">Campo obrigatório</p>
+                <p *ngIf="alunoForm.get('emailResponsavel')?.touched && alunoForm.get('emailResponsavel')?.hasError('email')" class="error-text">Email inválido</p>
+            </div>
+
+            <div class="form-group">
+                <label>Número da carteira *</label>
+                <input type="text" formControlName="numeroCarteira" maxlength="8" class="form-input" [class.input-error]="alunoForm.get('numeroCarteira')?.invalid && alunoForm.get('numeroCarteira')?.touched" placeholder="8 dígitos numéricos...">
+                <p *ngIf="alunoForm.get('numeroCarteira')?.touched && alunoForm.get('numeroCarteira')?.hasError('required')" class="error-text">Campo obrigatório</p>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button type="submit" class="btn-secondary h-[46px] w-full flex items-center justify-center gap-2">
+                    <lucide-icon [img]="isEditing ? icons.Edit : icons.Plus" class="w-5 h-5"></lucide-icon>
+                    {{ isEditing ? 'Atualizar aluno' : 'Cadastrar aluno' }}
+                </button>
+            </div>
+        </form>
+        <div class="text-sm text-gray-400 mt-4 font-medium">Preencha os campos ou importe um CSV para cadastrar alunos.
+        </div>
+    </div>
+
+    <!-- Students List -->
+    <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
+        <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary">Alunos cadastrados</h3>
+
+        <div class="overflow-x-auto no-scrollbar">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                        <th class="py-4">Nome do aluno</th>
+                        <th class="py-4">Responsável</th>
+                        <th class="py-4">Email Aluno</th>
+                        <th class="py-4">Email Resp.</th>
+                        <th class="py-4 text-center">Nº Carteira</th>
+                        <th class="py-4">Turma</th>
+                        <th class="py-4 text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    <tr *ngFor="let student of students$ | async" class="group">
+                        <td class="py-4 font-bold text-gray-700">{{ student.nome }}</td>
+                        <td class="py-4 text-gray-600">{{ student.responsavel }}</td>
+                        <td class="py-4 text-gray-500">{{ student.emailAluno }}</td>
+                        <td class="py-4 text-gray-500">{{ student.emailResponsavel }}</td>
+                        <td class="py-4 text-center font-mono text-xs text-gray-600">{{ student.numeroCarteira }}</td>
+                        <td class="py-4">
+                            <span
+                                class="px-3 py-1 bg-gray-50 text-gray-500 text-[10px] font-bold rounded-full uppercase">
+                                {{ getTurmaName(student.turmaId, (turmas$ | async)) }}
+                            </span>
+                        </td>
+                        <td class="py-4">
+                            <div class="flex items-center justify-center gap-3">
+                                <button (click)="removeStudent(student.id!)"
+                                    class="p-2 text-red-100 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all border border-transparent">
+                                    <lucide-icon [img]="icons.Trash2" class="w-5 h-5"></lucide-icon>
+                                </button>
+                                <button (click)="editStudent(student)"
+                                    class="p-2 text-gray-300 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-all border border-gray-100">
+                                    <lucide-icon [img]="icons.Edit" class="w-5 h-5"></lucide-icon>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr *ngIf="(students$ | async)?.length === 0">
+                        <td colspan="7" class="py-8 text-center text-gray-400 font-medium">Nenhum aluno cadastrado.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-4 pt-8 border-t border-gray-100">
+        <button (click)="onBack()" type="button" class="btn-secondary px-12">Voltar</button>
+        <button (click)="onSubmit()" type="button" class="btn-primary px-12">Finalizar Cadastro</button>
+    </div>
+
+    <app-feedback-modal *ngIf="showSuccessModal" title="Escola cadastrada!"
+        message="A escola e todos os seus dados foram salvos com sucesso no sistema." confirmLabel="Ir para o Dashboard"
+        (confirm)="onFinish()">
+    </app-feedback-modal>
+</div>
+
+<!-- Modal: Confirmar Exclusão -->
+<app-delete-confirm-modal 
+    [isVisible]="showDeleteConfirm"
+    [entityName]="'este aluno'"
+    [entityArticle]="'o'"
+    (onConfirm)="confirmDelete()"
+    (onCancel)="cancelDelete()">
+</app-delete-confirm-modal>
+
+<!-- Toast de Sucesso -->
+<div *ngIf="showSuccessToast"
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in px-4">
+    <div
+        class="bg-white rounded-3xl shadow-2xl w-full max-w-[320px] p-8 flex flex-col items-center text-center animate-scale-up">
+        <div
+            class="w-20 h-20 rounded-full bg-gradient-to-br from-[#005bb5] to-[#00aaff] flex items-center justify-center mb-6 shadow-lg shadow-blue-100">
+            <lucide-icon [img]="icons.CheckCircle2" class="w-10 h-10 text-white"></lucide-icon>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Sucesso</h3>
+        <p class="text-sm text-gray-500 mb-8 leading-relaxed">
+            {{ toastMessage }}
+        </p>
+        <button (click)="closeToast()"
+            class="w-full py-3.5 bg-white border border-gray-100 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+            Fechar
+        </button>
+    </div>
+</div>

@@ -1,0 +1,180 @@
+<div class="space-y-6 animate-in fade-in duration-500">
+    <!-- Header with Search and Add Button -->
+    <div class="flex flex-col sm:flex-row items-center gap-4">
+        <div class="relative flex-1 w-full">
+            <lucide-icon [img]="icons.Search"
+                class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+            <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Buscar professor"
+                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00609b] transition-all">
+        </div>
+
+        <button (click)="openAddModal()"
+            class="w-full sm:w-auto px-6 py-3 bg-[#00609b] text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#004d7c] transition-all shadow-md shadow-blue-900/10 whitespace-nowrap">
+            <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
+            Cadastrar professor
+        </button>
+    </div>
+
+    <!-- Grid of Professors -->
+    <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-12 gap-4">
+        <div class="w-8 h-8 border-4 border-[#00609b]/10 border-t-[#00609b] rounded-full animate-spin"></div>
+        <p class="text-xs text-gray-400 font-medium italic">Buscando professores...</p>
+    </div>
+
+    <div *ngIf="!isLoading && filteredProfessors.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div *ngFor="let prof of filteredProfessors"
+            class="bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100">
+                    <lucide-icon [img]="icons.User" class="w-6 h-6 text-gray-400"></lucide-icon>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800 text-[15px] underline">{{ prof.nome_completo }}</h4>
+                    <p class="text-xs text-gray-500">{{ prof.email }}</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <button (click)="openEditModal(prof)"
+                    class="p-2 text-[#00609b] hover:bg-blue-50 rounded-lg transition-colors">
+                    <lucide-icon [img]="icons.Edit" class="w-5 h-5"></lucide-icon>
+                </button>
+                <button (click)="onDelete(prof.id)"
+                    class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                    <lucide-icon [img]="icons.Trash2" class="w-5 h-5"></lucide-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && filteredProfessors.length === 0"
+        class="p-12 text-center bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-100 flex flex-col items-center gap-4">
+        <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+            <lucide-icon [img]="icons.Users" class="w-6 h-6 text-gray-300"></lucide-icon>
+        </div>
+        <div>
+            <h4 class="font-bold text-gray-700">Nenhum professor encontrado</h4>
+            <p class="text-xs text-gray-400">Clique em "Cadastrar professor" para adicionar um novo.</p>
+        </div>
+    </div>
+
+    <!-- Modal Layout according to User Images -->
+    <div *ngIf="showModal"
+        class="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <div
+            class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg p-8 animate-in zoom-in duration-200 relative overflow-hidden">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-4">
+                    <h3 class="text-xl font-bold text-gray-900">{{ isEditing ? 'Editar' : 'Cadastrar' }} professor</h3>
+
+                    <!-- Delete link in Edit Mode -->
+                    <button *ngIf="isEditing" (click)="onDelete(editingId!); closeModal()"
+                        class="flex items-center gap-1.5 text-sm font-bold text-red-500 hover:text-red-600 transition-all ml-4">
+                        <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon>
+                        Excluir professor
+                    </button>
+                </div>
+
+                <button (click)="closeModal()" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                    <lucide-icon [img]="icons.X" class="w-5 h-5 text-gray-400"></lucide-icon>
+                </button>
+            </div>
+
+            <form [formGroup]="professorForm" (ngSubmit)="onSubmit()" class="space-y-6">
+                <!-- Row 1: Nome and Grau -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Nome do professor *</label>
+                        <input type="text" formControlName="nome_completo"
+                            class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] transition-colors text-sm"
+                            [ngClass]="{'border-red-500': professorForm.get('nome_completo')?.invalid && professorForm.get('nome_completo')?.touched}"
+                            placeholder="Nome completo">
+                        <div *ngIf="professorForm.get('nome_completo')?.invalid && professorForm.get('nome_completo')?.touched" class="text-red-500 text-xs mt-1 font-medium flex items-center gap-1">
+                            <lucide-icon [img]="icons.X" class="w-3 h-3"></lucide-icon>
+                            Campo obrigatório
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Grau de escolaridade *</label>
+                        <div class="relative">
+                            <select formControlName="grau_escolaridade"
+                                class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] appearance-none pr-10 text-sm bg-white transition-colors"
+                                [ngClass]="{'border-red-500': professorForm.get('grau_escolaridade')?.invalid && professorForm.get('grau_escolaridade')?.touched}">
+                                <option value="">Selecionar</option>
+                                <option value="Superior Completo">Superior Completo</option>
+                                <option value="Pós-Graduação">Pós-Graduação</option>
+                                <option value="Mestrado">Mestrado</option>
+                                <option value="Doutorado">Doutorado</option>
+                            </select>
+                            <lucide-icon [img]="icons.ChevronDown"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-gray-400"></lucide-icon>
+                        </div>
+                        <div *ngIf="professorForm.get('grau_escolaridade')?.invalid && professorForm.get('grau_escolaridade')?.touched" class="text-red-500 text-xs mt-1 font-medium flex items-center gap-1">
+                            <lucide-icon [img]="icons.X" class="w-3 h-3"></lucide-icon>
+                            Campo obrigatório
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Email -->
+                <div class="form-group">
+                    <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Email do professor *</label>
+                    <input type="email" formControlName="email"
+                        class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] transition-colors text-sm"
+                        [ngClass]="{'border-red-500': professorForm.get('email')?.invalid && professorForm.get('email')?.touched}"
+                        placeholder="email@exemplo.com">
+                    <div *ngIf="professorForm.get('email')?.invalid && professorForm.get('email')?.touched" class="text-red-500 text-xs mt-1 font-medium flex items-center gap-1">
+                        <lucide-icon [img]="icons.X" class="w-3 h-3"></lucide-icon>
+                        <span>{{ professorForm.get('email')?.errors?.['required'] ? 'Campo obrigatório' : 'Email inválido' }}</span>
+                    </div>
+                </div>
+
+                <!-- Status Toggle -->
+                <div class="flex items-center justify-between py-2 border-b border-gray-50 mb-4">
+                    <label class="text-[13px] font-bold text-gray-700">Status *</label>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-medium"
+                            [ngClass]="statusValue ? 'text-gray-400' : 'text-gray-900'">Inativo</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" [checked]="statusValue" (change)="toggleStatus()"
+                                class="sr-only peer">
+                            <div
+                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00609b]">
+                            </div>
+                        </label>
+                        <span class="text-sm font-medium"
+                            [ngClass]="statusValue ? 'text-gray-900' : 'text-gray-400'">Ativo</span>
+                    </div>
+                </div>
+
+                <!-- Footer Buttons -->
+                <div class="flex gap-4 pt-4">
+                    <button type="button" (click)="closeModal()"
+                        class="flex-1 py-3.5 border border-gray-200 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit" [disabled]="isSubmitting"
+                        class="flex-1 py-3.5 bg-[#00609b] text-white rounded-xl font-bold hover:bg-[#004d7c] transition-all disabled:opacity-50">
+                        <div *ngIf="isSubmitting"
+                            class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin inline-block mr-2">
+                        </div>
+                        {{ isSubmitting ? 'Salvando...' : (isEditing ? 'Salvar alterações' : 'Cadastrar') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <app-delete-confirm-modal entityName="professor" entityArticle="o" [isVisible]="showDeleteModal"
+        [isLoading]="deleteLoading" (onConfirm)="confirmDelete()" (onCancel)="cancelDelete()">
+    </app-delete-confirm-modal>
+
+    <!-- Success Modal -->
+    <app-action-success-modal [isVisible]="showSuccessModal" [title]="successModalTitle" [message]="successModalMessage"
+        (onClose)="showSuccessModal = false">
+    </app-action-success-modal>
+</div>

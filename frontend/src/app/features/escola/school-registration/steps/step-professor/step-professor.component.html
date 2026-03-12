@@ -1,0 +1,157 @@
+<div class="space-y-8">
+    <!-- Register New Professor Card -->
+    <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
+        <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary">Cadastrar novo professor</h3>
+
+        <form [formGroup]="professorForm" (ngSubmit)="addProfessor()" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+            <div class="form-group">
+                <label>Nome completo *</label>
+                <input type="text" formControlName="nome" class="form-input" placeholder="Nome completo">
+            </div>
+
+            <div class="form-group">
+                <label>Grau de escolaridade *</label>
+                <select formControlName="escolaridade" class="form-input">
+                    <option value="">Selecione o grau</option>
+                    <option *ngFor="let option of escolaridadeOptions" [value]="option.value">
+                        {{ option.label }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Email do professor *</label>
+                <input type="email" formControlName="email" class="form-input" placeholder="email@exemplo.com">
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button type="submit" class="btn-secondary h-[46px] w-full flex items-center justify-center gap-2 border-dashed">
+                    <lucide-icon [img]="isEditing ? icons.Edit : icons.Plus" class="w-5 h-5"></lucide-icon>
+                    {{ isEditing ? 'Atualizar professor' : 'Cadastrar professor' }}
+                </button>
+            </div>
+        </form>
+        <div class="text-sm text-gray-400 mt-4 h-5">Preencha os campos para realizar um novo cadastro.</div>
+    </div>
+
+    <!-- Professors List Card -->
+    <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
+        <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary">Professores cadastrados</h3>
+
+            <!-- Filters Row -->
+            <div class="flex items-center gap-4">
+                <select (change)="updateGrau($any($event.target).value)"
+                    class="px-4 py-3 bg-white border border-gray-100 rounded-xl text-sm text-gray-500 font-medium cursor-pointer min-w-[200px]">
+                    <option value="">Filtrar por grau</option>
+                    <option *ngFor="let option of escolaridadeOptions" [value]="option.value">{{ option.label }}
+                    </option>
+                </select>
+
+                <select (change)="updateStatus($any($event.target).value)"
+                    class="px-4 py-3 bg-white border border-gray-100 rounded-xl text-sm text-gray-500 font-medium cursor-pointer min-w-[200px]">
+                    <option value="">Filtrar por status</option>
+                    <option value="active">Ativo</option>
+                    <option value="inactive">Inativo</option>
+                </select>
+
+                <div class="flex-1"></div>
+
+                <div class="relative w-full max-w-sm">
+                    <lucide-icon [img]="icons.Search"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
+                    <input type="text" (input)="updateSearch($any($event.target).value)" placeholder="Buscar professor"
+                        class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-[#00609b] transition-all">
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr
+                            class="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">
+                            <th class="px-2 py-4">Nome</th>
+                            <th class="px-2 py-4 text-center">Grau de escolaridade</th>
+                            <th class="px-2 py-4 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        <tr *ngFor="let professor of filteredProfessors$ | async"
+                            class="hover:bg-gray-50/20 transition-all group">
+                            <td class="px-2 py-5 font-bold text-gray-700 text-sm">{{ professor.nome }}</td>
+                            <td class="px-2 py-5 text-center">
+                                <span
+                                    class="px-4 py-1.5 bg-gray-50 text-gray-500 text-[10px] font-bold rounded-full border border-gray-100 uppercase tracking-tight">
+                                    {{ professor.escolaridade }}
+                                </span>
+                            </td>
+                            <td class="px-2 py-5">
+                                <div class="flex items-center justify-end gap-2">
+                                    <button (click)="removeProfessor(professor.id!)"
+                                        class="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                        title="Excluir">
+                                        <lucide-icon [img]="icons.Trash2" class="w-5 h-5"></lucide-icon>
+                                    </button>
+                                    <button (click)="editProfessor(professor)"
+                                        class="p-2 text-gray-300 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all border border-gray-50"
+                                        title="Editar">
+                                        <lucide-icon [img]="icons.Edit" class="w-5 h-5"></lucide-icon>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Empty state -->
+                        <tr *ngIf="(filteredProfessors$ | async)?.length === 0">
+                            <td colspan="3" class="py-12 text-center text-gray-400 text-sm italic">
+                                Nenhum professor encontrado.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        <div class="flex items-center justify-between mt-8 text-sm">
+            <span class="text-gray-400">Página 1 de 1</span>
+            <div class="flex gap-2">
+                <button
+                    class="btn-secondary py-2 px-4 text-xs font-bold opacity-50 cursor-not-allowed">Anterior</button>
+                <button class="btn-secondary py-2 px-4 text-xs font-bold opacity-50 cursor-not-allowed">Próximo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-4 pt-8 border-t border-gray-100">
+        <button (click)="onBack()" type="button" class="btn-secondary px-12">Voltar</button>
+        <button (click)="onNext()" type="button" class="btn-primary px-12">Prosseguir</button>
+    </div>
+</div>
+
+<!-- Modal: Confirmar Exclusão -->
+<app-delete-confirm-modal 
+    [isVisible]="showDeleteConfirm"
+    [entityName]="'este professor'"
+    [entityArticle]="'o'"
+    (onConfirm)="confirmDelete()"
+    (onCancel)="cancelDelete()">
+</app-delete-confirm-modal>
+
+<!-- Toast de Sucesso -->
+<div *ngIf="showSuccessToast"
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in px-4">
+    <div
+        class="bg-white rounded-3xl shadow-2xl w-full max-w-[320px] p-8 flex flex-col items-center text-center animate-scale-up">
+        <div
+            class="w-20 h-20 rounded-full bg-gradient-to-br from-[#005bb5] to-[#00aaff] flex items-center justify-center mb-6 shadow-lg shadow-blue-100">
+            <lucide-icon [img]="icons.CheckCircle2" class="w-10 h-10 text-white"></lucide-icon>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Sucesso</h3>
+        <p class="text-sm text-gray-500 mb-8 leading-relaxed">
+            {{ toastMessage }}
+        </p>
+        <button (click)="closeToast()"
+            class="w-full py-3.5 bg-white border border-gray-100 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+            Fechar
+        </button>
+    </div>
+</div>

@@ -1,0 +1,53 @@
+/* Specific styles for step school */
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+select.form-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.25rem;
+    padding-right: 2.5rem;
+}
+
+input[type="radio"] {
+    width: 1.15rem;
+    height: 1.15rem;
+    border-color: #D1D5DB;
+    color: #005E9E;
+    margin: 0;
+    transition: all 0.2s;
+}
+
+label.group {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+input[type="radio"]:focus {
+    outline: 2px solid #005E9E;
+    outline-offset: 2px;
+}
+
+.currency-input {
+    padding-left: 2.7rem !important;
+}
+
+.form-group label {
+    font-size: 0.8rem;
+    color: #4b5563;
+    font-weight: 600;
+}

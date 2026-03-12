@@ -1,0 +1,278 @@
+<div class="flex flex-col gap-6" *ngIf="selectedSchool">
+    <!-- Topo fota da div branca -->
+    <div class="flex justify-between items-start w-full">
+        <div>
+            <a [routerLink]="isAdmin ? '/admin/dashboard' : '/escola/dashboard'"
+                class="flex items-center gap-1.5 text-[14px] text-gray-400 font-medium hover:text-[#00609b] cursor-pointer mb-2 transition-colors"><lucide-icon
+                    [img]="icons.ArrowLeft" class="w-[18px] h-[18px]" strokeWidth="2.5"></lucide-icon> Voltar
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900">{{ isAdmin ? 'Escolas' : 'Cadastro' }}</h1>
+            <p class="text-gray-500 mt-1">Gerencie {{ isAdmin ? 'escolas cadastradas' : 'dados da sua escola' }} no
+                sistema.</p>
+        </div>
+        <div class="flex items-center gap-5 mt-4 sm:mt-0" *ngIf="isAdmin">
+            <button (click)="onDeleteSchool()"
+                class="flex items-center gap-2 px-2 py-2 text-[#E71B24] rounded-lg hover:bg-red-50 font-bold transition-colors">
+                <img src="assets/icons/LixoVermeelho.svg" alt="Excluir" class="w-[18px] h-[18px]" /> Excluir escola
+            </button>
+            <button (click)="openEditModal()"
+                class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 font-bold shadow-sm transition-colors">
+                <img src="assets/icons/Edit1.svg" alt="Editar" class="w-[18px] h-[18px]" /> Editar escola
+            </button>
+            <button routerLink="/admin/escolas/cadastro"
+                class="flex items-center gap-2 px-5 py-2.5 bg-[#00609b] text-white rounded-lg hover:bg-[#0070b4] font-bold shadow-sm transition-colors"><lucide-icon
+                    [img]="icons.Plus" class="w-5 h-5" strokeWidth="3"></lucide-icon> Cadastrar escola</button>
+        </div>
+    </div>
+
+    <!-- Container Branco Principal -->
+    <div
+        class="flex flex-col items-start gap-5 p-6 bg-white self-stretch w-full min-h-[500px] rounded-[24px] shadow-sm border border-gray-100">
+        <div class="flex flex-col xl:flex-row gap-5 items-start w-full">
+            <!-- Left Sidebar (Turmas) -->
+            <div
+                class="w-full xl:w-1/3 xl:min-w-[320px] xl:max-w-[400px] bg-white rounded-xl border border-gray-100 p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] sticky top-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">{{selectedSchool.nome_fantasia}} - Turmas</h2>
+
+                <div class="relative mb-6">
+                    <lucide-icon [img]="icons.Search"
+                        class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></lucide-icon>
+                    <input type="text" placeholder="Buscar turma"
+                        class="w-full border border-gray-200 rounded-lg pl-11 pr-4 py-3 focus:border-[#00609b] outline-none text-sm transition-all shadow-sm"
+                        [(ngModel)]="searchTermTurma" (input)="onSearchTurmaChange()">
+                </div>
+
+                <p class="text-sm font-semibold text-gray-600 mb-3 ml-1">Turmas</p>
+
+                <!-- Create Button -->
+                <div class="border-2 border-dashed border-gray-200 rounded-xl p-8 flex justify-center items-center cursor-pointer hover:bg-blue-50 hover:border-blue-200 transition-colors mb-4 group"
+                    (click)="selectTurmaToEdit(null)">
+                    <div
+                        class="w-10 h-10 border border-gray-200 rounded-full flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:text-[#00609b] group-hover:border-blue-200 transition-all shadow-sm">
+                        <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
+                    </div>
+                </div>
+
+                <!-- List -->
+                <div class="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div *ngFor="let turma of filteredTurmas" (click)="selectTurmaToEdit(turma)"
+                        class="border rounded-xl p-5 cursor-pointer hover:border-blue-300 transition-colors shadow-sm"
+                        [ngClass]="selectedTurma?.id === turma.id ? 'border-[#0069B3] bg-[#F3F9FC] shadow-md ring-1 ring-[#0069B3]/10' : 'border-gray-200 bg-white'">
+                        <div class="flex items-center gap-3 font-bold mb-1.5 text-gray-800 text-[15px]">
+                            <lucide-icon [img]="icons.Users" class="w-5 h-5"
+                                [ngClass]="selectedTurma?.id === turma.id ? 'text-[#00609b]' : 'text-[#00609b]'"></lucide-icon>
+                            {{turma.nome}}
+                        </div>
+                        <p class="text-[13px] text-gray-500 ml-8 mb-4">
+                            {{ turma.professor?.nome_completo || 'Professor não definido' }} / {{ turma.serie }} / {{ turma.periodo }}
+                        </p>
+                        <div class="flex gap-4 ml-8 text-[13px] font-bold">
+                            <button class="flex items-center gap-1.5 text-red-600 hover:text-red-700 transition-colors"
+                                (click)="deleteTurma(turma, $event)"><lucide-icon [img]="icons.Trash2"
+                                    class="w-4 h-4"></lucide-icon> Excluir turma</button>
+                            <button
+                                class="flex items-center gap-1.5 text-[#00609b] hover:text-blue-800 transition-colors">
+                                <lucide-icon [img]="icons.Pencil" class="w-4 h-4"></lucide-icon>
+                                Editar turma</button>
+                        </div>
+                    </div>
+
+                    <div *ngIf="filteredTurmas.length === 0" class="text-center py-6 text-gray-400 text-sm">
+                        Nenhuma turma encontrada.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Area -->
+            <div class="w-full xl:w-2/3 flex flex-col gap-6">
+                <!-- Dashboard section -->
+                <div>
+                    <h2 class="text-[15px] font-bold text-gray-800 mb-3">Dashboard - {{selectedSchool.nome_fantasia}}
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Saldo livre -->
+                        <div
+                            class="bg-white border border-gray-100 rounded-xl p-6 flex items-center gap-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)]">
+                            <div class="w-12 h-12 flex items-center justify-center">
+                                <img src="assets/icons/saldo-livre.svg" alt="Saldo Livre" class="w-12 h-12" />
+                            </div>
+                            <div>
+                                <p class="text-2xl font-extrabold text-[#0e1726]">{{
+                                    formatCurrency(dashboardStats?.saldo_livre) }}</p>
+                                <p class="text-[13px] font-semibold text-gray-500 mt-0.5">Saldo livre</p>
+                            </div>
+                        </div>
+                        <!-- Saldo proósitos -->
+                        <div
+                            class="bg-white border border-gray-100 rounded-xl p-6 flex items-center gap-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)]">
+                            <div class="w-12 h-12 flex items-center justify-center">
+                                <img src="assets/icons/saldo-propositos.svg" alt="Saldo em propósitos"
+                                    class="w-12 h-12" />
+                            </div>
+                            <div>
+                                <p class="text-2xl font-extrabold text-[#0e1726]">{{
+                                    formatCurrency(dashboardStats?.saldo_propositos) }}</p>
+                                <p class="text-[13px] font-semibold text-gray-500 mt-0.5">Saldo em propósitos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Details -->
+                <div
+                    class="bg-white border border-gray-100 rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] overflow-hidden min-h-[500px]">
+                    <!-- Headers Tabs -->
+                    <div class="flex items-center border-b border-gray-100 bg-white">
+                        <div class="flex-1 py-4 px-6 font-bold text-gray-800 text-lg hidden sm:block">
+                            Dados da {{ selectedTurma ? 'turma ' + selectedTurma.nome : 'nova turma' }}
+                        </div>
+                        <div class="flex overflow-x-auto custom-scrollbar">
+                            <button
+                                class="px-6 py-4 font-bold text-sm border-b-[3px] transition-all focus:outline-none whitespace-nowrap"
+                                [ngClass]="currentTab === 'dados' ? 'border-[#00609b] text-[#00609b]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'"
+                                (click)="currentTab = 'dados'">Dados da turma</button>
+                            <button
+                                class="px-6 py-4 font-bold text-sm border-b-[3px] transition-all focus:outline-none whitespace-nowrap"
+                                [ngClass]="currentTab === 'professors' ? 'border-[#00609b] text-[#00609b]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'"
+                                (click)="currentTab = 'professors'">Professores</button>
+                            <button
+                                class="px-6 py-4 font-bold text-sm border-b-[3px] transition-all focus:outline-none whitespace-nowrap"
+                                [ngClass]="currentTab === 'students' ? 'border-[#00609b] text-[#00609b]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'"
+                                (click)="currentTab = 'students'">Alunos</button>
+                        </div>
+                    </div>
+
+                    <!-- Forms/Components -->
+                    <div class="p-6">
+                        <!-- TAB 1: DADOS -->
+                        <div *ngIf="currentTab === 'dados'" class="animate-in fade-in duration-300">
+                            <form [formGroup]="turmaForm" (ngSubmit)="saveTurma()">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 mb-8">
+                                    <!-- Nome -->
+                                    <div>
+                                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Nome da turma
+                                            *</label>
+                                        <input type="text" formControlName="nome"
+                                            class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm"
+                                            placeholder="Turma">
+                                    </div>
+                                    <!-- Estágio -->
+                                    <div>
+                                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Estágio
+                                            *</label>
+                                        <div class="relative">
+                                            <select formControlName="estagio"
+                                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] appearance-none pr-10 text-sm bg-white transition-colors">
+                                                <option value="" disabled>Selecione</option>
+                                                <option value="Educação Infantil">Educação Infantil</option>
+                                                <option value="Ensino Fundamental I">Ensino Fundamental I</option>
+                                                <option value="Ensino Fundamental II">Ensino Fundamental II</option>
+                                                <option value="Ensino Médio">Ensino Médio</option>
+                                            </select>
+                                            <lucide-icon [img]="icons.ChevronDown"
+                                                class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-gray-400"></lucide-icon>
+                                        </div>
+                                    </div>
+                                    <!-- Período -->
+                                    <div>
+                                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Período
+                                            *</label>
+                                        <div class="relative">
+                                            <select formControlName="periodo"
+                                                class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] appearance-none pr-10 text-sm bg-white transition-colors">
+                                                <option value="" disabled>Selecione</option>
+                                                <option value="Manhã">Manhã</option>
+                                                <option value="Tarde">Tarde</option>
+                                                <option value="Noite">Noite</option>
+                                                <option value="Integral">Integral</option>
+                                            </select>
+                                            <lucide-icon [img]="icons.ChevronDown"
+                                                class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-gray-400"></lucide-icon>
+                                        </div>
+                                    </div>
+                                    <!-- Série -->
+                                    <div>
+                                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Série *</label>
+                                        <input type="text" formControlName="serie"
+                                            class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm"
+                                            placeholder="Ex: 5º A">
+                                    </div>
+                                    <!-- Qtd Alunos -->
+                                    <div>
+                                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Qtd. de alunos
+                                            *</label>
+                                        <input type="number" formControlName="quantidade_alunos"
+                                            class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm"
+                                            placeholder="403">
+                                    </div>
+                                    <!-- Data -->
+                                    <div>
+                                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Data de entrada
+                                            *</label>
+                                        <input type="date" formControlName="data_inicio"
+                                            class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] transition-colors text-sm">
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                                    <button type="button"
+                                        class="px-6 py-2.5 rounded-lg border border-gray-300 font-bold text-gray-700 hover:bg-gray-50 transition-colors text-sm"
+                                        (click)="selectTurmaToEdit(null)">Cancelar</button>
+                                    <button type="submit" [disabled]="isSubmitting"
+                                        class="px-6 py-2.5 rounded-lg bg-[#00609b] text-white font-bold hover:bg-[#0070b4] disabled:opacity-50 transition-colors text-sm shadow-md shadow-blue-900/20">
+                                        {{ isSubmitting ? 'Salvando...' : 'Salvar alterações' }}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- TAB 2: PROFESSORES -->
+                        <div *ngIf="currentTab === 'professors'" class="animate-in fade-in duration-300">
+                            <app-professor-management [schoolId]="selectedSchool.id"
+                                [turmaId]="selectedTurma?.id"></app-professor-management>
+                        </div>
+
+                        <!-- TAB 3: ALUNOS -->
+                        <div *ngIf="currentTab === 'students'" class="animate-in fade-in duration-300">
+                            <app-student-management [schoolId]="selectedSchool.id"
+                                [turmaId]="selectedTurma?.id"></app-student-management>
+                        </div>
+                    </div> <!-- encerra DIV forms -->
+                </div> <!-- encerra card components -->
+            </div> <!-- encerra right sidebar -->
+        </div> <!-- encerra flex-row -->
+    </div> <!-- encerra white card -->
+</div> <!-- encerra ngif principal -->
+<div class="px-6 py-12 text-center text-gray-500" *ngIf="!selectedSchool && !isLoading">
+    Selecione uma escola no menu superior para gerenciar suas turmas e usuários.
+</div>
+
+<!-- Modal Delete School (Inactivate) -->
+<app-delete-confirm-modal [isVisible]="showDeleteModal" [isLoading]="deleteLoading"
+    [entityName]="selectedSchool?.nome_fantasia || 'escola'" [actionType]="'inactivate'" [isReactivation]="false"
+    (onConfirm)="confirmDeleteSchool()" (onCancel)="cancelDeleteSchool()">
+</app-delete-confirm-modal>
+
+<!-- Modal Delete Turma -->
+<app-delete-confirm-modal [isVisible]="showDeleteTurmaModal" [isLoading]="deleteTurmaLoading" entityName="turma"
+    entityArticle="a" actionType="delete" (onConfirm)="confirmDeleteTurma()" (onCancel)="cancelDeleteTurma()">
+</app-delete-confirm-modal>
+
+<!-- Toast Component -->
+<div *ngIf="showToast"
+    class="fixed bottom-4 right-4 bg-[#10b981] text-white px-6 py-3.5 rounded-xl shadow-xl flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-300 z-50">
+    <div class="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center">
+        <lucide-icon [img]="icons.Check" class="w-4 h-4"></lucide-icon>
+    </div>
+    <span class="font-bold whitespace-nowrap text-sm pr-2">{{ toastMessage }}</span>
+</div>
+
+<!-- Modal Update School -->
+<app-edit-school-modal [isVisible]="showEditModal" [schoolData]="selectedSchool" (onClose)="closeEditModal()"
+    (onSuccess)="onEditSuccess()">
+</app-edit-school-modal>
+
+<!-- Modal Success Confirmations -->
+<app-action-success-modal [isVisible]="showSuccessModal" [title]="successModalTitle" [message]="successModalMessage"
+    (onClose)="closeSuccessModal()">
+</app-action-success-modal>

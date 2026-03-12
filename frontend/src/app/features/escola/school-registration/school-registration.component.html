@@ -1,0 +1,47 @@
+<div class="registration-container p-6 bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <div class="flex items-center gap-2 mb-6">
+        <button (click)="onBack()" class="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors">
+            <lucide-icon [img]="icons.ArrowLeft" class="w-5 h-5"></lucide-icon>
+            <span class="font-medium">Voltar</span>
+        </button>
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8">
+            <h1 class="text-[32px] font-semibold text-gray-900 font-primary">Cadastro</h1>
+            <p class="text-gray-500 mt-1">{{ headerMessage }}</p>
+        </header>
+
+        <!-- Stepper Tabs -->
+        <div class="stepper-tabs flex border-b border-gray-200 mb-8 overflow-x-auto no-scrollbar">
+            <button *ngFor="let step of steps" (click)="setStep(step.number)"
+                [class.active]="(currentStep$ | async) === step.number"
+                [class.opacity-50]="step.number > 1 && !(isSchoolConfirmed$ | async)"
+                [class.cursor-not-allowed]="step.number > 1 && !(isSchoolConfirmed$ | async)"
+                class="step-tab px-8 py-4 font-semibold text-sm transition-all relative whitespace-nowrap">
+                {{ step.label }}
+                <div class="active-indicator" *ngIf="(currentStep$ | async) === step.number"></div>
+            </button>
+        </div>
+
+        <!-- Step Content Container -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+            <!-- We will inject step components here -->
+            <div [ngSwitch]="currentStep$ | async">
+                <div *ngSwitchCase="1">
+                    <app-step-school></app-step-school>
+                </div>
+                <div *ngSwitchCase="2">
+                    <app-step-professor></app-step-professor>
+                </div>
+                <div *ngSwitchCase="3">
+                    <app-step-turma></app-step-turma>
+                </div>
+                <div *ngSwitchCase="4">
+                    <app-step-aluno></app-step-aluno>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

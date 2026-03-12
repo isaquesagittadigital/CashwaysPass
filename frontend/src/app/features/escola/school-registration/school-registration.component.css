@@ -1,0 +1,81 @@
+.registration-container {
+    font-family: 'Inter', sans-serif;
+}
+
+.step-tab {
+    color: #6B7280;
+    border-bottom: 2px solid transparent;
+}
+
+.step-tab.active {
+    color: #005E9E;
+}
+
+.active-indicator {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: #005E9E;
+    border-radius: 4px 4px 0 0;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+:host ::ng-deep .form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+:host ::ng-deep .form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+:host ::ng-deep .form-input:focus {
+    outline: none;
+    border-color: #005E9E;
+    box-shadow: 0 0 0 4px rgba(0, 94, 158, 0.1);
+}
+
+:host ::ng-deep .btn-primary {
+    background-color: #005E9E;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+:host ::ng-deep .btn-primary:hover {
+    background-color: #004d82;
+}
+
+:host ::ng-deep .btn-secondary {
+    background-color: white;
+    color: #374151;
+    padding: 0.75rem 2rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+:host ::ng-deep .btn-secondary:hover {
+    background-color: #F9FAFB;
+}

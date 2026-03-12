@@ -12,6 +12,7 @@ import { LogoComponent } from '../../../components/logo/logo.component';
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
+  role: 'school' | 'admin' = 'admin';
   email = '';
   password = '';
   rememberMe = false;
@@ -31,6 +32,11 @@ export class LoginComponent {
   };
 
   constructor(private router: Router) { }
+
+  setRole(newRole: 'school' | 'admin') {
+    this.role = newRole;
+    this.errorMessage = '';
+  }
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
@@ -75,12 +81,21 @@ export class LoginComponent {
         return;
       }
 
-      const userType = data.tipo_acesso;
+      const userType = data.tipo_acesso?.toLowerCase();
 
-      if (userType !== 'Admin' && userType !== 'Administrador') {
-        this.errorMessage = 'Acesso negado. Este usuário não possui privilégios de Administrador. Verifique os dados e tente novamente.';
-        this.isLoading = false;
-        return;
+      // Validation logic per role
+      if (this.role === 'admin') {
+        if (userType !== 'admin' && userType !== 'administrador') {
+          this.errorMessage = 'Acesso negado. Este usuário não possui privilégios de Administrador.';
+          this.isLoading = false;
+          return;
+        }
+      } else if (this.role === 'school') {
+        if (userType !== 'escola' && userType !== 'admin' && userType !== 'administrador') {
+          this.errorMessage = 'Acesso negado. Este usuário não possui privilégios de Escola.';
+          this.isLoading = false;
+          return;
+        }
       }
 
       const userData = { ...data };
@@ -92,7 +107,9 @@ export class LoginComponent {
         sessionStorage.setItem('currentUser', JSON.stringify(userData));
         localStorage.removeItem('currentUser');
       }
-      this.router.navigate(['/admin']);
+      
+      const redirectPath = this.role === 'admin' ? '/admin' : '/escola';
+      this.router.navigate([redirectPath]);
     } catch (err) {
       console.error('Login error:', err);
       this.errorMessage = 'Erro ao conectar ao servidor. Verifique sua conexão.';

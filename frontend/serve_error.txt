@@ -1,0 +1,196 @@
+﻿node.exe : - Building...
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecif 
+   ied: (- Building...:String) [], Rem  
+  oteException
+    + FullyQualifiedErrorId : NativeCom 
+   mandError
+ 
+
+Application bundle generation failed. [6.413 seconds]
+
+Γû▓ [WARNING] NG8107: The left side of 
+this optional chain operation does not 
+include 'null' or 'undefined' in its 
+type, therefore the '?.' operator can 
+be replaced with the '.' operator. 
+[plugin angular-compiler]
+
+    src/app/features/admin/events/events
+.component.html:94:51:
+      94 Γöé ...     {{ 
+ev.lojistas_convidados?.length || 0 }} 
+lojistas convidados
+         Γò╡                            
+        ~~~~~~
+
+  Error occurs in the template of 
+component EventsComponent.
+
+    src/app/features/admin/events/events
+.component.ts:31:17:
+      31 Γöé     templateUrl: 
+'./events.component.html',
+         Γò╡                  
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Γû▓ [WARNING] NG8107: The left side of 
+this optional chain operation does not 
+include 'null' or 'undefined' in its 
+type, therefore the '?.' operator can 
+be replaced with the '.' operator. 
+[plugin angular-compiler]
+
+    src/app/features/admin/events/events
+.component.html:341:90:
+      341 Γöé ...(s) ({{ selectedDetails
+Event.lojistas_convidados?.length || 0 
+}})
+          Γò╡                           
+                           ~~~~~~
+
+  Error occurs in the template of 
+component EventsComponent.
+
+    src/app/features/admin/events/events
+.component.ts:31:17:
+      31 Γöé     templateUrl: 
+'./events.component.html',
+         Γò╡                  
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Γû▓ [WARNING] NG8107: The left side of 
+this optional chain operation does not 
+include 'null' or 'undefined' in its 
+type, therefore the '?.' operator can 
+be replaced with the '.' operator. 
+[plugin angular-compiler]
+
+    src/app/features/admin/products/prod
+ucts.component.html:96:54:
+      96 Γöé ...             {{ 
+product.turma_ids?.length }} turma(s) 
+vinculada(s)
+         Γò╡                            
+           ~~~~~~
+
+  Error occurs in the template of 
+component ProductsComponent.
+
+    src/app/features/admin/products/prod
+ucts.component.ts:32:17:
+      32 Γöé     templateUrl: 
+'./products.component.html',
+         Γò╡                  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Γû▓ [WARNING] NG8107: The left side of 
+this optional chain operation does not 
+include 'null' or 'undefined' in its 
+type, therefore the '?.' operator can 
+be replaced with the '.' operator. 
+[plugin angular-compiler]
+
+    src/app/features/escola/events/escol
+a-events.component.html:94:51:
+      94 Γöé ...     {{ 
+ev.lojistas_convidados?.length || 0 }} 
+lojistas convidados
+         Γò╡                            
+        ~~~~~~
+
+  Error occurs in the template of 
+component EscolaEventsComponent.
+
+    src/app/features/escola/events/escol
+a-events.component.ts:31:17:
+      31 Γöé     templateUrl: 
+'./escola-events.component.html',
+         Γò╡                  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Γû▓ [WARNING] NG8107: The left side of 
+this optional chain operation does not 
+include 'null' or 'undefined' in its 
+type, therefore the '?.' operator can 
+be replaced with the '.' operator. 
+[plugin angular-compiler]
+
+    src/app/features/escola/events/escol
+a-events.component.html:341:90:
+      341 Γöé ...(s) ({{ selectedDetails
+Event.lojistas_convidados?.length || 0 
+}})
+          Γò╡                           
+                           ~~~~~~
+
+  Error occurs in the template of 
+component EscolaEventsComponent.
+
+    src/app/features/escola/events/escol
+a-events.component.ts:31:17:
+      31 Γöé     templateUrl: 
+'./escola-events.component.html',
+         Γò╡                  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Γû▓ [WARNING] NG8107: The left side of 
+this optional chain operation does not 
+include 'null' or 'undefined' in its 
+type, therefore the '?.' operator can 
+be replaced with the '.' operator. 
+[plugin angular-compiler]
+
+    src/app/features/escola/products/esc
+ola-products.component.html:96:54:
+      96 Γöé ...             {{ 
+product.turma_ids?.length }} turma(s) 
+vinculada(s)
+         Γò╡                            
+           ~~~~~~
+
+  Error occurs in the template of 
+component EscolaProductsComponent.
+
+    src/app/features/escola/products/esc
+ola-products.component.ts:32:17:
+      32 Γöé     templateUrl: 
+'./escola-products.component.html',
+         Γò╡                  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] NG5002: Unexpected closing 
+tag "button". It may happen when the 
+tag has already been closed by another 
+tag. For more info see https://www.w3.or
+g/TR/html5/syntax.html#closing-elements-
+that-have-implied-end-tags [plugin 
+angular-compiler]
+
+    src/app/features/escola/dashboard/es
+cola-dashboard.component.html:19:12:
+      19 Γöé             </button>
+         Γò╡             ~~~~~~~~~
+
+  Error occurs in the template of 
+component EscolaDashboardComponent.
+
+    src/app/features/escola/dashboard/es
+cola-dashboard.component.ts:44:17:
+      44 Γöé     templateUrl: 
+'./escola-dashboard.component.html',
+         Γò╡                  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Watch mode enabled. Watching for file changes...

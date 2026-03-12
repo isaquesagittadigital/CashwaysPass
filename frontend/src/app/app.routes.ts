@@ -2,6 +2,15 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
 import { AdminLayoutComponent } from './features/admin/layout/admin-layout.component';
 import { AdminDashboardComponent } from './features/admin/dashboard/admin-dashboard.component';
+import { EscolaLayoutComponent } from './features/escola/layout/escola-layout.component';
+import { EscolaDashboardComponent } from './features/escola/dashboard/escola-dashboard.component';
+import { EscolaProductsComponent } from './features/escola/products/escola-products.component';
+import { EscolaWalletComponent } from './features/escola/wallet/escola-wallet.component';
+import { EscolaEventsComponent } from './features/escola/events/escola-events.component';
+import { EscolaUserManagementComponent } from './features/escola/users/escola-user-management.component';
+import { EscolaReportsComponent } from './features/escola/reports/escola-reports.component';
+import { EscolaPerfilComponent } from './features/escola/profile/escola-perfil.component';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
     // Login - página inicial
@@ -12,6 +21,7 @@ export const routes: Routes = [
     {
         path: 'admin',
         component: AdminLayoutComponent,
+        canActivate: [authGuard],
         children: [
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             { path: 'dashboard', component: AdminDashboardComponent },
@@ -52,6 +62,48 @@ export const routes: Routes = [
             },
         ]
     },
+
+    // Escola panel
+    {
+        path: 'escola',
+        component: EscolaLayoutComponent,
+        canActivate: [authGuard],
+        children: [
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+            { path: 'dashboard', component: EscolaDashboardComponent },
+            {
+                path: 'carteira', component: EscolaWalletComponent
+            },
+            {
+                path: 'produtos', component: EscolaProductsComponent
+            },
+            {
+                path: 'eventos', component: EscolaEventsComponent
+            },
+            {
+                path: 'escolas',
+                loadComponent: () => import('./features/escola/schools/schools-list.component').then(m => m.SchoolsListComponent)
+            },
+            {
+                path: 'escolas/cadastro',
+                loadComponent: () => import('./features/escola/school-registration/school-registration.component').then(m => m.SchoolRegistrationComponent)
+            },
+            {
+                path: 'escolas/:id',
+                loadComponent: () => import('./features/escola/schools/school-details.component').then(m => m.SchoolDetailsComponent)
+            },
+            {
+                path: 'usuarios', component: EscolaUserManagementComponent
+            },
+            {
+                path: 'relatorios', component: EscolaReportsComponent
+            },
+            {
+                path: 'perfil', component: EscolaPerfilComponent
+            },
+        ]
+    },
+
     // Fallback
     { path: '**', redirectTo: '' }
 ];

@@ -1,0 +1,225 @@
+<form [formGroup]="schoolForm" (ngSubmit)="onNext()" class="space-y-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="form-group">
+            <label>Nome da escola *</label>
+            <input type="text" formControlName="nome" class="form-input" [class.input-error]="schoolForm.get('nome')?.invalid && schoolForm.get('nome')?.touched" placeholder="Nome da escola">
+            <p *ngIf="schoolForm.get('nome')?.touched && schoolForm.get('nome')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+        <div class="form-group">
+            <label>CNPJ *</label>
+            <input type="text" formControlName="cnpj" mask="00.000.000/0000-00" class="form-input" [class.input-error]="schoolForm.get('cnpj')?.invalid && schoolForm.get('cnpj')?.touched"
+                placeholder="00.000.000/0000-00">
+            <p *ngIf="schoolForm.get('cnpj')?.touched && schoolForm.get('cnpj')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+        <div class="form-group">
+            <label>Razão social *</label>
+            <input type="text" formControlName="razaoSocial" class="form-input" [class.input-error]="schoolForm.get('razaoSocial')?.invalid && schoolForm.get('razaoSocial')?.touched" placeholder="Razão social">
+            <p *ngIf="schoolForm.get('razaoSocial')?.touched && schoolForm.get('razaoSocial')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+    </div>
+
+    <div class="p-6 bg-gray-50 rounded-xl space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="form-group">
+                <label>Modelo de contratação *</label>
+                <select formControlName="modeloContratacao" class="form-input" [class.input-error]="schoolForm.get('modeloContratacao')?.invalid && schoolForm.get('modeloContratacao')?.touched">
+                    <option value="Full">Full</option>
+                    <option value="Light">Light</option>
+                </select>
+                <p *ngIf="schoolForm.get('modeloContratacao')?.touched && schoolForm.get('modeloContratacao')?.hasError('required')"
+                    class="error-text">Campo obrigatório</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Repasse -->
+            <div class="form-group">
+                <label>Dias de início para repasse *</label>
+                <div class="flex items-center flex-wrap gap-6 mt-1">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="radio" formControlName="diasRepasse" [value]="3"
+                            class="w-4 h-4 text-primary focus:ring-primary">
+                        <span class="text-sm font-medium group-hover:text-primary transition-colors">3 dias</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="radio" formControlName="diasRepasse" [value]="5"
+                            class="w-4 h-4 text-primary focus:ring-primary">
+                        <span class="text-sm font-medium group-hover:text-primary transition-colors">5 dias</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="radio" formControlName="diasRepasse" [value]="10"
+                            class="w-4 h-4 text-primary focus:ring-primary">
+                        <span class="text-sm font-medium group-hover:text-primary transition-colors">10 dias</span>
+                    </label>
+                </div>
+                <p *ngIf="schoolForm.get('diasRepasse')?.touched && schoolForm.get('diasRepasse')?.hasError('required')"
+                    class="error-text">Campo obrigatório</p>
+            </div>
+
+            <!-- Equipamentos -->
+            <div class="form-group">
+                <label>Equipamentos *</label>
+                <div class="flex items-center gap-8 mt-1">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="radio" formControlName="possuiEquipamentos" [value]="true"
+                            class="w-4 h-4 text-primary focus:ring-primary">
+                        <span class="text-sm font-medium group-hover:text-primary transition-colors">Sim</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="radio" formControlName="possuiEquipamentos" [value]="false"
+                            class="w-4 h-4 text-primary focus:ring-primary">
+                        <span class="text-sm font-medium group-hover:text-primary transition-colors">Não</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" *ngIf="schoolForm.get('possuiEquipamentos')?.value">
+            <div class="form-group">
+                <label>Quantidade *</label>
+                <input type="number" formControlName="quantidadeEquipamentos" min="0" class="form-input" [class.input-error]="schoolForm.get('quantidadeEquipamentos')?.invalid && schoolForm.get('quantidadeEquipamentos')?.touched"
+                    (keydown)="onCurrencyKeydown($event)" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>Valor unitário *</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">R$</span>
+                    <input type="text" formControlName="valorUnitarioEquipamento"
+                        (input)="applyCurrencyMask('valorUnitarioEquipamento', $event)"
+                        (keydown)="onCurrencyKeydown($event)" class="form-input currency-input" [class.input-error]="schoolForm.get('valorUnitarioEquipamento')?.invalid && schoolForm.get('valorUnitarioEquipamento')?.touched" placeholder="0,00">
+                </div>
+            </div>
+        </div>
+
+        <!-- Transações -->
+        <div class="space-y-4">
+            <div class="form-group">
+                <label>Transações *</label>
+                <div class="flex items-center gap-8 mt-1">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="radio" formControlName="cobraTransacoes" [value]="true"
+                            class="w-4 h-4 text-primary focus:ring-primary">
+                        <span class="text-sm font-medium group-hover:text-primary transition-colors">Sim</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="radio" formControlName="cobraTransacoes" [value]="false"
+                            class="w-4 h-4 text-primary focus:ring-primary">
+                        <span class="text-sm font-medium group-hover:text-primary transition-colors">Não</span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group" *ngIf="schoolForm.get('cobraTransacoes')?.value">
+                <label>Valor unitário *</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">R$</span>
+                    <input type="text" formControlName="valorUnitarioTransacao"
+                        (input)="applyCurrencyMask('valorUnitarioTransacao', $event)"
+                        (keydown)="onCurrencyKeydown($event)" class="form-input currency-input" [class.input-error]="schoolForm.get('valorUnitarioTransacao')?.invalid && schoolForm.get('valorUnitarioTransacao')?.touched" placeholder="0,00">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="form-group">
+            <label>Série *</label>
+            <select formControlName="serie" class="form-input" [class.input-error]="schoolForm.get('serie')?.invalid && schoolForm.get('serie')?.touched">
+                <option value="">Selecionar série</option>
+                <option *ngFor="let option of seriesOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
+            <p *ngIf="schoolForm.get('serie')?.touched && schoolForm.get('serie')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+        <div class="form-group">
+            <label>Nome da direção *</label>
+            <input type="text" formControlName="nomeDirecao" class="form-input" [class.input-error]="schoolForm.get('nomeDirecao')?.invalid && schoolForm.get('nomeDirecao')?.touched" placeholder="Nome da direção">
+            <p *ngIf="schoolForm.get('nomeDirecao')?.touched && schoolForm.get('nomeDirecao')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+        <div class="form-group">
+            <label>Nome do secretariado *</label>
+            <input type="text" formControlName="nomeSecretariado" class="form-input" [class.input-error]="schoolForm.get('nomeSecretariado')?.invalid && schoolForm.get('nomeSecretariado')?.touched" placeholder="Nome do secretariado">
+            <p *ngIf="schoolForm.get('nomeSecretariado')?.touched && schoolForm.get('nomeSecretariado')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+        <div class="form-group">
+            <label>Email da escola *</label>
+            <input type="email" formControlName="emailEscola" class="form-input" [class.input-error]="schoolForm.get('emailEscola')?.invalid && schoolForm.get('emailEscola')?.touched" placeholder="email@exemplo.com">
+            <p *ngIf="schoolForm.get('emailEscola')?.touched && schoolForm.get('emailEscola')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="form-group">
+            <label>Email da secretaria (admin) *</label>
+            <input type="email" formControlName="emailSecretariaAdmin" class="form-input" [class.input-error]="schoolForm.get('emailSecretariaAdmin')?.invalid && schoolForm.get('emailSecretariaAdmin')?.touched"
+                placeholder="email02@exemplo.com">
+            <p *ngIf="schoolForm.get('emailSecretariaAdmin')?.touched && schoolForm.get('emailSecretariaAdmin')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+        <div class="form-group">
+            <label>Telefone *</label>
+            <input type="text" formControlName="telefone" mask="(00) 00000-0000||(00) 0000-0000" class="form-input" [class.input-error]="schoolForm.get('telefone')?.invalid && schoolForm.get('telefone')?.touched"
+                placeholder="(DDD)">
+            <p *ngIf="schoolForm.get('telefone')?.touched && schoolForm.get('telefone')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+        <div class="form-group">
+            <label>Whatsapp *</label>
+            <input type="text" formControlName="whatsapp" mask="(00) 00000-0000||(00) 0000-0000" class="form-input" [class.input-error]="schoolForm.get('whatsapp')?.invalid && schoolForm.get('whatsapp')?.touched"
+                placeholder="(DDD)">
+            <p *ngIf="schoolForm.get('whatsapp')?.touched && schoolForm.get('whatsapp')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+        <div class="form-group">
+            <label>CEP *</label>
+            <input type="text" formControlName="cep" mask="00000-000" class="form-input" [class.input-error]="schoolForm.get('cep')?.invalid && schoolForm.get('cep')?.touched" placeholder="01234-567">
+            <p *ngIf="schoolForm.get('cep')?.touched && schoolForm.get('cep')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="form-group">
+            <label>Complemento (opcional)</label>
+            <input type="text" formControlName="complemento" class="form-input" [class.input-error]="schoolForm.get('complemento')?.invalid && schoolForm.get('complemento')?.touched" placeholder="Sala, andar e etc.">
+        </div>
+        <div class="form-group md:col-span-1">
+            <label>Endereço completo *</label>
+            <input type="text" formControlName="enderecoCompleto" class="form-input" [class.input-error]="schoolForm.get('enderecoCompleto')?.invalid && schoolForm.get('enderecoCompleto')?.touched" placeholder="Rua...">
+            <p *ngIf="schoolForm.get('enderecoCompleto')?.touched && schoolForm.get('enderecoCompleto')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+        <div class="form-group">
+            <label>Valor da carteira *</label>
+            <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">R$</span>
+                <input type="text" formControlName="valorCarteira" (input)="applyCurrencyMask('valorCarteira', $event)"
+                    (keydown)="onCurrencyKeydown($event)" class="form-input currency-input" [class.input-error]="schoolForm.get('valorCarteira')?.invalid && schoolForm.get('valorCarteira')?.touched" placeholder="0,00">
+            </div>
+            <p *ngIf="schoolForm.get('valorCarteira')?.touched && schoolForm.get('valorCarteira')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+        <div class="form-group">
+            <label>Valor por transferência *</label>
+            <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">R$</span>
+                <input type="text" formControlName="valorTransferencia"
+                    (input)="applyCurrencyMask('valorTransferencia', $event)" (keydown)="onCurrencyKeydown($event)"
+                    class="form-input currency-input" [class.input-error]="schoolForm.get('valorTransferencia')?.invalid && schoolForm.get('valorTransferencia')?.touched" placeholder="0,00">
+            </div>
+            <p *ngIf="schoolForm.get('valorTransferencia')?.touched && schoolForm.get('valorTransferencia')?.hasError('required')"
+                class="error-text">Campo obrigatório</p>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-4 pt-8">
+        <button type="button" (click)="onCancel()" class="btn-secondary px-12">Cancelar</button>
+        <button type="submit" class="btn-primary px-12">Cadastrar escola</button>
+    </div>
+</form>
