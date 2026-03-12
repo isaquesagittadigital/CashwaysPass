@@ -6,22 +6,26 @@
         <form [formGroup]="professorForm" (ngSubmit)="addProfessor()" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
             <div class="form-group">
                 <label>Nome completo *</label>
-                <input type="text" formControlName="nome" class="form-input" placeholder="Nome completo">
+                <input type="text" formControlName="nome" class="form-input" [class.input-error]="professorForm.get('nome')?.invalid && professorForm.get('nome')?.touched" placeholder="Nome completo">
+                <p *ngIf="professorForm.get('nome')?.touched && professorForm.get('nome')?.hasError('required')" class="error-text">Campo obrigatório</p>
             </div>
 
             <div class="form-group">
                 <label>Grau de escolaridade *</label>
-                <select formControlName="escolaridade" class="form-input">
+                <select formControlName="escolaridade" class="form-input" [class.input-error]="professorForm.get('escolaridade')?.invalid && professorForm.get('escolaridade')?.touched">
                     <option value="">Selecione o grau</option>
                     <option *ngFor="let option of escolaridadeOptions" [value]="option.value">
                         {{ option.label }}
                     </option>
                 </select>
+                <p *ngIf="professorForm.get('escolaridade')?.touched && professorForm.get('escolaridade')?.hasError('required')" class="error-text">Campo obrigatório</p>
             </div>
 
             <div class="form-group">
                 <label>Email do professor *</label>
-                <input type="email" formControlName="email" class="form-input" placeholder="email@exemplo.com">
+                <input type="email" formControlName="email" class="form-input" [class.input-error]="professorForm.get('email')?.invalid && professorForm.get('email')?.touched" placeholder="email@exemplo.com">
+                <p *ngIf="professorForm.get('email')?.touched && professorForm.get('email')?.hasError('required')" class="error-text">Campo obrigatório</p>
+                <p *ngIf="professorForm.get('email')?.touched && professorForm.get('email')?.hasError('email')" class="error-text">Email inválido</p>
             </div>
 
             <div class="flex items-center gap-4">

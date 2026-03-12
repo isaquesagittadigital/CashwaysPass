@@ -79,3 +79,19 @@
 :host ::ng-deep .btn-secondary:hover {
     background-color: #F9FAFB;
 }
+
+:host ::ng-deep .input-error {
+    border-color: #EF4444 !important;
+    background-color: #FEF2F2 !important;
+}
+
+:host ::ng-deep .input-error:focus {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+}
+
+:host ::ng-deep .error-text {
+    color: #EF4444;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+}

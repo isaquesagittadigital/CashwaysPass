@@ -6,46 +6,54 @@
         <form [formGroup]="turmaForm" (ngSubmit)="addTurma()" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
             <div class="form-group">
                 <label>Nome da turma *</label>
-                <input type="text" formControlName="nome" class="form-input" placeholder="Ex.: Turma A">
+                <input type="text" formControlName="nome" class="form-input" [class.input-error]="turmaForm.get('nome')?.invalid && turmaForm.get('nome')?.touched" placeholder="Ex.: Turma A">
+                <p *ngIf="turmaForm.get('nome')?.touched && turmaForm.get('nome')?.hasError('required')" class="error-text">Campo obrigatório</p>
             </div>
 
             <div class="form-group">
                 <label>Estágio *</label>
-                <select formControlName="estagio" class="form-input">
+                <select formControlName="estagio" class="form-input" [class.input-error]="turmaForm.get('estagio')?.invalid && turmaForm.get('estagio')?.touched">
                     <option value="">Selecione o estágio</option>
                     <option *ngFor="let option of estagioOptions" [value]="option.value">{{ option.label }}</option>
                 </select>
+                <p *ngIf="turmaForm.get('estagio')?.touched && turmaForm.get('estagio')?.hasError('required')" class="error-text">Campo obrigatório</p>
             </div>
 
             <div class="form-group">
                 <label>Período *</label>
-                <select formControlName="periodo" class="form-input">
+                <select formControlName="periodo" class="form-input" [class.input-error]="turmaForm.get('periodo')?.invalid && turmaForm.get('periodo')?.touched">
                     <option value="">Selecione o período</option>
                     <option *ngFor="let option of periodoOptions" [value]="option.value">{{ option.label }}</option>
                 </select>
+                <p *ngIf="turmaForm.get('periodo')?.touched && turmaForm.get('periodo')?.hasError('required')" class="error-text">Campo obrigatório</p>
             </div>
 
             <div class="form-group">
                 <label>Série *</label>
-                <input type="text" formControlName="serie" class="form-input" placeholder="Ex.: 5º A">
+                <input type="text" formControlName="serie" class="form-input" [class.input-error]="turmaForm.get('serie')?.invalid && turmaForm.get('serie')?.touched" placeholder="Ex.: 5º A">
+                <p *ngIf="turmaForm.get('serie')?.touched && turmaForm.get('serie')?.hasError('required')" class="error-text">Campo obrigatório</p>
             </div>
 
             <div class="form-group">
                 <label>Professor *</label>
-                <select formControlName="professor_id" class="form-input">
+                <select formControlName="professor_id" class="form-input" [class.input-error]="turmaForm.get('professor_id')?.invalid && turmaForm.get('professor_id')?.touched">
                     <option value="">Selecione o professor</option>
                     <option *ngFor="let prof of professors$ | async" [value]="prof.id">{{ prof.nome }}</option>
                 </select>
+                <p *ngIf="turmaForm.get('professor_id')?.touched && turmaForm.get('professor_id')?.hasError('required')" class="error-text">Campo obrigatório</p>
             </div>
 
             <div class="form-group">
                 <label>Quantidade de alunos *</label>
-                <input type="number" formControlName="quantidade_alunos" class="form-input" placeholder="0">
+                <input type="number" formControlName="quantidade_alunos" class="form-input" [class.input-error]="turmaForm.get('quantidade_alunos')?.invalid && turmaForm.get('quantidade_alunos')?.touched" placeholder="0">
+                <p *ngIf="turmaForm.get('quantidade_alunos')?.touched && turmaForm.get('quantidade_alunos')?.hasError('required')" class="error-text">Campo obrigatório</p>
+                <p *ngIf="turmaForm.get('quantidade_alunos')?.touched && turmaForm.get('quantidade_alunos')?.hasError('min')" class="error-text">No mínimo 1 aluno</p>
             </div>
 
             <div class="form-group">
                 <label>Data de entrada *</label>
-                <input type="date" formControlName="data_inicio" class="form-input">
+                <input type="date" formControlName="data_inicio" class="form-input" [class.input-error]="turmaForm.get('data_inicio')?.invalid && turmaForm.get('data_inicio')?.touched">
+                <p *ngIf="turmaForm.get('data_inicio')?.touched && turmaForm.get('data_inicio')?.hasError('required')" class="error-text">Campo obrigatório</p>
             </div>
 
             <div class="flex items-center gap-4">
