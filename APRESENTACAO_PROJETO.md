@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="capa-github.png" width="800" alt="CashwaysPass Cover"/>
+  <img src="logo.svg" width="250" alt="CashwaysPass Logo"/>
 </div>
 
 # Apresentação do Projeto: CashwaysPass
