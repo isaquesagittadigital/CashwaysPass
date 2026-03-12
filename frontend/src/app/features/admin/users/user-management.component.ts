@@ -33,13 +33,14 @@ import {
 } from 'lucide-angular';
 import * as Papa from 'papaparse';
 import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { UsuarioService, Usuario, UserTipoAcesso, UserStatus } from '../../../core/services/usuario.service';
 import { SchoolService, School } from '../../../core/services/school.service';
 
 @Component({
     selector: 'app-user-management',
     standalone: true,
-    imports: [CommonModule, FormsModule, LucideAngularModule, DeleteConfirmModalComponent],
+    imports: [CommonModule, FormsModule, LucideAngularModule, DeleteConfirmModalComponent, NgxMaskDirective],
     templateUrl: './user-management.component.html',
 })
 export class UserManagementComponent implements OnInit, OnDestroy {
@@ -95,14 +96,14 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     isEditing = false;
     formLoading = false;
     form: Partial<Usuario> = {
-        tipo_acesso: 'Responsável',
+        tipo_acesso: 'Responsavel',
         nome_completo: '',
         cpf: '',
         telefone: '',
         turmaID: '',
         email: '',
         escola_id: '',
-        status: 'Ativo'
+        status: 'active'
     };
 
     selectedUser: Usuario | null = null;
@@ -195,7 +196,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     }
 
     shouldDisablePeriod(): boolean {
-        return this.form.tipo_acesso === 'Responsável' || this.form.tipo_acesso === 'Lojista' || this.form.tipo_acesso === 'Escola' || this.form.tipo_acesso === 'Administrador';
+        return this.form.tipo_acesso === 'Responsavel' || this.form.tipo_acesso === 'Lojista' || this.form.tipo_acesso === 'Escola' || this.form.tipo_acesso === 'Admin';
     }
 
     async loadTurmas() {
@@ -327,9 +328,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
                 nome_completo: row.nome_completo,
                 email: row.email,
                 cpf: row.cpf,
-                tipo_acesso: (row.tipo_acesso as UserTipoAcesso) || 'Responsável',
+                tipo_acesso: (row.tipo_acesso as UserTipoAcesso) || 'Responsavel',
                 escola_id: this.selectedSchoolId,
-                status: 'Ativo'
+                status: 'active'
             };
 
             try {
@@ -374,13 +375,13 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         this.schoolSearchTerm = '';
         this.showSchoolList = false;
         this.form = {
-            tipo_acesso: 'Responsável',
+            tipo_acesso: 'Responsavel',
             nome_completo: '',
             cpf: '',
             turmaID: '',
             email: '',
             escola_id: this.selectedSchoolId || '',
-            status: 'Ativo'
+            status: 'active'
         };
     }
 
@@ -389,15 +390,28 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
         this.formLoading = true;
         try {
+            // Sanitize data before sending to Supabase
+            const dataToSave = { ...this.form };
+            
+            // Convert empty strings to null for UUID fields or fields that should be nullable
+            if (!dataToSave.turmaID || dataToSave.turmaID === '') {
+                delete dataToSave.turmaID; // Or set to null
+                (dataToSave as any).turmaID = null;
+            }
+
+            if (!dataToSave.escola_id || dataToSave.escola_id === '') {
+                (dataToSave as any).escola_id = this.selectedSchoolId;
+            }
+
             if (this.isEditing && this.form.id) {
-                const result = await this.usuarioService.updateUsuario(this.form.id, this.form);
+                const result = await this.usuarioService.updateUsuario(this.form.id, dataToSave);
                 if (result.success) {
                     this.showEditSuccessToast = true;
                     this.showFormModal = false;
                     this.loadUsuarios();
                 }
             } else {
-                const result = await this.usuarioService.createUsuario(this.form);
+                const result = await this.usuarioService.createUsuario(dataToSave);
                 if (result.success) {
                     this.showSuccessToast = true;
                     this.showFormModal = false;
@@ -479,7 +493,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     // --- Utils ---
     getStatusClass(status: string): string {
         const s = status?.toLowerCase();
-        if (s === 'ativo' || s === 'active') {
+        if (s === 'active' || s === 'ativo') {
             return 'bg-green-100 text-green-700';
         }
         return 'bg-red-100 text-red-700';

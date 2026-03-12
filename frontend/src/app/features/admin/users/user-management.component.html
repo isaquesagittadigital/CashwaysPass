@@ -29,10 +29,10 @@
             <select [(ngModel)]="tipoFilter" (change)="onFilterChange()"
                 class="w-full appearance-none pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] cursor-pointer">
                 <option value="">Todos os tipos</option>
-                <option value="Administrador">Administrador</option>
+                <option value="Admin">Administrador</option>
                 <option value="Escola">Escola</option>
                 <option value="Professor">Professor</option>
-                <option value="Responsável">Responsável</option>
+                <option value="Responsavel">Responsável</option>
                 <option value="Lojista">Lojista</option>
                 <option value="Aluno">Aluno</option>
             </select>
@@ -45,8 +45,8 @@
             <select [(ngModel)]="statusFilter" (change)="onFilterChange()"
                 class="w-full appearance-none pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] cursor-pointer">
                 <option value="">Todos</option>
-                <option value="Ativo">Ativo</option>
-                <option value="Inativo">Inativo</option>
+                <option value="active">Ativo</option>
+                <option value="inactive">Inativo</option>
             </select>
             <lucide-icon [img]="icons.ChevronDown"
                 class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
@@ -230,10 +230,10 @@
                 <div class="relative">
                     <select [(ngModel)]="form.tipo_acesso" (change)="onTipoAcessoChange()"
                         class="w-full appearance-none px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] cursor-pointer">
-                        <option value="Administrador">Administrador</option>
+                        <option value="Admin">Administrador</option>
                         <option value="Escola">Escola</option>
                         <option value="Professor">Professor</option>
-                        <option value="Responsável">Responsável</option>
+                        <option value="Responsavel">Responsável</option>
                         <option value="Lojista">Lojista</option>
                         <option value="Aluno">Aluno</option>
                     </select>
@@ -255,12 +255,12 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">CPF <span
                             class="text-red-500">*</span></label>
-                    <input type="text" [(ngModel)]="form.cpf" placeholder="000.000.000-00"
+                    <input type="text" [(ngModel)]="form.cpf" mask="000.000.000-00" placeholder="000.000.000-00"
                         class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] transition-all">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Telefone</label>
-                    <input type="text" [(ngModel)]="form.telefone" placeholder="(00) 00000-0000"
+                    <input type="text" [(ngModel)]="form.telefone" mask="(00) 00000-0000" placeholder="(00) 00000-0000"
                         class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] transition-all">
                 </div>
             </div>
@@ -337,8 +337,8 @@
                 <div class="flex items-center gap-3">
                     <span class="text-xs text-gray-400">Inativo</span>
                     <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" [checked]="form.status === 'Ativo'"
-                            (change)="form.status = (form.status === 'Ativo' ? 'Inativo' : 'Ativo')"
+                        <input type="checkbox" [checked]="form.status === 'active'"
+                            (change)="form.status = (form.status === 'active' ? 'inactive' : 'active')"
                             class="sr-only peer">
                         <div
                             class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-[#005bb5] after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all">

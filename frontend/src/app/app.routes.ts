@@ -2,8 +2,6 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
 import { AdminLayoutComponent } from './features/admin/layout/admin-layout.component';
 import { AdminDashboardComponent } from './features/admin/dashboard/admin-dashboard.component';
-import { EscolaLayoutComponent } from './features/escola/layout/escola-layout.component';
-import { EscolaDashboardComponent } from './features/escola/dashboard/escola-dashboard.component';
 
 export const routes: Routes = [
     // Login - página inicial
@@ -54,40 +52,6 @@ export const routes: Routes = [
             },
         ]
     },
-    // School panel
-    {
-        path: 'escola',
-        component: EscolaLayoutComponent,
-        children: [
-            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-            { path: 'dashboard', component: EscolaDashboardComponent },
-            {
-                path: 'cadastro',
-                loadComponent: () => import('./features/admin/schools/schools-list.component').then(m => m.SchoolsListComponent)
-            },
-            {
-                path: 'carteira',
-                loadComponent: () => import('./features/escola/wallet/wallet.component').then(m => m.EscolaWalletComponent)
-            },
-            {
-                path: 'produtos',
-                loadComponent: () => import('./features/escola/products/products.component').then(m => m.EscolaProductsComponent)
-            },
-            {
-                path: 'eventos',
-                loadComponent: () => import('./features/escola/events/events.component').then(m => m.EscolaEventsComponent)
-            },
-            {
-                path: 'relatorios',
-                loadComponent: () => import('./features/escola/reports/reports.component').then(m => m.EscolaReportsComponent)
-            },
-            {
-                path: 'perfil',
-                loadComponent: () => import('./features/escola/profile/perfil.component').then(m => m.EscolaPerfilComponent)
-            },
-        ]
-    },
-
     // Fallback
     { path: '**', redirectTo: '' }
 ];

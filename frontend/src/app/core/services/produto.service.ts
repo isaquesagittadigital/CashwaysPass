@@ -109,9 +109,9 @@ export class ProdutoService {
         }
     }
 
-    async createProduct(product: ProdutoForm, escolaId: string): Promise<{ success: boolean; error?: any }> {
+    async createProduct(product: ProdutoForm, escolaId: string): Promise<{ success: boolean; data?: any; error?: any }> {
         try {
-            const { error } = await supabase
+            const { data, error } = await supabase
                 .from('produto')
                 .insert({
                     escola_id: escolaId,
@@ -124,11 +124,14 @@ export class ProdutoService {
                     'limete_por_aluno': product.limite_por_aluno,
                     'Status': product.status,
                     turma_ids: product.turma_ids,
-                    quantidade: product.quantidade
-                });
+                    quantidade: product.quantidade,
+                    categoria: product.categoria
+                })
+                .select()
+                .single();
 
             if (error) throw error;
-            return { success: true };
+            return { success: true, data };
         } catch (error) {
             console.error('Error creating product:', error);
             return { success: false, error };
@@ -149,7 +152,8 @@ export class ProdutoService {
                     'limete_por_aluno': product.limite_por_aluno,
                     'Status': product.status,
                     turma_ids: product.turma_ids,
-                    quantidade: product.quantidade
+                    quantidade: product.quantidade,
+                    categoria: product.categoria
                 })
                 .eq('id', id);
 
@@ -178,8 +182,9 @@ export class ProdutoService {
 
     async uploadProductImage(file: File): Promise<string> {
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+            const fileExt = file.name.split('.').pop() || 'png';
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+            
             const { data, error } = await supabase.storage
                 .from('produtos')
                 .upload(fileName, file, {
@@ -187,16 +192,19 @@ export class ProdutoService {
                     upsert: false
                 });
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase Storage Error:', error);
+                throw error;
+            }
 
-            const { data: urlData } = supabase.storage
+            const { data: { publicUrl } } = supabase.storage
                 .from('produtos')
                 .getPublicUrl(data.path);
 
-            return urlData.publicUrl;
+            return publicUrl;
         } catch (error) {
             console.error('Error uploading image:', error);
-            return '';
+            throw error; // Rethrow to be caught by the component
         }
     }
 }

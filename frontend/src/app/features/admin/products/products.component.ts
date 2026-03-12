@@ -225,11 +225,17 @@ export class ProductsComponent implements OnInit, OnDestroy {
         if (!this.form.nome.trim()) return;
         this.formLoading = true;
 
-        // Upload image if a new file was selected
         if (this.imageFile) {
-            const imageUrl = await this.produtoService.uploadProductImage(this.imageFile);
-            if (imageUrl) {
-                this.form.url_imagem = imageUrl;
+            try {
+                const imageUrl = await this.produtoService.uploadProductImage(this.imageFile);
+                if (imageUrl) {
+                    this.form.url_imagem = imageUrl;
+                }
+            } catch (error) {
+                console.error('Failed to upload image:', error);
+                alert('Erro ao fazer upload da imagem. O produto será salvo sem alteração na imagem ou tente novamente.');
+                this.formLoading = false;
+                return;
             }
         }
 

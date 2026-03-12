@@ -12,7 +12,6 @@ import { LogoComponent } from '../../../components/logo/logo.component';
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
-  role: 'school' | 'admin' = 'admin';
   email = '';
   password = '';
   rememberMe = false;
@@ -32,10 +31,6 @@ export class LoginComponent {
   };
 
   constructor(private router: Router) { }
-
-  setRole(newRole: 'school' | 'admin') {
-    this.role = newRole;
-  }
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
@@ -82,41 +77,22 @@ export class LoginComponent {
 
       const userType = data.tipo_acesso;
 
-      if (this.role === 'admin') {
-        if (userType !== 'Admin' && userType !== 'Administrador') {
-          this.errorMessage = 'Acesso negado. Este usuário não possui privilégios de Administrador. Verifique os dados e tente novamente.';
-          this.isLoading = false;
-          return;
-        }
-
-        const userData = { ...data };
-        if (this.rememberMe) {
-          userData.sessionExpiration = new Date().getTime() + 30 * 24 * 60 * 60 * 1000;
-          localStorage.setItem('currentUser', JSON.stringify(userData));
-          sessionStorage.removeItem('currentUser');
-        } else {
-          sessionStorage.setItem('currentUser', JSON.stringify(userData));
-          localStorage.removeItem('currentUser');
-        }
-        this.router.navigate(['/admin']);
-      } else if (this.role === 'school') {
-        if (userType !== 'Escola') {
-          this.errorMessage = 'Acesso negado. Este usuário não possui privilégios de Escola.';
-          this.isLoading = false;
-          return;
-        }
-
-        const userData = { ...data };
-        if (this.rememberMe) {
-          userData.sessionExpiration = new Date().getTime() + 30 * 24 * 60 * 60 * 1000;
-          localStorage.setItem('currentUser', JSON.stringify(userData));
-          sessionStorage.removeItem('currentUser');
-        } else {
-          sessionStorage.setItem('currentUser', JSON.stringify(userData));
-          localStorage.removeItem('currentUser');
-        }
-        this.router.navigate(['/escola']);
+      if (userType !== 'Admin' && userType !== 'Administrador') {
+        this.errorMessage = 'Acesso negado. Este usuário não possui privilégios de Administrador. Verifique os dados e tente novamente.';
+        this.isLoading = false;
+        return;
       }
+
+      const userData = { ...data };
+      if (this.rememberMe) {
+        userData.sessionExpiration = new Date().getTime() + 30 * 24 * 60 * 60 * 1000;
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        sessionStorage.removeItem('currentUser');
+      } else {
+        sessionStorage.setItem('currentUser', JSON.stringify(userData));
+        localStorage.removeItem('currentUser');
+      }
+      this.router.navigate(['/admin']);
     } catch (err) {
       console.error('Login error:', err);
       this.errorMessage = 'Erro ao conectar ao servidor. Verifique sua conexão.';

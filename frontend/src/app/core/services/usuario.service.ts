@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../supabase';
 
-export type UserTipoAcesso = 'Administrador' | 'Escola' | 'Professor' | 'Lojista' | 'Aluno' | 'Responsável';
-export type UserStatus = 'Ativo' | 'Inativo';
+export type UserTipoAcesso = 'Admin' | 'Escola' | 'Professor' | 'Lojista' | 'Aluno' | 'Responsavel' | 'Convidado';
+export type UserStatus = 'active' | 'inactive' | 'blocked' | 'invited';
 
 export interface Usuario {
     id: number;

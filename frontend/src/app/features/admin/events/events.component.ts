@@ -250,8 +250,17 @@ export class EventsComponent implements OnInit, OnDestroy {
         try {
             // Upload image if selected
             if (this.imageFile) {
-                const url = await this.eventoService.uploadCapa(this.imageFile);
-                if (url) this.form.capa_url = url;
+                try {
+                    const url = await this.eventoService.uploadCapa(this.imageFile);
+                    if (url) {
+                        this.form.capa_url = url;
+                    }
+                } catch (error) {
+                    console.error('Failed to upload image:', error);
+                    alert('Erro ao fazer upload da imagem de capa. O evento será salvo sem alteração na imagem ou tente novamente.');
+                    this.formLoading = false;
+                    return;
+                }
             }
 
             const dataToSave = {

@@ -67,11 +67,13 @@ export class EventoService {
         }
     }
 
-    async createEvento(evento: Partial<Evento>): Promise<{ success: boolean; error?: any }> {
+    async createEvento(evento: Partial<Evento>): Promise<{ success: boolean; data?: any; error?: any }> {
         try {
-            const { error } = await supabase
+            const { data, error } = await supabase
                 .from(this.TABLE)
-                .insert([evento]);
+                .insert([evento])
+                .select()
+                .single();
 
             if (error) throw error;
 
@@ -79,23 +81,21 @@ export class EventoService {
             if (evento.escola_id) {
                 const { data: escolaData } = await supabase
                     .from('escola')
-                    .select('nome_fantasia, email_escola')
+                    .select('nome_fantasia, email_contato')
                     .eq('id', evento.escola_id)
                     .single();
 
-                if (escolaData && escolaData.email_escola) {
+                if (escolaData && escolaData.email_contato) {
                     try {
                         const apiUrl = window.location.hostname.includes('localhost')
                             ? 'http://localhost:3000/email/send-event-invite'
-                            : 'https://pass-2-0.vercel.app/api/email/send-event-invite'; // Ajuste caso sua URL de api de produção seja diferente
-
-                        console.log('Disparando e-mail para a escola: ', escolaData.email_escola);
+                            : 'https://pass-2-0.vercel.app/api/email/send-event-invite';
 
                         await fetch(apiUrl, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                to: escolaData.email_escola,
+                                to: escolaData.email_contato,
                                 schoolName: escolaData.nome_fantasia,
                                 eventName: evento.nome || 'Novo Evento',
                                 eventDate: evento.data_evento || new Date().toISOString()
@@ -107,7 +107,7 @@ export class EventoService {
                 }
             }
 
-            return { success: true };
+            return { success: true, data };
         } catch (error) {
             console.error('Error creating event:', error);
             return { success: false, error };
@@ -146,8 +146,8 @@ export class EventoService {
 
     async uploadCapa(file: File): Promise<string> {
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `capas/${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+            const fileExt = file.name.split('.').pop() || 'png';
+            const fileName = `capas/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
 
             const { data, error } = await supabase.storage
                 .from(this.BUCKET)
@@ -156,16 +156,19 @@ export class EventoService {
                     upsert: false
                 });
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase Storage Error (Events):', error);
+                throw error;
+            }
 
-            const { data: urlData } = supabase.storage
+            const { data: { publicUrl } } = supabase.storage
                 .from(this.BUCKET)
                 .getPublicUrl(data.path);
 
-            return urlData.publicUrl;
+            return publicUrl;
         } catch (error) {
             console.error('Error uploading capa:', error);
-            return '';
+            throw error;
         }
     }
 
