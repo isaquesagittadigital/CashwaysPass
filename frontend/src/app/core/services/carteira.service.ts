@@ -85,7 +85,7 @@ export class CarteiraService {
                 // Search in 'aluno' table for RA and 'Carteira' table for carteira_code
                 const [matchedByRA, matchedByCode] = await Promise.all([
                     supabase.from('aluno').select('nome').ilike('ra', `%${term}%`),
-                    supabase.from('Carteira').select('Usuario').ilike('carteira_code', `%${term}%`)
+                    supabase.from('carteira').select('Usuario').ilike('carteira_code', `%${term}%`)
                 ]);
                 
                 const matchedNamesFromRA = (matchedByRA.data || []).map(a => a.nome).filter(Boolean);
@@ -124,7 +124,7 @@ export class CarteiraService {
                     .select('id, nome, ra, saldo_carteira, escola_id, usuario_id')
                     .in('usuario_id', userIds),
                 supabase
-                    .from('Carteira')
+                    .from('carteira')
                     .select('carteira_code, Usuario')
                     .in('Usuario', userIds)
             ]);

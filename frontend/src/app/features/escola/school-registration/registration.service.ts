@@ -316,7 +316,7 @@ export class SchoolRegistrationService {
                         }));
 
                         const { error: carteiraError } = await supabase
-                            .from('Carteira')
+                            .from('carteira')
                             .insert(carteiraInserts);
 
                         if (carteiraError) throw carteiraError;

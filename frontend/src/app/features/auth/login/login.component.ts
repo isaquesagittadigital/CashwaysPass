@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, User, Key, Eye, EyeOff, AlertCircle, AlertTriangle, X } from 'lucide-angular';
 import { LogoComponent } from '../../../components/logo/logo.component';
+import { supabase } from '../../../core/supabase';
 
 @Component({
   selector: 'app-login',
@@ -11,8 +12,8 @@ import { LogoComponent } from '../../../components/logo/logo.component';
   imports: [CommonModule, LucideAngularModule, LogoComponent, RouterModule, FormsModule],
   templateUrl: './login.component.html',
 })
-export class LoginComponent {
-  role: 'school' | 'admin' = 'admin';
+export class LoginComponent implements OnInit {
+  role: 'school' | 'admin' = 'school';
   email = '';
   password = '';
   rememberMe = false;
@@ -20,6 +21,7 @@ export class LoginComponent {
   isLoading = false;
   submitted = false;
   errorMessage = '';
+  appVersion: string = 'Carregando...';
 
   icons = {
     User: User,
@@ -32,6 +34,29 @@ export class LoginComponent {
   };
 
   constructor(private router: Router) { }
+
+  ngOnInit() {
+    this.loadAppVersion();
+  }
+
+  async loadAppVersion() {
+    try {
+      const { data, error } = await supabase
+        .from('versionamento')
+        .select('version_string')
+        .eq('id', 1)
+        .single();
+
+      if (data && !error) {
+        this.appVersion = 'VERSÃO ' + data.version_string;
+      } else {
+        this.appVersion = 'VERSÃO INDISPONÍVEL';
+      }
+    } catch (e) {
+      console.error('Erro ao buscar versão', e);
+      this.appVersion = 'VERSÃO INDISPONÍVEL';
+    }
+  }
 
   setRole(newRole: 'school' | 'admin') {
     this.role = newRole;

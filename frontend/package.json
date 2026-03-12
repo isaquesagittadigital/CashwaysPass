@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "npx ng build",
     "watch": "npx ng build --watch --configuration development",
-    "test": "npx ng test"
+    "test": "npx ng test",
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui"
   },
   "engines": {
     "node": ">=18.0.0"
