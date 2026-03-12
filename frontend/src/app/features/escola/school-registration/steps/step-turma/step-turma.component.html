@@ -103,8 +103,8 @@
                                     class="p-2 text-red-100 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
                                     <lucide-icon [img]="icons.Trash2" class="w-5 h-5"></lucide-icon>
                                 </button>
-                                <button
-                                    class="p-2 text-gray-300 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-all border border-gray-100">
+                                <button (click)="editTurma(turma)"
+                                    class="p-2 text-gray-400 hover:text-[#00609b] hover:bg-blue-50 rounded-lg transition-all border border-gray-100 shadow-sm">
                                     <lucide-icon [img]="icons.Edit" class="w-5 h-5"></lucide-icon>
                                 </button>
                             </div>

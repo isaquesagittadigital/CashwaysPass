@@ -197,7 +197,13 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
         if (!this.selectedSchool) return;
         if (this.turmaForm.valid) {
             this.isSubmitting = true;
-            const data = { ...this.turmaForm.value, escola_id: this.selectedSchool.id };
+            const formValue = this.turmaForm.value;
+            
+            const data = { 
+                ...formValue, 
+                escola_id: this.selectedSchool.id,
+                data_entrada: formValue.data_inicio
+            };
 
             const obs = this.selectedTurma?.id
                 ? this.schoolService.updateTurma(this.selectedTurma.id, data)
@@ -212,12 +218,18 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
                     setTimeout(() => this.showToast = false, 3000);
 
                     this.selectedTurma = null;
-                    this.turmaForm.reset({ status: true, quantidade_alunos: 0, data_inicio: new Date().toISOString().split('T')[0], Periodos: '' });
+                    this.turmaForm.reset({ 
+                        status: true, 
+                        quantidade_alunos: 0, 
+                        data_inicio: new Date().toISOString().split('T')[0],
+                        Periodos: ''
+                    });
                     this.loadTurmas();
                 },
                 error: (err) => {
                     this.isSubmitting = false;
-                    alert('Erro ao salvar turma: ' + err.message);
+                    console.error('Error saving turma:', err);
+                    alert('Erro ao salvar turma: ' + (err.message || 'Erro desconhecido'));
                 }
             });
         } else {

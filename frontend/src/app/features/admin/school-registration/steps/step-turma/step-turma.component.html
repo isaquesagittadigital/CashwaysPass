@@ -19,7 +19,7 @@
 
             <div class="form-group">
                 <label>Período *</label>
-                <select formControlName="periodo" class="form-input">
+                <select formControlName="Periodos" class="form-input">
                     <option value="">Selecione o período</option>
                     <option *ngFor="let option of periodoOptions" [value]="option.value">{{ option.label }}</option>
                 </select>
@@ -87,7 +87,7 @@
                         <td class="py-4 text-gray-600">{{ getProfessorName(turma.professor_id, (professors$ | async)) }}
                         </td>
                         <td class="py-4 text-center text-gray-600">{{ turma.quantidade_alunos }}</td>
-                        <td class="py-4 text-center text-gray-600">{{ turma.periodo }}</td>
+                        <td class="py-4 text-center text-gray-600">{{ turma.Periodos }}</td>
                         <td class="py-4 text-gray-500 ">{{ turma.data_inicio | date:'dd/MM/yyyy' }}</td>
                         <td class="py-4">
                             <div class="flex items-center justify-center gap-3">
@@ -95,8 +95,8 @@
                                     class="p-2 text-red-100 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
                                     <lucide-icon [img]="icons.Trash2" class="w-5 h-5"></lucide-icon>
                                 </button>
-                                <button
-                                    class="p-2 text-gray-300 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-all border border-gray-100">
+                                <button (click)="editTurma(turma)"
+                                    class="p-2 text-gray-400 hover:text-[#00609b] hover:bg-blue-50 rounded-lg transition-all border border-gray-100 shadow-sm">
                                     <lucide-icon [img]="icons.Edit" class="w-5 h-5"></lucide-icon>
                                 </button>
                             </div>

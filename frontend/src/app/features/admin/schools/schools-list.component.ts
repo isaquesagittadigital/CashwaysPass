@@ -86,7 +86,7 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
         this.turmaForm = this.fb.group({
             nome: ['', Validators.required],
             estagio: ['', Validators.required],
-            periodo: ['', Validators.required],
+            Periodos: ['', Validators.required],
             serie: ['', Validators.required],
             quantidade_alunos: [0, Validators.required],
             data_inicio: [new Date().toISOString().split('T')[0], Validators.required],
@@ -187,7 +187,8 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
             this.turmaForm.reset({
                 status: true,
                 quantidade_alunos: 0,
-                data_inicio: new Date().toISOString().split('T')[0]
+                data_inicio: new Date().toISOString().split('T')[0],
+                Periodos: ''
             });
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -197,7 +198,14 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
         if (!this.selectedSchool) return;
         if (this.turmaForm.valid) {
             this.isSubmitting = true;
-            const data = { ...this.turmaForm.value, escola_id: this.selectedSchool.id };
+            const formValue = this.turmaForm.value;
+            
+            // Map data to match db columns
+            const data = { 
+                ...formValue, 
+                escola_id: this.selectedSchool.id,
+                data_entrada: formValue.data_inicio
+            };
 
             const obs = this.selectedTurma?.id
                 ? this.schoolService.updateTurma(this.selectedTurma.id, data)
@@ -212,12 +220,18 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
                     setTimeout(() => this.showToast = false, 3000);
 
                     this.selectedTurma = null;
-                    this.turmaForm.reset({ status: true, quantidade_alunos: 0, data_inicio: new Date().toISOString().split('T')[0] });
+                    this.turmaForm.reset({ 
+                        status: true, 
+                        quantidade_alunos: 0, 
+                        data_inicio: new Date().toISOString().split('T')[0],
+                        Periodos: ''
+                    });
                     this.loadTurmas();
                 },
                 error: (err) => {
                     this.isSubmitting = false;
-                    alert('Erro ao salvar turma: ' + err.message);
+                    console.error('Error saving turma:', err);
+                    alert('Erro ao salvar turma: ' + (err.message || 'Erro desconhecido'));
                 }
             });
         } else {

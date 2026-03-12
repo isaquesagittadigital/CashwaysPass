@@ -41,7 +41,7 @@ export class TurmaManagementComponent implements OnInit {
         this.turmaForm = this.fb.group({
             nome: ['', Validators.required],
             estagio: ['', Validators.required],
-            periodo: ['', Validators.required],
+            Periodos: ['', Validators.required],
             serie: ['', Validators.required],
             professor_id: [''],
             quantidade_alunos: [0, Validators.required],
@@ -95,7 +95,20 @@ export class TurmaManagementComponent implements OnInit {
     onSubmit() {
         if (this.turmaForm.valid) {
             this.isSubmitting = true;
-            const data = { ...this.turmaForm.value, escola_id: this.schoolId };
+            
+            const formValue = this.turmaForm.value;
+            const professor = this.professors.find(p => p.id === formValue.professor_id);
+            
+            const data = { 
+                ...formValue, 
+                escola_id: this.schoolId,
+                professor: professor ? professor.nome_completo : '',
+                data_entrada: formValue.data_inicio
+            };
+            
+            // Remove professor_id as it doesn't exist in the table
+            delete data.professor_id;
+
             const obs = this.isEditing
                 ? this.schoolService.updateTurma(this.editingId!, data)
                 : this.schoolService.createTurma(data);
@@ -108,7 +121,8 @@ export class TurmaManagementComponent implements OnInit {
                     this.turmaForm.reset({
                         status: true,
                         quantidade_alunos: 0,
-                        data_inicio: new Date().toISOString().split('T')[0]
+                        data_inicio: new Date().toISOString().split('T')[0],
+                        Periodos: ''
                     });
                     this.loadTurmas();
 
@@ -119,7 +133,8 @@ export class TurmaManagementComponent implements OnInit {
                 },
                 error: (err) => {
                     this.isSubmitting = false;
-                    alert('Erro ao salvar turma: ' + err.message);
+                    console.error('Error saving turma:', err);
+                    alert('Erro ao salvar turma: ' + (err.message || 'Erro desconhecido'));
                 }
             });
         } else {

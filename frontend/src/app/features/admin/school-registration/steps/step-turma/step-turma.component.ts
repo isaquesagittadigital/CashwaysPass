@@ -44,7 +44,7 @@ export class StepTurmaComponent implements OnInit {
         this.turmaForm = this.fb.group({
             nome: ['', Validators.required],
             estagio: ['', Validators.required],
-            periodo: ['', Validators.required],
+            Periodos: ['', Validators.required],
             serie: ['', Validators.required],
             professor_id: ['', Validators.required],
             quantidade_alunos: [0, [Validators.required, Validators.min(1)]],
@@ -54,21 +54,52 @@ export class StepTurmaComponent implements OnInit {
 
     ngOnInit(): void { }
 
+    // Edit State
+    isEditing = false;
+    editingId: string | null = null;
+
     addTurma() {
         if (this.turmaForm.valid) {
             const turma: TurmaData = {
                 ...this.turmaForm.value,
                 status: true
             };
-            this.registrationService.addTurma(turma);
+
+            if (this.isEditing && this.editingId) {
+                this.registrationService.updateTurma(this.editingId, turma);
+                this.showToast('Turma atualizada com sucesso!');
+                this.isEditing = false;
+                this.editingId = null;
+            } else {
+                this.registrationService.addTurma(turma);
+                this.showToast('Turma cadastrada com sucesso!');
+            }
+
             this.turmaForm.reset({
                 estagio: '',
-                periodo: '',
-                professor_id: ''
+                Periodos: '',
+                professor_id: '',
+                quantidade_alunos: 0,
+                data_inicio: ''
             });
         } else {
             this.turmaForm.markAllAsTouched();
         }
+    }
+
+    editTurma(turma: TurmaData) {
+        this.isEditing = true;
+        this.editingId = turma.id || null;
+        this.turmaForm.patchValue({
+            nome: turma.nome,
+            estagio: turma.estagio,
+            Periodos: turma.Periodos,
+            serie: turma.serie,
+            professor_id: turma.professor_id,
+            quantidade_alunos: turma.quantidade_alunos,
+            data_inicio: turma.data_inicio
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     removeTurma(id: string) {

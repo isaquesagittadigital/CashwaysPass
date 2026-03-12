@@ -107,6 +107,12 @@ export class SchoolManagementService {
             supabase
                 .from('turma')
                 .insert(data)
+                .select()
+        ).pipe(
+            map(resp => {
+                if (resp.error) throw resp.error;
+                return resp.data;
+            })
         );
     }
 
@@ -116,6 +122,12 @@ export class SchoolManagementService {
                 .from('turma')
                 .update(data)
                 .eq('id', id)
+                .select()
+        ).pipe(
+            map(resp => {
+                if (resp.error) throw resp.error;
+                return resp.data;
+            })
         );
     }
 
@@ -125,6 +137,11 @@ export class SchoolManagementService {
                 .from('turma')
                 .delete()
                 .eq('id', id)
+        ).pipe(
+            map(resp => {
+                if (resp.error) throw resp.error;
+                return resp.data;
+            })
         );
     }
 
