@@ -63,6 +63,7 @@ export class StudentManagementComponent implements OnInit, OnChanges {
         this.studentForm = this.fb.group({
             turmaId: ['', Validators.required],
             nome: ['', Validators.required],
+            responsavel: [''],
             email: ['', [Validators.required, Validators.email]],
             telefone: [''],
             data_nascimento: [''],

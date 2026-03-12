@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { supabase } from '../supabase';
 import { from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -107,12 +107,6 @@ export class SchoolManagementService {
             supabase
                 .from('turma')
                 .insert(data)
-                .select()
-        ).pipe(
-            map(resp => {
-                if (resp.error) throw resp.error;
-                return resp.data;
-            })
         );
     }
 
@@ -122,12 +116,6 @@ export class SchoolManagementService {
                 .from('turma')
                 .update(data)
                 .eq('id', id)
-                .select()
-        ).pipe(
-            map(resp => {
-                if (resp.error) throw resp.error;
-                return resp.data;
-            })
         );
     }
 
@@ -137,11 +125,6 @@ export class SchoolManagementService {
                 .from('turma')
                 .delete()
                 .eq('id', id)
-        ).pipe(
-            map(resp => {
-                if (resp.error) throw resp.error;
-                return resp.data;
-            })
         );
     }
 
@@ -156,10 +139,10 @@ export class SchoolManagementService {
             .not('deleted', 'eq', true);
 
         if (turmaId) {
-            // Se houver lógica de vinculação professor_turma, aplicar aqui. 
-            // Por enquanto, se a tabela 'turma' tem professor_id, podemos filtrar por lá ou buscar todos da escola.
-            // Para seguir a solicitação de "da turma", vamos assumir que queremos filtrar.
-            // Se não houver coluna turma_id em usuarios, precisaremos de uma tabela intermediária ou usar o id da turma.
+            // Se houver l├│gica de vincula├º├úo professor_turma, aplicar aqui. 
+            // Por enquanto, se a tabela 'turma' tem professor_id, podemos filtrar por l├í ou buscar todos da escola.
+            // Para seguir a solicita├º├úo de "da turma", vamos assumir que queremos filtrar.
+            // Se n├úo houver coluna turma_id em usuarios, precisaremos de uma tabela intermedi├íria ou usar o id da turma.
         }
 
         return from(query.order('nome_completo', { ascending: true })).pipe(
@@ -230,10 +213,10 @@ export class SchoolManagementService {
                     escola_id: data.escola_id,
                     turma_id: data.turmaId,
                     nome: data.nome,
-                    nome_completo: data.nome,
-                    nome_mae: data.responsavel || data.nome_mae,
+                    nome_mae: data.responsavel,
                     email: data.emailResponsavel || data.email,
                     ra: data.numeroCarteira,
+                    whatsapp: data.telefone,
                     data_nascimento: data.data_nascimento
                 });
 
@@ -264,10 +247,10 @@ export class SchoolManagementService {
                 .update({
                     turma_id: data.turmaId,
                     nome: data.nome,
-                    nome_completo: data.nome,
-                    nome_mae: data.responsavel || data.nome_mae,
+                    nome_mae: data.responsavel,
                     email: data.emailResponsavel || data.email,
                     ra: data.numeroCarteira || data.ra,
+                    whatsapp: data.telefone,
                     data_nascimento: data.data_nascimento
                 })
                 .eq('id', id);

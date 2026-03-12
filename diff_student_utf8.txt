@@ -1,0 +1,50 @@
+﻿commit f004cff96fe38e21abf5e52636898ff3a6fe98c3
+Author: isaquesagittadigital <isaque.putumuju@sagittadigital.com.br>
+Date:   Thu Mar 12 19:24:52 2026 -0400
+
+    fix(schools): resolve turma management errors and improve registration wizard flow
+    
+    - Fix column mapping for 'Periodos' and 'data_entrada' in turma CRUD\n- Implement edit/remove logic in school registration wizard turmas step\n- Fix success/error feedback in various school management components\n- Ensure professor name is correctly persisted when saving turmas\n- Update SchoolManagementService with select and error mapping
+
+diff --git a/frontend/src/app/core/services/school-management.service.ts b/frontend/src/app/core/services/school-management.service.ts
+index 14b3d31..4224237 100644
+--- a/frontend/src/app/core/services/school-management.service.ts
++++ b/frontend/src/app/core/services/school-management.service.ts
+@@ -107,6 +107,12 @@ export class SchoolManagementService {
+             supabase
+                 .from('turma')
+                 .insert(data)
++                .select()
++        ).pipe(
++            map(resp => {
++                if (resp.error) throw resp.error;
++                return resp.data;
++            })
+         );
+     }
+ 
+@@ -116,6 +122,12 @@ export class SchoolManagementService {
+                 .from('turma')
+                 .update(data)
+                 .eq('id', id)
++                .select()
++        ).pipe(
++            map(resp => {
++                if (resp.error) throw resp.error;
++                return resp.data;
++            })
+         );
+     }
+ 
+@@ -125,6 +137,11 @@ export class SchoolManagementService {
+                 .from('turma')
+                 .delete()
+                 .eq('id', id)
++        ).pipe(
++            map(resp => {
++                if (resp.error) throw resp.error;
++                return resp.data;
++            })
+         );
+     }
+ 
