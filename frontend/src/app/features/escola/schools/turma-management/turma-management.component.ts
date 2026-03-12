@@ -41,7 +41,7 @@ export class TurmaManagementComponent implements OnInit {
         this.turmaForm = this.fb.group({
             nome: ['', Validators.required],
             estagio: ['', Validators.required],
-            periodo: ['', Validators.required],
+            Periodos: ['', Validators.required],
             serie: ['', Validators.required],
             professor_id: [''],
             quantidade_alunos: [0, Validators.required],
@@ -108,7 +108,8 @@ export class TurmaManagementComponent implements OnInit {
                     this.turmaForm.reset({
                         status: true,
                         quantidade_alunos: 0,
-                        data_inicio: new Date().toISOString().split('T')[0]
+                        data_inicio: new Date().toISOString().split('T')[0],
+                        Periodos: ''
                     });
                     this.loadTurmas();
 

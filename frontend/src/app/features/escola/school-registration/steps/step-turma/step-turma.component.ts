@@ -44,7 +44,7 @@ export class StepTurmaComponent implements OnInit {
         this.turmaForm = this.fb.group({
             nome: ['', Validators.required],
             estagio: ['', Validators.required],
-            periodo: ['', Validators.required],
+            Periodos: ['', Validators.required],
             serie: ['', Validators.required],
             professor_id: ['', Validators.required],
             quantidade_alunos: [0, [Validators.required, Validators.min(1)]],
@@ -63,7 +63,7 @@ export class StepTurmaComponent implements OnInit {
             this.registrationService.addTurma(turma);
             this.turmaForm.reset({
                 estagio: '',
-                periodo: '',
+                Periodos: '',
                 professor_id: ''
             });
         } else {

@@ -86,7 +86,7 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
         this.turmaForm = this.fb.group({
             nome: ['', Validators.required],
             estagio: ['', Validators.required],
-            periodo: ['', Validators.required],
+            Periodos: ['', Validators.required],
             serie: ['', Validators.required],
             quantidade_alunos: [0, Validators.required],
             data_inicio: [new Date().toISOString().split('T')[0], Validators.required],
@@ -212,7 +212,7 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
                     setTimeout(() => this.showToast = false, 3000);
 
                     this.selectedTurma = null;
-                    this.turmaForm.reset({ status: true, quantidade_alunos: 0, data_inicio: new Date().toISOString().split('T')[0] });
+                    this.turmaForm.reset({ status: true, quantidade_alunos: 0, data_inicio: new Date().toISOString().split('T')[0], Periodos: '' });
                     this.loadTurmas();
                 },
                 error: (err) => {

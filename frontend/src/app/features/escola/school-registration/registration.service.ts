@@ -39,7 +39,7 @@ export interface TurmaData {
     id?: string;
     nome: string;
     estagio: string;
-    periodo: string;
+    Periodos: string;
     serie: string;
     professor_id: string;
     quantidade_alunos: number;
@@ -197,14 +197,17 @@ export class SchoolRegistrationService {
                 .select('id')
                 .single();
 
-            if (schoolError) throw schoolError;
+            if (schoolError) {
+                console.error('Step 1: School upsert failed', schoolError);
+                throw schoolError;
+            }
             const schoolId = schoolResp.id as string;
+            console.log('Step 1: School confirmed/upserted', schoolId);
 
             // 2. Insert Professors
             const profs = this.professors.value;
             if (profs.length > 0) {
                 // a. Prepare and Upsert Professors (into 'professor' table)
-                // We use 'nome' and 'escola_id' as a proxy for unique if email is not in this table
                 const professorTableInserts = profs.map(p => ({
                     nome: p.nome,
                     especialidade: p.escolaridade,
@@ -213,85 +216,146 @@ export class SchoolRegistrationService {
 
                 const { data: profsTableData, error: profsTableError } = await supabase
                     .from('professor')
-                    .upsert(professorTableInserts, { onConflict: 'nome,escola_id' })
+                    .upsert(professorTableInserts, { onConflict: 'id' }) // Use ID if known, but really we want to update by name
                     .select();
 
-                if (profsTableError) throw profsTableError;
+                // If upsert with ID fails or we need to be sure about name/escola_id matching:
+                // We'll refetch or map by name later.
+
+                if (profsTableError) {
+                    console.error('Step 2a: Professor table upsert failed', profsTableError);
+                    throw profsTableError;
+                }
+                console.log('Step 2a: Professors upserted', profsTableData);
 
                 // b. Prepare and Upsert Users (into 'usuarios' table)
-                const professorUserInserts = profs.map(p => ({
-                    nome_completo: p.nome,
-                    nome: p.nome,
-                    email: p.email,
-                    tipo_acesso: 'Professor',
-                    status: 'active',
-                    escola_id: schoolId,
-                    grau_escolaridade: p.escolaridade
-                }));
+                for (const p of profs) {
+                    const { data: existingUser } = await supabase
+                        .from('usuarios')
+                        .select('id')
+                        .eq('email', p.email)
+                        .single();
 
-                const { data: profsUserResp, error: profsUserError } = await supabase
-                    .from('usuarios')
-                    .upsert(professorUserInserts, { onConflict: 'email' })
-                    .select();
+                    const userPayload = {
+                        nome_completo: p.nome,
+                        nome: p.nome,
+                        email: p.email,
+                        tipo_acesso: 'Professor',
+                        status: 'active',
+                        escola_id: schoolId,
+                        grau_escolaridade: p.escolaridade
+                    };
 
-                if (profsUserError) throw profsUserError;
+                    if (existingUser) {
+                        const { error: updateError } = await supabase
+                            .from('usuarios')
+                            .update(userPayload)
+                            .eq('id', existingUser.id);
+                        if (updateError) throw updateError;
+                    } else {
+                        const { error: insertError } = await supabase
+                            .from('usuarios')
+                            .insert(userPayload);
+                        if (insertError) throw insertError;
+                    }
+                }
+                console.log('Step 2b: Professor users confirmed');
 
                 // 3. Insert Classes
                 const turmas = this.turmas.value;
                 if (turmas.length > 0) {
-                    const turmaInserts = turmas.map(t => ({
-                        nome: t.nome,
-                        estagio: t.estagio,
-                        periodo: t.periodo,
-                        serie: t.serie,
-                        professor: profs.find(p => p.id === t.professor_id)?.nome || '',
-                        quantidade_alunos: t.quantidade_alunos,
-                        data_inicio: t.data_inicio,
-                        data_entrada: t.data_inicio,
-                        escola_id: schoolId,
-                        status: true
-                    }));
-
-                    const { data: turmasResp, error: turmasError } = await supabase
-                        .from('turma')
-                        .upsert(turmaInserts, { onConflict: 'nome,escola_id' })
-                        .select();
-
-                    if (turmasError) throw turmasError;
-
-                    // Map local temp UUIDs to real DB IDs for students
                     const turmaIdMap = new Map();
-                    turmas.forEach((t, i) => {
-                        const dbTurma = turmasResp.find(dt => dt.nome === t.nome && dt.escola_id === schoolId);
-                        if (t.id && dbTurma) turmaIdMap.set(t.id, dbTurma.id);
-                    });
+
+                    for (const t of turmas) {
+                        const { data: existingTurma } = await supabase
+                            .from('turma')
+                            .select('id')
+                            .eq('nome', t.nome)
+                            .eq('escola_id', schoolId)
+                            .maybeSingle();
+
+                        const turmaPayload = {
+                            nome: t.nome,
+                            estagio: t.estagio,
+                            Periodos: t.Periodos,
+                            serie: t.serie,
+                            professor: profs.find(p => p.id === t.professor_id)?.nome || '',
+                            quantidade_alunos: t.quantidade_alunos,
+                            data_inicio: t.data_inicio,
+                            data_entrada: t.data_inicio,
+                            escola_id: schoolId,
+                            status: true
+                        };
+
+                        if (existingTurma) {
+                            const { error: updateError } = await supabase
+                                .from('turma')
+                                .update(turmaPayload)
+                                .eq('id', existingTurma.id);
+                            if (updateError) throw updateError;
+                            turmaIdMap.set(t.id, existingTurma.id);
+                        } else {
+                            const { data: newTurma, error: insertError } = await supabase
+                                .from('turma')
+                                .insert(turmaPayload)
+                                .select('id')
+                                .single();
+                            if (insertError) throw insertError;
+                            turmaIdMap.set(t.id, newTurma.id);
+                        }
+                    }
+                    console.log('Step 3: Turmas confirmed', Array.from(turmaIdMap.entries()));
 
                     // 4. Insert Students
                     const students = this.students.value;
                     if (students.length > 0) {
-                        const studentUserInserts = students.map(s => ({
-                            nome_completo: s.nome,
-                            nome: s.nome,
-                            email: s.emailAluno,
-                            tipo_acesso: 'Aluno',
-                            status: 'active',
-                            escola_id: schoolId,
-                            turmaID: turmaIdMap.get(s.turmaId),
-                            nome_mae: s.responsavel,
-                            ra: s.numeroCarteira
-                        }));
+                        for (const s of students) {
+                            // a. Upsert User (by email)
+                            const { data: existingSUser } = await supabase
+                                .from('usuarios')
+                                .select('id')
+                                .eq('email', s.emailAluno)
+                                .single();
 
-                        const { data: studentsUserResp, error: studentsUserError } = await supabase
-                            .from('usuarios')
-                            .upsert(studentUserInserts, { onConflict: 'email' }) // Student emails should also be unique
-                            .select();
+                            const studentUserPayload = {
+                                nome_completo: s.nome,
+                                nome: s.nome,
+                                email: s.emailAluno,
+                                tipo_acesso: 'Aluno',
+                                status: 'active',
+                                escola_id: schoolId,
+                                turmaID: turmaIdMap.get(s.turmaId),
+                                nome_mae: s.responsavel,
+                                ra: s.numeroCarteira
+                            };
 
-                        if (studentsUserError) throw studentsUserError;
+                            let dbUserId;
+                            if (existingSUser) {
+                                const { error: uError } = await supabase
+                                    .from('usuarios')
+                                    .update(studentUserPayload)
+                                    .eq('id', existingSUser.id);
+                                if (uError) throw uError;
+                                dbUserId = existingSUser.id;
+                            } else {
+                                const { data: nUser, error: iError } = await supabase
+                                    .from('usuarios')
+                                    .insert(studentUserPayload)
+                                    .select('id')
+                                    .single();
+                                if (iError) throw iError;
+                                dbUserId = nUser.id;
+                            }
 
-                        const alunoInserts = students.map((s, i) => {
-                            const dbUser = studentsUserResp.find(du => du.email === s.emailAluno);
-                            return {
-                                usuario_id: dbUser?.id,
+                            // b. Upsert Aluno (by email/nome/turma logic - manual check)
+                            const { data: existingAluno } = await supabase
+                                .from('aluno')
+                                .select('id')
+                                .eq('email', s.emailAluno)
+                                .single();
+
+                            const alunoPayload = {
+                                usuario_id: dbUserId,
                                 escola_id: schoolId,
                                 turma_id: turmaIdMap.get(s.turmaId),
                                 nome: s.nome,
@@ -299,30 +363,48 @@ export class SchoolRegistrationService {
                                 nome_mae: s.responsavel,
                                 ra: s.numeroCarteira
                             };
-                        });
 
-                        const { error: alunoError } = await supabase
-                            .from('aluno')
-                            .upsert(alunoInserts, { onConflict: 'email' });
+                            if (existingAluno) {
+                                const { error: aError } = await supabase
+                                    .from('aluno')
+                                    .update(alunoPayload)
+                                    .eq('id', existingAluno.id);
+                                if (aError) throw aError;
+                            } else {
+                                const { error: aError } = await supabase
+                                    .from('aluno')
+                                    .insert(alunoPayload);
+                                if (aError) throw aError;
+                            }
 
-                        if (alunoError) throw alunoError;
+                            // c. Upsert Wallet (by code)
+                            const { data: existingWallet } = await supabase
+                                .from('carteira')
+                                .select('id')
+                                .eq('carteira_code', s.numeroCarteira)
+                                .single();
 
-                        // 5. Insert Wallet (Carteira)
-                        const carteiraInserts = students.map((s, i) => {
-                            const dbUser = studentsUserResp.find(du => du.email === s.emailAluno);
-                            return {
-                                Usuario: dbUser?.id,
+                            const walletPayload = {
+                                Usuario: dbUserId,
                                 carteira_code: s.numeroCarteira,
                                 turmaID: turmaIdMap.get(s.turmaId),
                                 escola_id: schoolId
                             };
-                        });
 
-                        const { error: carteiraError } = await supabase
-                            .from('carteira')
-                            .upsert(carteiraInserts, { onConflict: 'carteira_code' });
-
-                        if (carteiraError) throw carteiraError;
+                            if (existingWallet) {
+                                const { error: cError } = await supabase
+                                    .from('carteira')
+                                    .update(walletPayload)
+                                    .eq('id', existingWallet.id);
+                                if (cError) throw cError;
+                            } else {
+                                const { error: cError } = await supabase
+                                    .from('carteira')
+                                    .insert(walletPayload);
+                                if (cError) throw cError;
+                            }
+                        }
+                        console.log('Step 4/5: Students and Wallets confirmed');
                     }
                 }
             }
