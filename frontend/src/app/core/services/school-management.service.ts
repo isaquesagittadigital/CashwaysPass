@@ -206,7 +206,7 @@ export class SchoolManagementService {
     getStudentsBySchool(schoolId: string, turmaId?: string): Observable<any[]> {
         let query = supabase
             .from('aluno')
-            .select('*, turma:turma_id(nome, serie), user:usuario_id(id, email, ultimo_login)')
+            .select('*, numeroCarteira:ra, turma:turma_id(nome, serie), user:usuario_id(id, email, ultimo_login)')
             .eq('escola_id', schoolId);
 
         if (turmaId) {
@@ -223,21 +223,60 @@ export class SchoolManagementService {
 
     async createStudent(data: any): Promise<{ success: boolean; error?: any }> {
         try {
-            // Only insert into 'aluno' table as per new requirement
+            const email = data.emailAluno || data.email;
+            const ra = data.numeroCarteira || data.ra;
+
+            // 1. Upsert into usuarios table for login/identity
+            const { data: userData, error: userError } = await supabase
+                .from('usuarios')
+                .upsert({
+                    nome_completo: data.nome,
+                    nome: data.nome,
+                    email: email,
+                    tipo_acesso: 'Aluno',
+                    status: data.status || 'active',
+                    escola_id: data.escola_id,
+                    turmaID: data.turmaId,
+                    nome_mae: data.responsavel || data.nome_mae,
+                    ra: ra
+                }, { onConflict: 'email' })
+                .select('id')
+                .single();
+
+            if (userError) throw userError;
+            const userId = userData.id;
+
+            // 2. Upsert into aluno table for student details
             const { error: alunoError } = await supabase
                 .from('aluno')
-                .insert({
+                .upsert({
+                    usuario_id: userId,
                     escola_id: data.escola_id,
                     turma_id: data.turmaId,
                     nome: data.nome,
                     nome_completo: data.nome,
                     nome_mae: data.responsavel || data.nome_mae,
-                    email: data.emailResponsavel || data.email,
-                    ra: data.numeroCarteira,
+                    email: email,
+                    ra: ra,
                     data_nascimento: data.data_nascimento
-                });
+                }, { onConflict: 'email' });
 
             if (alunoError) throw alunoError;
+
+            // 3. Upsert into carteira table
+            if (ra) {
+                const { error: carteiraError } = await supabase
+                    .from('carteira')
+                    .upsert({
+                        Usuario: userId,
+                        carteira_code: ra,
+                        turmaID: data.turmaId,
+                        escola_id: data.escola_id
+                    }, { onConflict: 'carteira_code' });
+                
+                if (carteiraError) console.warn('Error creating carteira:', carteiraError);
+            }
+
             return { success: true };
         } catch (error) {
             console.error('Create student failed:', error);
@@ -259,6 +298,35 @@ export class SchoolManagementService {
 
     async updateStudent(id: string, data: any): Promise<{ success: boolean; error?: any }> {
         try {
+            const email = data.emailAluno || data.email;
+            const ra = data.numeroCarteira || data.ra;
+
+            // 1. Get current student to find usuario_id
+            const { data: student, error: getError } = await supabase
+                .from('aluno')
+                .select('usuario_id')
+                .eq('id', id)
+                .single();
+            
+            if (getError) throw getError;
+
+            // 2. Update usuarios if linked
+            if (student.usuario_id) {
+                await supabase
+                    .from('usuarios')
+                    .update({
+                        nome_completo: data.nome,
+                        nome: data.nome,
+                        email: email,
+                        status: data.status,
+                        turmaID: data.turmaId,
+                        nome_mae: data.responsavel || data.nome_mae,
+                        ra: ra
+                    })
+                    .eq('id', student.usuario_id);
+            }
+
+            // 3. Update aluno table
             const { error: alunoError } = await supabase
                 .from('aluno')
                 .update({
@@ -266,13 +334,26 @@ export class SchoolManagementService {
                     nome: data.nome,
                     nome_completo: data.nome,
                     nome_mae: data.responsavel || data.nome_mae,
-                    email: data.emailResponsavel || data.email,
-                    ra: data.numeroCarteira || data.ra,
+                    email: email,
+                    ra: ra,
                     data_nascimento: data.data_nascimento
                 })
                 .eq('id', id);
 
             if (alunoError) throw alunoError;
+
+            // 4. Upsert into carteira table
+            if (ra && student.usuario_id) {
+                await supabase
+                    .from('carteira')
+                    .upsert({
+                        Usuario: student.usuario_id,
+                        carteira_code: ra,
+                        turmaID: data.turmaId,
+                        escola_id: data.escola_id
+                    }, { onConflict: 'carteira_code' });
+            }
+
             return { success: true };
         } catch (error) {
             console.error('Update student failed:', error);
