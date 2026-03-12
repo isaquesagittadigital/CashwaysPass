@@ -183,7 +183,7 @@ export class StepAlunoComponent implements OnInit {
         if (result.success) {
             this.showSuccessModal = true;
         } else {
-            alert('Falha ao realizar o cadastro. Verifique os dados e tente novamente.');
+            alert('Falha ao realizar o cadastro: ' + (result.error || 'Erro desconhecido.'));
         }
     }
 

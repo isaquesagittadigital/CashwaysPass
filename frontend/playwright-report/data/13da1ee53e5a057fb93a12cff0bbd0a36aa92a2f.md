@@ -1,0 +1,191 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - img [ref=e9]
+    - navigation [ref=e21]:
+      - button "Dashboard" [ref=e22] [cursor=pointer]:
+        - img [ref=e24]
+        - generic [ref=e29]: Dashboard
+      - button "Cadastro" [ref=e30] [cursor=pointer]:
+        - img [ref=e32]
+        - generic [ref=e38]: Cadastro
+      - button "Carteira" [ref=e39] [cursor=pointer]:
+        - img [ref=e41]
+        - generic [ref=e44]: Carteira
+      - button "Produtos" [ref=e45] [cursor=pointer]:
+        - img [ref=e47]
+        - generic [ref=e52]: Produtos
+      - button "Eventos" [ref=e53] [cursor=pointer]:
+        - img [ref=e55]
+        - generic [ref=e66]: Eventos
+      - button "Perfil" [ref=e67] [cursor=pointer]:
+        - img [ref=e69]
+        - generic [ref=e72]: Perfil
+    - generic [ref=e73]:
+      - button "Sair" [ref=e74] [cursor=pointer]:
+        - img [ref=e76]
+        - generic [ref=e80]: Sair
+      - generic [ref=e81]: VERSÃO BETA 2.5
+  - generic [ref=e82]:
+    - banner [ref=e83]:
+      - generic [ref=e85]:
+        - generic [ref=e86]: Painel Escola
+        - generic [ref=e88]: Carteira
+      - generic [ref=e89]:
+        - combobox [disabled] [ref=e91]:
+          - option "Escola Educacional Nova Esperança" [selected]
+          - option "Escola Futuro Brilhante"
+          - option "Escola Integração do Conhecimento"
+          - option "Escola Modelo Horizonte"
+          - option "Escola Caminho do Saber"
+          - option "Escola da Vida"
+          - option "Ines Maria Loudez"
+          - option "Escola Caritas"
+          - option "Escola Teste Unitario 2"
+          - option "Escola da Rua"
+          - option "Escola de Teste"
+        - generic [ref=e92]:
+          - generic [ref=e93]:
+            - paragraph [ref=e94]: Escola Teste
+            - paragraph [ref=e95]: escola@mock.com
+          - img [ref=e98] [cursor=pointer]
+    - main [ref=e102]:
+      - generic [ref=e103]:
+        - generic [ref=e104]:
+          - button "Voltar" [ref=e105] [cursor=pointer]:
+            - img [ref=e107]
+            - text: Voltar
+          - heading "Carteira digital" [level=1] [ref=e110]
+          - paragraph [ref=e111]: Visualize o saldo e histórico de cada aluno.
+        - generic [ref=e112]:
+          - generic [ref=e114]:
+            - heading "Alunos (198)" [level=2] [ref=e115]
+            - generic [ref=e116]:
+              - generic [ref=e117]:
+                - combobox [ref=e118] [cursor=pointer]:
+                  - option "Todas as turmas" [selected]
+                  - option "1º Ano A – Matutino"
+                  - option "1º Ano A – Noturno"
+                  - option "1º Ano A – Vespertino"
+                  - option "2º Ano A – Matutino"
+                  - option "2º Ano A – Noturno"
+                  - option "2º Ano A – Vespertino"
+                  - option "3º Ano A – Matutino"
+                  - option "3º Ano A – Noturno"
+                  - option "3º Ano A – Vespertino"
+                - generic:
+                  - img
+              - generic [ref=e119]:
+                - combobox [ref=e120] [cursor=pointer]:
+                  - option "Todos" [selected]
+                  - option "Ativo"
+                  - option "Inativo"
+                - generic:
+                  - img
+              - generic [ref=e121]:
+                - img [ref=e123]
+                - textbox "Buscar aluno, carteira ou turma" [ref=e126]
+              - button "Exportar" [ref=e127] [cursor=pointer]:
+                - img [ref=e129]
+                - text: Exportar
+          - table [ref=e134]:
+            - rowgroup [ref=e135]:
+              - row "Carteira Nome do aluno Turma Escola Saldo atual Status Ações" [ref=e136]:
+                - columnheader "Carteira" [ref=e137]
+                - columnheader "Nome do aluno" [ref=e138]
+                - columnheader "Turma" [ref=e139]
+                - columnheader "Escola" [ref=e140]
+                - columnheader "Saldo atual" [ref=e141]
+                - columnheader "Status" [ref=e142]
+                - columnheader "Ações" [ref=e143]:
+                  - text: Ações
+                  - img [ref=e145]
+            - rowgroup [ref=e147]:
+              - row "57614935 Simulado 1º Ano A – Matutino 1 1º Ano A – Matutino Escola Educacional Nova Esperança R$ 1.200,00 Ativo Ver perfil financeiro" [ref=e148]:
+                - cell "57614935" [ref=e149]
+                - cell "Simulado 1º Ano A – Matutino 1" [ref=e150]
+                - cell "1º Ano A – Matutino" [ref=e151]
+                - cell "Escola Educacional Nova Esperança" [ref=e152]
+                - cell "R$ 1.200,00" [ref=e153]
+                - cell "Ativo" [ref=e154]
+                - cell "Ver perfil financeiro" [ref=e155]:
+                  - button "Ver perfil financeiro" [ref=e157] [cursor=pointer]:
+                    - img [ref=e159]
+              - row "21066611 Simulado 1º Ano A – Matutino 10 1º Ano A – Matutino Escola Educacional Nova Esperança R$ 754,03 Ativo Ver perfil financeiro" [ref=e162]:
+                - cell "21066611" [ref=e163]
+                - cell "Simulado 1º Ano A – Matutino 10" [ref=e164]
+                - cell "1º Ano A – Matutino" [ref=e165]
+                - cell "Escola Educacional Nova Esperança" [ref=e166]
+                - cell "R$ 754,03" [ref=e167]
+                - cell "Ativo" [ref=e168]
+                - cell "Ver perfil financeiro" [ref=e169]:
+                  - button "Ver perfil financeiro" [ref=e171] [cursor=pointer]:
+                    - img [ref=e173]
+              - row "28969604 Simulado 1º Ano A – Matutino 11 1º Ano A – Matutino Escola Educacional Nova Esperança R$ 831,29 Ativo Ver perfil financeiro" [ref=e176]:
+                - cell "28969604" [ref=e177]
+                - cell "Simulado 1º Ano A – Matutino 11" [ref=e178]
+                - cell "1º Ano A – Matutino" [ref=e179]
+                - cell "Escola Educacional Nova Esperança" [ref=e180]
+                - cell "R$ 831,29" [ref=e181]
+                - cell "Ativo" [ref=e182]
+                - cell "Ver perfil financeiro" [ref=e183]:
+                  - button "Ver perfil financeiro" [ref=e185] [cursor=pointer]:
+                    - img [ref=e187]
+              - row "54695716 Simulado 1º Ano A – Matutino 12 1º Ano A – Matutino Escola Educacional Nova Esperança R$ 1.015,80 Ativo Ver perfil financeiro" [ref=e190]:
+                - cell "54695716" [ref=e191]
+                - cell "Simulado 1º Ano A – Matutino 12" [ref=e192]
+                - cell "1º Ano A – Matutino" [ref=e193]
+                - cell "Escola Educacional Nova Esperança" [ref=e194]
+                - cell "R$ 1.015,80" [ref=e195]
+                - cell "Ativo" [ref=e196]
+                - cell "Ver perfil financeiro" [ref=e197]:
+                  - button "Ver perfil financeiro" [ref=e199] [cursor=pointer]:
+                    - img [ref=e201]
+              - row "74803579 Simulado 1º Ano A – Matutino 13 1º Ano A – Matutino Escola Educacional Nova Esperança R$ 868,44 Ativo Ver perfil financeiro" [ref=e204]:
+                - cell "74803579" [ref=e205]
+                - cell "Simulado 1º Ano A – Matutino 13" [ref=e206]
+                - cell "1º Ano A – Matutino" [ref=e207]
+                - cell "Escola Educacional Nova Esperança" [ref=e208]
+                - cell "R$ 868,44" [ref=e209]
+                - cell "Ativo" [ref=e210]
+                - cell "Ver perfil financeiro" [ref=e211]:
+                  - button "Ver perfil financeiro" [ref=e213] [cursor=pointer]:
+                    - img [ref=e215]
+              - row "26121893 Simulado 1º Ano A – Matutino 14 1º Ano A – Matutino Escola Educacional Nova Esperança R$ 1.012,74 Ativo Ver perfil financeiro" [ref=e218]:
+                - cell "26121893" [ref=e219]
+                - cell "Simulado 1º Ano A – Matutino 14" [ref=e220]
+                - cell "1º Ano A – Matutino" [ref=e221]
+                - cell "Escola Educacional Nova Esperança" [ref=e222]
+                - cell "R$ 1.012,74" [ref=e223]
+                - cell "Ativo" [ref=e224]
+                - cell "Ver perfil financeiro" [ref=e225]:
+                  - button "Ver perfil financeiro" [ref=e227] [cursor=pointer]:
+                    - img [ref=e229]
+              - row "39912784 Simulado 1º Ano A – Matutino 15 1º Ano A – Matutino Escola Educacional Nova Esperança R$ 797,61 Ativo Ver perfil financeiro" [ref=e232]:
+                - cell "39912784" [ref=e233]
+                - cell "Simulado 1º Ano A – Matutino 15" [ref=e234]
+                - cell "1º Ano A – Matutino" [ref=e235]
+                - cell "Escola Educacional Nova Esperança" [ref=e236]
+                - cell "R$ 797,61" [ref=e237]
+                - cell "Ativo" [ref=e238]
+                - cell "Ver perfil financeiro" [ref=e239]:
+                  - button "Ver perfil financeiro" [ref=e241] [cursor=pointer]:
+                    - img [ref=e243]
+              - row "62270512 Simulado 1º Ano A – Matutino 16 1º Ano A – Matutino Escola Educacional Nova Esperança R$ 1.056,32 Ativo Ver perfil financeiro" [ref=e246]:
+                - cell "62270512" [ref=e247]
+                - cell "Simulado 1º Ano A – Matutino 16" [ref=e248]
+                - cell "1º Ano A – Matutino" [ref=e249]
+                - cell "Escola Educacional Nova Esperança" [ref=e250]
+                - cell "R$ 1.056,32" [ref=e251]
+                - cell "Ativo" [ref=e252]
+                - cell "Ver perfil financeiro" [ref=e253]:
+                  - button "Ver perfil financeiro" [ref=e255] [cursor=pointer]:
+                    - img [ref=e257]
+          - generic [ref=e260]:
+            - paragraph [ref=e261]: Página 1 de 25
+            - generic [ref=e262]:
+              - button "Anterior" [disabled] [ref=e263]
+              - button "Próximo" [ref=e264] [cursor=pointer]
+```

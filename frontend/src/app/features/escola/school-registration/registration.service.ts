@@ -166,10 +166,10 @@ export class SchoolRegistrationService {
             const school = this.schoolData.value;
             if (!school) throw new Error('Dados da escola não encontrados.');
 
-            // 1. Insert School
+            // 1. Upsert School (prevents 409 if CNPJ already exists)
             const { data: schoolResp, error: schoolError } = await supabase
                 .from('escola')
-                .insert({
+                .upsert({
                     nome_fantasia: school.nome,
                     cnpj: school.cnpj,
                     razao_social: school.razaoSocial,
@@ -191,8 +191,9 @@ export class SchoolRegistrationService {
                     complemento: school.complemento,
                     endereco: school.enderecoCompleto,
                     valor_carteira: school.valorCarteira,
-                    valor_transferencia: school.valorTransferencia
-                })
+                    valor_transferencia: school.valorTransferencia,
+                    deletado: false
+                }, { onConflict: 'cnpj' })
                 .select('id')
                 .single();
 
@@ -325,9 +326,10 @@ export class SchoolRegistrationService {
             }
 
             return { success: true };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Registration failed:', error);
-            return { success: false, error };
+            const errorMsg = error.message || error.error_description || 'Erro desconhecido durante o cadastro.';
+            return { success: false, error: errorMsg };
         }
     }
 }

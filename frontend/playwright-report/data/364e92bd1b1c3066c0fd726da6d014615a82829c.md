@@ -1,0 +1,260 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - img [ref=e9]
+    - navigation [ref=e21]:
+      - button "Dashboard" [ref=e22] [cursor=pointer]:
+        - img [ref=e24]
+        - generic [ref=e29]: Dashboard
+      - button "Escolas" [ref=e30] [cursor=pointer]:
+        - img [ref=e32]
+        - generic [ref=e38]: Escolas
+      - button "Carteira" [ref=e39] [cursor=pointer]:
+        - img [ref=e41]
+        - generic [ref=e44]: Carteira
+      - button "Produtos" [ref=e45] [cursor=pointer]:
+        - img [ref=e47]
+        - generic [ref=e52]: Produtos
+      - button "Eventos" [ref=e53] [cursor=pointer]:
+        - img [ref=e55]
+        - generic [ref=e66]: Eventos
+      - button "Usuários" [ref=e67] [cursor=pointer]:
+        - img [ref=e69]
+        - generic [ref=e74]: Usuários
+      - button "Relatórios" [ref=e75] [cursor=pointer]:
+        - img [ref=e77]
+        - generic [ref=e80]: Relatórios
+      - button "Perfil" [ref=e81] [cursor=pointer]:
+        - img [ref=e83]
+        - generic [ref=e86]: Perfil
+    - generic [ref=e87]:
+      - button "Sair" [ref=e88] [cursor=pointer]:
+        - img [ref=e90]
+        - generic [ref=e94]: Sair
+      - generic [ref=e95]: VERSÃO BETA 2.5
+  - generic [ref=e96]:
+    - banner [ref=e97]:
+      - generic [ref=e99]:
+        - generic [ref=e100]: Admin
+        - generic [ref=e102]: Escolas
+      - generic [ref=e103]:
+        - generic [ref=e104]:
+          - combobox [ref=e105] [cursor=pointer]:
+            - option "Escola Educacional Nova Esperança" [selected]
+            - option "Escola Futuro Brilhante"
+            - option "Escola Integração do Conhecimento"
+            - option "Escola Modelo Horizonte"
+            - option "Escola Caminho do Saber"
+            - option "Escola da Vida"
+            - option "Ines Maria Loudez"
+            - option "Escola Caritas"
+            - option "Escola Teste Unitario 2"
+            - option "Escola da Rua"
+            - option "Escola de Teste"
+          - generic:
+            - img
+        - generic [ref=e106]:
+          - generic [ref=e107]:
+            - paragraph [ref=e108]: Admin Teste
+            - paragraph [ref=e109]: admin@mock.com
+          - img [ref=e112] [cursor=pointer]
+    - main [ref=e116]:
+      - generic [ref=e118]:
+        - generic [ref=e119]:
+          - generic [ref=e120]:
+            - link "Voltar" [ref=e121] [cursor=pointer]:
+              - /url: /admin/dashboard
+              - img [ref=e123]
+              - text: Voltar
+            - heading "Escolas" [level=1] [ref=e126]
+            - paragraph [ref=e127]: Gerencie escolas cadastradas no sistema.
+          - generic [ref=e128]:
+            - button "Excluir Excluir escola" [ref=e129] [cursor=pointer]:
+              - img "Excluir" [ref=e130]
+              - text: Excluir escola
+            - button "Editar Editar escola" [ref=e131] [cursor=pointer]:
+              - img "Editar" [ref=e132]
+              - text: Editar escola
+            - button "Cadastrar escola" [ref=e133] [cursor=pointer]:
+              - img [ref=e135]
+              - text: Cadastrar escola
+        - generic [ref=e139]:
+          - generic [ref=e140]:
+            - heading "Escola Educacional Nova Esperança - Turmas" [level=2] [ref=e141]
+            - generic [ref=e142]:
+              - img [ref=e144]
+              - textbox "Buscar turma" [ref=e147]
+            - paragraph [ref=e148]: Turmas
+            - img [ref=e152] [cursor=pointer]
+            - generic [ref=e155]:
+              - generic [ref=e156] [cursor=pointer]:
+                - generic [ref=e157]:
+                  - img [ref=e159]
+                  - text: 1º Ano A – Matutino
+                - paragraph [ref=e164]: Professor não definido / /
+                - generic [ref=e165]:
+                  - button "Excluir turma" [ref=e166]:
+                    - img [ref=e168]
+                    - text: Excluir turma
+                  - button "Editar turma" [ref=e174]:
+                    - img [ref=e176]
+                    - text: Editar turma
+              - generic [ref=e179] [cursor=pointer]:
+                - generic [ref=e180]:
+                  - img [ref=e182]
+                  - text: 1º Ano A – Noturno
+                - paragraph [ref=e187]: Professor não definido / /
+                - generic [ref=e188]:
+                  - button "Excluir turma" [ref=e189]:
+                    - img [ref=e191]
+                    - text: Excluir turma
+                  - button "Editar turma" [ref=e197]:
+                    - img [ref=e199]
+                    - text: Editar turma
+              - generic [ref=e202] [cursor=pointer]:
+                - generic [ref=e203]:
+                  - img [ref=e205]
+                  - text: 1º Ano A – Vespertino
+                - paragraph [ref=e210]: Professor não definido / /
+                - generic [ref=e211]:
+                  - button "Excluir turma" [ref=e212]:
+                    - img [ref=e214]
+                    - text: Excluir turma
+                  - button "Editar turma" [ref=e220]:
+                    - img [ref=e222]
+                    - text: Editar turma
+              - generic [ref=e225] [cursor=pointer]:
+                - generic [ref=e226]:
+                  - img [ref=e228]
+                  - text: 2º Ano A – Matutino
+                - paragraph [ref=e233]: Professor não definido / /
+                - generic [ref=e234]:
+                  - button "Excluir turma" [ref=e235]:
+                    - img [ref=e237]
+                    - text: Excluir turma
+                  - button "Editar turma" [ref=e243]:
+                    - img [ref=e245]
+                    - text: Editar turma
+              - generic [ref=e248] [cursor=pointer]:
+                - generic [ref=e249]:
+                  - img [ref=e251]
+                  - text: 2º Ano A – Noturno
+                - paragraph [ref=e256]: Professor não definido / /
+                - generic [ref=e257]:
+                  - button "Excluir turma" [ref=e258]:
+                    - img [ref=e260]
+                    - text: Excluir turma
+                  - button "Editar turma" [ref=e266]:
+                    - img [ref=e268]
+                    - text: Editar turma
+              - generic [ref=e271] [cursor=pointer]:
+                - generic [ref=e272]:
+                  - img [ref=e274]
+                  - text: 2º Ano A – Vespertino
+                - paragraph [ref=e279]: Professor não definido / /
+                - generic [ref=e280]:
+                  - button "Excluir turma" [ref=e281]:
+                    - img [ref=e283]
+                    - text: Excluir turma
+                  - button "Editar turma" [ref=e289]:
+                    - img [ref=e291]
+                    - text: Editar turma
+              - generic [ref=e294] [cursor=pointer]:
+                - generic [ref=e295]:
+                  - img [ref=e297]
+                  - text: 3º Ano A – Matutino
+                - paragraph [ref=e302]: Professor não definido / /
+                - generic [ref=e303]:
+                  - button "Excluir turma" [ref=e304]:
+                    - img [ref=e306]
+                    - text: Excluir turma
+                  - button "Editar turma" [ref=e312]:
+                    - img [ref=e314]
+                    - text: Editar turma
+              - generic [ref=e317] [cursor=pointer]:
+                - generic [ref=e318]:
+                  - img [ref=e320]
+                  - text: 3º Ano A – Noturno
+                - paragraph [ref=e325]: Professor não definido / /
+                - generic [ref=e326]:
+                  - button "Excluir turma" [ref=e327]:
+                    - img [ref=e329]
+                    - text: Excluir turma
+                  - button "Editar turma" [ref=e335]:
+                    - img [ref=e337]
+                    - text: Editar turma
+              - generic [ref=e340] [cursor=pointer]:
+                - generic [ref=e341]:
+                  - img [ref=e343]
+                  - text: 3º Ano A – Vespertino
+                - paragraph [ref=e348]: Professor não definido / /
+                - generic [ref=e349]:
+                  - button "Excluir turma" [ref=e350]:
+                    - img [ref=e352]
+                    - text: Excluir turma
+                  - button "Editar turma" [ref=e358]:
+                    - img [ref=e360]
+                    - text: Editar turma
+          - generic [ref=e363]:
+            - generic [ref=e364]:
+              - heading "Dashboard - Escola Educacional Nova Esperança" [level=2] [ref=e365]
+              - generic [ref=e366]:
+                - generic [ref=e367]:
+                  - img "Saldo Livre" [ref=e369]
+                  - generic [ref=e370]:
+                    - paragraph [ref=e371]: R$ 170.250,11
+                    - paragraph [ref=e372]: Saldo livre
+                - generic [ref=e373]:
+                  - img "Saldo em propósitos" [ref=e375]
+                  - generic [ref=e376]:
+                    - paragraph [ref=e377]: R$ 56.554,90
+                    - paragraph [ref=e378]: Saldo em propósitos
+            - generic [ref=e379]:
+              - generic [ref=e380]:
+                - generic [ref=e381]: Dados da turma 1º Ano A – Matutino
+                - generic [ref=e382]:
+                  - button "Dados da turma" [ref=e383] [cursor=pointer]
+                  - button "Professores" [ref=e384] [cursor=pointer]
+                  - button "Alunos" [ref=e385] [cursor=pointer]
+              - generic [ref=e388]:
+                - generic [ref=e389]:
+                  - generic [ref=e390]:
+                    - generic [ref=e391]: Nome da turma *
+                    - textbox "Turma" [ref=e392]: 1º Ano A – Matutino
+                  - generic [ref=e393]:
+                    - generic [ref=e394]: Estágio *
+                    - generic [ref=e395]:
+                      - combobox [ref=e396]:
+                        - option "Selecione" [disabled]
+                        - option "Educação Infantil"
+                        - option "Ensino Fundamental I"
+                        - option "Ensino Fundamental II"
+                        - option "Ensino Médio"
+                      - generic:
+                        - img
+                  - generic [ref=e397]:
+                    - generic [ref=e398]: Período *
+                    - generic [ref=e399]:
+                      - combobox [ref=e400]:
+                        - option "Selecione" [disabled] [selected]
+                        - option "Manhã"
+                        - option "Tarde"
+                        - option "Noite"
+                        - option "Integral"
+                      - generic:
+                        - img
+                  - generic [ref=e401]:
+                    - generic [ref=e402]: Série *
+                    - 'textbox "Ex: 5º A" [ref=e403]'
+                  - generic [ref=e404]:
+                    - generic [ref=e405]: Qtd. de alunos *
+                    - spinbutton [ref=e406]: "22"
+                  - generic [ref=e407]:
+                    - generic [ref=e408]: Data de entrada *
+                    - textbox [ref=e409]: 2026-03-05
+                - generic [ref=e410]:
+                  - button "Cancelar" [ref=e411] [cursor=pointer]
+                  - button "Salvar alterações" [ref=e412] [cursor=pointer]
+```
