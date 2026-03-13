@@ -16,13 +16,13 @@
             </button>
 
             <button (click)="openAddModal()"
-                class="flex-1 sm:flex-none px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all shadow-sm whitespace-nowrap">
+                class="flex-1 sm:flex-none px-6 py-0 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all shadow-sm whitespace-nowrap">
                 <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
                 Cadastrar
             </button>
 
             <button (click)="openBulkModal()"
-                class="flex-1 sm:flex-none px-6 py-3 bg-[#00609b] text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#004d7c] transition-all shadow-md shadow-blue-900/10 whitespace-nowrap">
+                class="flex-1 sm:flex-none px-6 py-0 bg-[#00609b] text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#004d7c] transition-all shadow-md shadow-blue-900/10 whitespace-nowrap">
                 <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
                 Cadastrar em massa
             </button>
@@ -212,11 +212,11 @@
 
                 <div class="flex gap-4 pt-6">
                     <button type="button" (click)="closeModal()"
-                        class="flex-1 py-3.5 border border-gray-200 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                        class="flex-1 py-0 border border-gray-200 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all">
                         Cancelar
                     </button>
                     <button type="submit" [disabled]="isSubmitting"
-                        class="flex-1 py-3.5 bg-[#00609b] text-white rounded-xl font-bold hover:bg-[#004d7c] transition-all disabled:opacity-50">
+                        class="flex-1 py-0 bg-[#00609b] text-white rounded-xl font-bold hover:bg-[#004d7c] transition-all disabled:opacity-50">
                         {{ isSubmitting ? 'Salvando...' : (isEditing ? 'Salvar alterações' : 'Cadastrar') }}
                     </button>
                 </div>
@@ -251,7 +251,7 @@
                 </button>
 
                 <label
-                    class="px-8 py-3 bg-[#00609b] text-white rounded-xl font-bold text-sm cursor-pointer hover:bg-[#004d7c] transition-all shadow-md">
+                    class="px-8 py-0 h-[40px] flex items-center justify-center bg-[#00609b] text-white rounded-xl font-bold text-sm cursor-pointer hover:bg-[#004d7c] transition-all shadow-md">
                     Procurar arquivo
                     <input type="file" (change)="onFileChange($event)" accept=".csv" class="hidden">
                 </label>
@@ -296,11 +296,11 @@
 
             <div class="flex gap-4 shrink-0">
                 <button type="button" (click)="closePreviewModal()"
-                    class="flex-1 py-3.5 border border-gray-200 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                    class="flex-1 py-0 border border-gray-200 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all">
                     Cancelar
                 </button>
                 <button type="button" (click)="confirmBulkImport()" [disabled]="isSubmitting"
-                    class="flex-1 py-3.5 bg-[#00609b] text-white rounded-xl font-bold hover:bg-[#004d7c] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                    class="flex-1 py-0 bg-[#00609b] text-white rounded-xl font-bold hover:bg-[#004d7c] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                     <div *ngIf="isSubmitting" class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
                     {{ isSubmitting ? 'Cadastrando...' : 'Confirmar e Cadastrar' }}
                 </button>

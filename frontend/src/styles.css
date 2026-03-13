@@ -156,3 +156,26 @@ input[type=number] {
   font-weight: 500;
   animation: fadeIn 0.3s ease-out forwards;
 }
+
+/* Global Button Standardization (40px) */
+button:not(.btn-custom-height), 
+.btn-standard {
+  height: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: normal !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Square icon buttons */
+button.flex-none.p-2,
+button.flex-none.p-3,
+button.w-8.h-8,
+button.w-10.h-10 {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+}

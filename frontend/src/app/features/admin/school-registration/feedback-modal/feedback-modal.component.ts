@@ -17,10 +17,10 @@ import { LucideAngularModule, Check, HelpCircle, AlertCircle } from 'lucide-angu
         <p class="text-gray-500 mb-8">{{ message }}</p>
         
         <div class="flex flex-col gap-3">
-          <button (click)="confirm.emit()" class="w-full py-4 bg-[#00609b] text-white rounded-2xl font-bold hover:bg-[#004a7a] transition-all shadow-lg active:scale-95">
+          <button (click)="confirm.emit()" class="w-full py-0 bg-[#00609b] text-white rounded-2xl font-bold hover:bg-[#004a7a] transition-all shadow-lg active:scale-95">
             {{ confirmLabel }}
           </button>
-          <button *ngIf="showCancel" (click)="cancel.emit()" class="w-full py-4 text-gray-400 font-bold hover:text-gray-600 transition-colors">
+          <button *ngIf="showCancel" (click)="cancel.emit()" class="w-full py-0 text-gray-400 font-bold hover:text-gray-600 transition-colors">
             {{ cancelLabel }}
           </button>
         </div>

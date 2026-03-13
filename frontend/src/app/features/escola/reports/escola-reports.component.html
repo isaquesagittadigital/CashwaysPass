@@ -12,14 +12,14 @@
                 [class.text-[#005bb5]]="activeFilter === filter"
                 [class.border-b-2]="activeFilter === filter" 
                 [class.border-[#005bb5]]="activeFilter === filter"
-                class="pb-1 text-sm font-bold transition-all hover:text-[#005bb5] whitespace-nowrap"
+                class="pb-1 text-sm font-bold transition-all hover:text-[#005bb5] whitespace-nowrap btn-custom-height"
                 [ngClass]="activeFilter === filter ? 'text-[#005bb5]' : 'text-gray-400'">
                 {{ filter }}
             </button>
         </div>
 
         <button (click)="exportReport()" [disabled]="isExporting"
-            class="flex items-center gap-2 px-5 py-2.5 border border-gray-200 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-bold text-sm shadow-sm whitespace-nowrap">
+            class="hidden sm:flex items-center gap-2 px-5 py-0 border border-gray-200 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-bold text-sm shadow-sm whitespace-nowrap">
             <lucide-icon [img]="icons.Download" class="w-4 h-4"></lucide-icon>
             {{ isExporting ? 'Exportando...' : 'Exportar' }}
         </button>
@@ -141,13 +141,13 @@
         <div class="flex gap-6 border-b border-gray-100 mb-8">
             <button (click)="setTransactionTab('Weekly')" [class.text-[#005bb5]]="transactionTab === 'Weekly'"
                 [class.border-b-2]="transactionTab === 'Weekly'" [class.border-[#005bb5]]="transactionTab === 'Weekly'"
-                class="pb-3 text-xs font-bold transition-all hover:text-[#005bb5]"
+                class="pb-3 text-xs font-bold transition-all hover:text-[#005bb5] btn-custom-height"
                 [ngClass]="transactionTab === 'Weekly' ? 'text-[#005bb5]' : 'text-gray-400'">
                 Semanal
             </button>
             <button (click)="setTransactionTab('Monthly')" [class.text-[#005bb5]]="transactionTab === 'Monthly'"
                 [class.border-b-2]="transactionTab === 'Monthly'" [class.border-[#005bb5]]="transactionTab === 'Monthly'"
-                class="pb-3 text-xs font-bold transition-all hover:text-[#005bb5]"
+                class="pb-3 text-xs font-bold transition-all hover:text-[#005bb5] btn-custom-height"
                 [ngClass]="transactionTab === 'Monthly' ? 'text-[#005bb5]' : 'text-gray-400'">
                 Mensal
             </button>
@@ -241,13 +241,13 @@
         <div class="flex gap-8 mb-8 border-b border-gray-100">
             <button (click)="setBillingModel('Full')" [class.text-[#005bb5]]="billingModel === 'Full'"
                 [class.border-b-2]="billingModel === 'Full'" [class.border-[#005bb5]]="billingModel === 'Full'"
-                class="pb-3 text-xs font-bold transition-all hover:text-[#005bb5]"
+                class="pb-3 text-xs font-bold transition-all hover:text-[#005bb5] btn-custom-height"
                 [ngClass]="billingModel === 'Full' ? 'text-[#005bb5]' : 'text-gray-400'">
                 Contratação Full
             </button>
             <button (click)="setBillingModel('Lite')" [class.text-[#005bb5]]="billingModel === 'Lite'"
                 [class.border-b-2]="billingModel === 'Lite'" [class.border-[#005bb5]]="billingModel === 'Lite'"
-                class="pb-3 text-xs font-bold transition-all hover:text-[#005bb5]"
+                class="pb-3 text-xs font-bold transition-all hover:text-[#005bb5] btn-custom-height"
                 [ngClass]="billingModel === 'Lite' ? 'text-[#005bb5]' : 'text-gray-400'">
                 Contratação Lite
             </button>
