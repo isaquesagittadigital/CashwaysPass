@@ -259,6 +259,62 @@
         </div>
     </div>
 
+    <!-- Bulk Preview Modal -->
+    <div *ngIf="showPreviewModal"
+        class="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl p-8 animate-in zoom-in-95 duration-200 relative max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between mb-8 shrink-0">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Confirmar importação</h3>
+                    <p class="text-sm text-gray-400">Revise os dados dos {{ previewStudents.length }} alunos antes de confirmar.</p>
+                </div>
+                <button (click)="closePreviewModal()" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                    <lucide-icon [img]="icons.X" class="w-5 h-5 text-gray-400"></lucide-icon>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-auto border border-gray-100 rounded-2xl mb-8">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-gray-50 z-10">
+                        <tr class="text-xs font-semibold text-gray-500 border-b border-gray-50">
+                            <th class="px-6 py-4">Nome</th>
+                            <th class="px-6 py-4">Email</th>
+                            <th class="px-6 py-4">RA/Carteira</th>
+                            <th class="px-6 py-4">Turma</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        <tr *ngFor="let s of previewStudents" class="hover:bg-gray-50/40 transition-all">
+                            <td class="px-6 py-4 text-sm font-bold text-gray-800">{{ s.nome }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ s.email }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ s.numeroCarteira || '---' }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-[#00609b]">{{ s.turmaNome }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex gap-4 shrink-0">
+                <button type="button" (click)="closePreviewModal()"
+                    class="flex-1 py-3.5 border border-gray-200 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                    Cancelar
+                </button>
+                <button type="button" (click)="confirmBulkImport()" [disabled]="isSubmitting"
+                    class="flex-1 py-3.5 bg-[#00609b] text-white rounded-xl font-bold hover:bg-[#004d7c] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                    <div *ngIf="isSubmitting" class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                    {{ isSubmitting ? 'Cadastrando...' : 'Confirmar e Cadastrar' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay for Parsing -->
+    <div *ngIf="isParsing" class="fixed inset-0 z-[120] flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm animate-in fade-in duration-300">
+        <div class="w-12 h-12 border-4 border-[#00609b]/10 border-t-[#00609b] rounded-full animate-spin mb-4"></div>
+        <p class="text-lg font-bold text-gray-900">Processando arquivo...</p>
+        <p class="text-sm text-gray-400">Aguarde enquanto analisamos os dados.</p>
+    </div>
+
     <!-- Success Modals -->
     <app-action-success-modal [isVisible]="showSuccessModal" [title]="successModalTitle" [message]="successModalMessage"
         (onClose)="showSuccessModal = false">

@@ -51,6 +51,11 @@ export class StudentManagementComponent implements OnInit, OnChanges {
     studentForm: FormGroup;
     turmas: any[] = [];
 
+    // Bulk Import Improvements
+    isParsing = false;
+    showPreviewModal = false;
+    previewStudents: any[] = [];
+
     // Email state
     isSendingEmail: { [key: string]: boolean } = {};
 
@@ -147,6 +152,8 @@ export class StudentManagementComponent implements OnInit, OnChanges {
         this.showModal = false;
         this.isEditing = false;
         this.isBulk = false;
+        this.showPreviewModal = false;
+        this.isParsing = false;
         this.editingId = null;
         this.studentForm.reset({ turmaId: '', status: 'active' });
     }
@@ -190,40 +197,72 @@ export class StudentManagementComponent implements OnInit, OnChanges {
     onFileChange(event: any) {
         const file = event.target.files[0];
         if (file) {
-            this.isSubmitting = true;
+            this.isParsing = true;
             this.papa.parse(file, {
                 header: true,
                 skipEmptyLines: true,
-                complete: async (result) => {
-                    const mappedStudents = result.data.map((row: any) => ({
-                        turmaId: this.turmas.find(t => t.nome === row.turma)?.id || this.studentForm.get('turmaId')?.value || this.turmas[0]?.id || '',
-                        nome: row.nome || '',
-                        email: row.email || '',
-                        telefone: row.telefone || '',
-                        data_nascimento: row.data_nascimento || '',
-                        numeroCarteira: row.carteira || ''
-                    })).filter((s: any) => s.nome !== '');
+                complete: (result) => {
+                    this.previewStudents = result.data.map((row: any) => {
+                        const turma = this.turmas.find(t => 
+                            t.nome?.toLowerCase() === row.turma?.toLowerCase() || 
+                            t.serie?.toLowerCase() === row.turma?.toLowerCase() ||
+                            `${t.serie} ${t.nome}`.toLowerCase() === row.turma?.toLowerCase()
+                        ) || this.turmas[0];
 
-                    if (mappedStudents.length > 0) {
-                        const res = await this.schoolService.createStudentsBulk(this.schoolId, mappedStudents);
-                        if (res.success) {
-                            this.successModalTitle = 'Alunos importados';
-                            this.successModalMessage = 'A importação em massa foi concluída com sucesso!';
-                            this.showSuccessModal = true;
-                            this.closeModal();
-                            this.loadStudents();
-                        } else {
-                            alert('Erro ao importar alunos.');
-                        }
+                        return {
+                            turmaId: turma?.id || '',
+                            turmaNome: turma ? `${turma.serie} ${turma.nome}` : row.turma,
+                            nome: row.nome || '',
+                            email: row.email || '',
+                            telefone: row.telefone || '',
+                            data_nascimento: row.data_nascimento || '',
+                            numeroCarteira: row.carteira || ''
+                        };
+                    }).filter((s: any) => s.nome !== '');
+
+                    this.isParsing = false;
+                    if (this.previewStudents.length > 0) {
+                        this.showModal = false;
+                        this.showPreviewModal = true;
+                    } else {
+                        alert('Nenhum aluno válido encontrado no arquivo.');
                     }
-                    this.isSubmitting = false;
                 },
                 error: (err) => {
-                    this.isSubmitting = false;
+                    this.isParsing = false;
                     alert('Erro ao processar o arquivo CSV.');
                 }
             });
         }
+    }
+
+    async confirmBulkImport() {
+        if (this.previewStudents.length === 0) return;
+
+        this.isSubmitting = true;
+        try {
+            const res = await this.schoolService.createStudentsBulk(this.schoolId, this.previewStudents);
+            if (res.success) {
+                this.successModalTitle = 'Alunos importados';
+                this.successModalMessage = `A importação de ${this.previewStudents.length} alunos foi concluída com sucesso!`;
+                this.showSuccessModal = true;
+                this.closePreviewModal();
+                this.loadStudents();
+            } else {
+                alert('Erro ao importar alunos: ' + (res.error?.message || 'Erro desconhecido'));
+            }
+        } catch (error) {
+            console.error('Error in bulk import:', error);
+            alert('Erro inesperado ao importar alunos.');
+        } finally {
+            this.isSubmitting = false;
+        }
+    }
+
+    closePreviewModal() {
+        this.showPreviewModal = false;
+        this.previewStudents = [];
+        this.isBulk = false;
     }
 
     async onSubmit() {
