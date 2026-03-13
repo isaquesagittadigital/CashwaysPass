@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../supabase';
+import { environment } from '../../../environments/environment';
 
 export interface Evento {
     id: string;
@@ -87,9 +88,7 @@ export class EventoService {
 
                 if (escolaData && escolaData.email_contato) {
                     try {
-                        const apiUrl = window.location.hostname.includes('localhost')
-                            ? 'http://localhost:3000/email/send-event-invite'
-                            : 'https://pass-2-0.vercel.app/api/email/send-event-invite';
+                        const apiUrl = `${environment.apiUrl}/email/send-event-invite`;
 
                         await fetch(apiUrl, {
                             method: 'POST',

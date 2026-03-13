@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../supabase';
+import { environment } from '../../../environments/environment';
 
 export type UserTipoAcesso = 'Admin' | 'Escola' | 'Professor' | 'Lojista' | 'Aluno' | 'Responsavel' | 'Convidado';
 export type UserStatus = 'active' | 'inactive' | 'blocked' | 'invited';
@@ -186,7 +187,7 @@ export class UsuarioService {
 
     async sendWelcomeEmail(email: string, name: string): Promise<{ success: boolean; error?: any }> {
         try {
-            const response = await fetch('http://localhost:3000/email/welcome', {
+            const response = await fetch(`${environment.apiUrl}/email/welcome`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

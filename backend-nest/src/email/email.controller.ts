@@ -26,4 +26,14 @@ export class EmailController {
             payload.eventDate
         );
     }
+
+    @Post('welcome')
+    @HttpCode(HttpStatus.OK)
+    async sendWelcome(@Body() payload: { email: string; name: string }) {
+        if (!payload.email || !payload.name) {
+            return { success: false, error: 'Parâmetros incompletos de envio de email de boas-vindas' };
+        }
+
+        return this.emailService.sendWelcomeEmail(payload.email, payload.name);
+    }
 }
