@@ -101,8 +101,8 @@ export class ReportService {
 
         // 6. School Info
         let schoolInfo = {
-            razaoSocial: 'Todas as Escolas',
-            cnpj: 'Consolidado',
+            razaoSocial: 'Consolidado (Todas as Escolas)',
+            cnpj: 'Múltiplos',
             modeloContratacao: 'Misto',
             periodo: this.getPeriodLabel(filter)
         };
@@ -110,7 +110,7 @@ export class ReportService {
         if (escolaId) {
             const { data: school } = await supabase
                 .from('escola')
-                .select('razao_social, nome_fantasia, cnpj, modelo_contratacao')
+                .select('razao_social, nome_fantasia, cnpj, modelo_contratacao, tipo_escola')
                 .eq('id', escolaId)
                 .single();
             
@@ -118,7 +118,8 @@ export class ReportService {
                 schoolInfo.razaoSocial = school.razao_social || school.nome_fantasia || 'Escola sem nome';
                 schoolInfo.cnpj = school.cnpj || 'Não informado';
                 schoolInfo.modeloContratacao = school.modelo_contratacao || 'Full';
-                schoolInfo.periodo = this.getPeriodLabel(filter);
+                // Periodo aqui refere-se ao tipo/estágio da escola registrado no cadastro
+                schoolInfo.periodo = school.tipo_escola || this.getPeriodLabel(filter);
             }
         }
 
