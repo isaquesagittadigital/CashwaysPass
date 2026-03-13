@@ -413,6 +413,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
                     this.showEditSuccessToast = true;
                     this.showFormModal = false;
                     this.loadUsuarios();
+                } else {
+                    alert('Erro ao atualizar usuário: ' + (result.error?.message || 'Erro desconhecido'));
                 }
             } else {
                 const result = await this.usuarioService.createUsuario(dataToSave);
@@ -420,10 +422,13 @@ export class UserManagementComponent implements OnInit, OnDestroy {
                     this.showSuccessToast = true;
                     this.showFormModal = false;
                     this.loadUsuarios();
+                } else {
+                    alert('Erro ao criar usuário: ' + (result.error?.message || 'Erro desconhecido'));
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving user:', error);
+            alert('Erro inesperado ao salvar: ' + (error.message || 'Verifique o console'));
         } finally {
             this.formLoading = false;
         }

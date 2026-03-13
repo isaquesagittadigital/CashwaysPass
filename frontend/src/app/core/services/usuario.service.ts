@@ -25,6 +25,7 @@ export interface Usuario {
     ultimo_login?: string;
     data_nascimento?: string;
     nome_mae?: string;
+    ra?: string;
     grau_escolaridade?: string;
     created_at?: string;
     updated_at?: string;
@@ -130,16 +131,92 @@ export class UsuarioService {
 
     async updateUsuario(id: number, updates: Partial<Usuario>): Promise<{ success: boolean; error?: any }> {
         try {
+            // 1. Clean data to avoid Supabase errors (remove joined fields)
+            const cleanedUpdates = { ...updates };
+            delete (cleanedUpdates as any).turma;
+            delete (cleanedUpdates as any).created_at;
+            delete (cleanedUpdates as any).updated_at;
+            delete (cleanedUpdates as any).ultimo_login;
+            delete (cleanedUpdates as any).UserID;
+            delete (cleanedUpdates as any).id; // ID shouldn't be in updates
+
             const { error } = await supabase
                 .from(this.TABLE)
-                .update(updates)
+                .update(cleanedUpdates)
                 .eq('id', id);
 
             if (error) throw error;
+
+            // 2. Sync with 'aluno' table if it's a student
+            if (updates.tipo_acesso === 'Aluno') {
+                await this.syncWithAlunoTable(id, updates);
+            }
+
             return { success: true };
         } catch (error) {
             console.error('Error updating user:', error);
             return { success: false, error };
+        }
+    }
+
+    private async syncWithAlunoTable(usuarioId: number, data: Partial<Usuario>) {
+        try {
+            // Map common fields from usuarios to aluno
+            const alunoUpdates: any = {};
+            if (data.nome_completo) {
+                alunoUpdates.nome = data.nome_completo;
+                alunoUpdates.nome_completo = data.nome_completo;
+            }
+            if (data.email) alunoUpdates.email = data.email;
+            if (data.cpf) alunoUpdates.cpf = data.cpf;
+            if (data.turmaID !== undefined) alunoUpdates.turma_id = data.turmaID;
+            if (data.escola_id) alunoUpdates.escola_id = data.escola_id;
+            if (data.nome_mae) alunoUpdates.nome_mae = data.nome_mae;
+            if (data.ra) alunoUpdates.ra = data.ra;
+            if (data.data_nascimento) alunoUpdates.data_nascimento = data.data_nascimento;
+
+            if (Object.keys(alunoUpdates).length === 0) return;
+
+            const { error } = await supabase
+                .from('aluno')
+                .update(alunoUpdates)
+                .eq('usuario_id', usuarioId);
+
+            if (error) {
+                console.warn('Could not sync with aluno table (User might not have record in aluno table yet):', error.message);
+            }
+
+            // 3. Sync with 'carteira' table if RA is provided
+            if (data.ra) {
+                const carteiraPayload = {
+                    Usuario: usuarioId,
+                    carteira_code: data.ra,
+                    turmaID: data.turmaID,
+                    escola_id: data.escola_id
+                };
+
+                const { data: existingCarteira } = await supabase
+                    .from('carteira')
+                    .select('id')
+                    .eq('Usuario', usuarioId)
+                    .single();
+
+                if (existingCarteira) {
+                    await supabase
+                        .from('carteira')
+                        .update(carteiraPayload)
+                        .eq('id', existingCarteira.id);
+                } else {
+                    // Only insert if we have all required fields
+                    if (data.ra && data.escola_id) {
+                        await supabase
+                            .from('carteira')
+                            .insert(carteiraPayload);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Failed to sync with related tables:', err);
         }
     }
 
