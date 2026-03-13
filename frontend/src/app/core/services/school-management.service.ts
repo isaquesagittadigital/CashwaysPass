@@ -243,7 +243,8 @@ export class SchoolManagementService {
                 escola_id: data.escola_id,
                 turmaID: data.turmaId,
                 nome_mae: data.responsavel || data.nome_mae,
-                ra: ra
+                ra: ra,
+                primeiro_acesso: false
             };
 
             if (existingUser) {
@@ -367,7 +368,8 @@ export class SchoolManagementService {
                         status: data.status,
                         turmaID: data.turmaId,
                         nome_mae: data.responsavel || data.nome_mae,
-                        ra: ra
+                        ra: ra,
+                        primeiro_acesso: data.primeiro_acesso ?? false
                     })
                     .eq('id', student.usuario_id);
             }
