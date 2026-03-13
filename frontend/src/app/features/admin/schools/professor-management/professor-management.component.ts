@@ -171,7 +171,7 @@ export class ProfessorManagementComponent implements OnInit {
                         this.successModalMessage = 'As alterações foram salvas com sucesso.';
                     } else {
                         this.successModalTitle = 'Professor cadastrado';
-                        this.successModalMessage = 'O professor foi cadastrada com sucesso!'; // Following image typo intentionally if that's what was shown, but normally "cadastrado"
+                        this.successModalMessage = 'O professor foi cadastrado com sucesso!';
                     }
                     this.showSuccessModal = true;
                     this.closeModal();

@@ -153,7 +153,8 @@ export class SchoolManagementService {
             .select('*')
             .eq('escola_id', schoolId)
             .eq('tipo_acesso', 'Professor')
-            .not('deleted', 'eq', true);
+            .or('deleted.is.null,deleted.eq.false')
+            .neq('excluido', 'sim');
 
         if (turmaId) {
             // Se houver lógica de vinculação professor_turma, aplicar aqui. 
@@ -175,6 +176,7 @@ export class SchoolManagementService {
             supabase
                 .from('usuarios')
                 .insert(data)
+                .select()
         );
     }
 
@@ -184,20 +186,41 @@ export class SchoolManagementService {
                 .from('usuarios')
                 .update(data)
                 .eq('id', id)
+                .select()
         );
     }
 
     deleteProfessor(id: string): Observable<void> {
-        return from(
-            supabase
+        return from((async () => {
+            // 1. Primeiro buscamos os dados do professor em usuarios para ter o nome e escola_id
+            const { data: prof } = await supabase
                 .from('usuarios')
-                .update({ deleted: true, status: 'inactive', excluido: 'sim' })
+                .select('nome_completo, escola_id')
                 .eq('id', id)
-        ).pipe(
-            map(resp => {
-                if (resp.error) throw resp.error;
-                return;
-            })
+                .single();
+
+            if (prof) {
+                // 2. Removemos da tabela professor (usando nome e escola como chave, já que IDs são diferentes)
+                await supabase.from('professor')
+                    .delete()
+                    .eq('escola_id', prof.escola_id)
+                    .eq('nome', prof.nome_completo);
+            }
+
+            // 3. Soft delete mandatório em usuarios para manter histórico/integridade
+            const { error } = await supabase
+                .from('usuarios')
+                .update({ 
+                    deleted: true, 
+                    status: 'inactive', 
+                    excluido: 'sim' 
+                })
+                .eq('id', id)
+                .select();
+            
+            if (error) throw error;
+        })()).pipe(
+            map(() => { return; })
         );
     }
 
