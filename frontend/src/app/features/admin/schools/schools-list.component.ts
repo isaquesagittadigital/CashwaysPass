@@ -133,9 +133,19 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
                         this.dashboardStats = null;
                     }
 
-                    this.loadTurmas();
-                    this.schoolService.getProfessorsBySchool(schoolId).subscribe(profs => this.professors = profs);
-                    this.isLoading = false;
+                    // Carregar professores ANTES das turmas para evitar problemas de sincronização no formulário
+                    this.schoolService.getProfessorsBySchool(schoolId).subscribe({
+                        next: (profs) => {
+                            this.professors = profs;
+                            this.loadTurmas();
+                            this.isLoading = false;
+                        },
+                        error: (err) => {
+                            console.error('Erro ao carregar professores:', err);
+                            this.loadTurmas();
+                            this.isLoading = false;
+                        }
+                    });
                 },
                 error: (e) => {
                     console.error(e);
@@ -182,37 +192,53 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
 
     selectTurmaToEdit(turma: any | null) {
         this.selectedTurma = turma;
-        // Keep current tab unless we are specifically wanting to go back to dados or it's a new turma
+        // Se for uma nova turma, garantir que a aba de dados esteja ativa
         if (!turma) {
             this.currentTab = 'dados';
-        }
-        if (turma) {
-            this.turmaForm.patchValue(turma);
-            const prof = this.professors.find(p => p.turmaID === turma.id);
-            if (prof) {
-                this.turmaForm.patchValue({ professor_id: prof.id });
-            } else {
-                this.turmaForm.patchValue({ professor_id: '' });
-            }
-        } else {
             this.turmaForm.reset({
                 status: true,
                 quantidade_alunos: 0,
                 data_inicio: new Date().toISOString().split('T')[0],
                 Periodos: ''
             });
+            return;
         }
+
+        // Patch values básicos
+        this.turmaForm.patchValue(turma);
+
+        // Identificar o ID do professor responsável de forma robusta
+        let profId = '';
+        
+        // 1. Tentar encontrar no professor_obj (que vem no JOIN do getTurmasBySchool)
+        if (turma.professor_obj && Array.isArray(turma.professor_obj)) {
+            const prof = turma.professor_obj.find((u: any) => u.tipo_acesso === 'Professor');
+            if (prof) profId = prof.id;
+        }
+
+        // 2. Se não encontrou, buscar na lista de professores carregada (pelo campo turmaID)
+        if (!profId && this.professors.length > 0) {
+            const prof = this.professors.find(p => p.turmaID === turma.id);
+            if (prof) profId = prof.id;
+        }
+
+        // 3. Fallback: Se ainda não encontrou mas temos o nome texto na turma, tentar bater pelo nome (menos preciso)
+        if (!profId && turma.professor && this.professors.length > 0) {
+            const prof = this.professors.find(p => p.nome_completo === turma.professor);
+            if (prof) profId = prof.id;
+        }
+
+        this.turmaForm.patchValue({ professor_id: profId });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    saveTurma() {
+    async saveTurma() {
         if (!this.selectedSchool) return;
         if (this.turmaForm.valid) {
             this.isSubmitting = true;
             const formValue = this.turmaForm.value;
             const selectedProf = this.professors.find(p => p.id === formValue.professor_id);
             
-            // Map data to match db columns
             const data = { 
                 ...formValue, 
                 escola_id: this.selectedSchool.id,
@@ -228,12 +254,22 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
                 : this.schoolService.createTurma(data);
 
             obs.subscribe({
-                next: (resp: any) => {
+                next: async (resp: any) => {
                     const turmaSaved = Array.isArray(resp) ? resp[0] : resp;
                     const finalTurmaId = this.selectedTurma?.id || turmaSaved?.id;
 
-                    if (professorId && finalTurmaId) {
-                        this.schoolService.updateProfessor(professorId, { turmaID: finalTurmaId }).subscribe();
+                    if (finalTurmaId) {
+                        // 1. Limpar vínculo de qualquer professor anterior desta turma (se houver)
+                        // Isso é importante para evitar múltiplos professores com o mesmo turmaID
+                        const oldProfs = this.professors.filter(p => p.turmaID === finalTurmaId && p.id !== professorId);
+                        for (const op of oldProfs) {
+                            await this.schoolService.updateProfessor(op.id, { turmaID: null }).toPromise();
+                        }
+
+                        // 2. Vincular o novo professor selecionado
+                        if (professorId) {
+                            await this.schoolService.updateProfessor(professorId, { turmaID: finalTurmaId }).toPromise();
+                        }
                     }
                     
                     this.isSubmitting = false;
@@ -242,14 +278,9 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
                     this.showToast = true;
                     setTimeout(() => this.showToast = false, 3000);
 
+                    // Recarregar tudo para garantir consistência
+                    this.loadSchoolFullData(this.selectedSchool.id);
                     this.selectedTurma = null;
-                    this.turmaForm.reset({ 
-                        status: true, 
-                        quantidade_alunos: 0, 
-                        data_inicio: new Date().toISOString().split('T')[0],
-                        Periodos: ''
-                    });
-                    this.loadTurmas();
                 },
                 error: (err) => {
                     this.isSubmitting = false;
