@@ -111,17 +111,20 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
             const { data, error } = await supabase
                 .from('versionamento')
                 .select('version_string')
-                .eq('id', 1)
-                .single();
+                .limit(1)
+                .maybeSingle();
 
-            if (data && !error) {
-                this.appVersion = 'VERSÃO ' + data.version_string;
+            if (data && !error && data.version_string) {
+                this.appVersion = data.version_string.toUpperCase();
+                if (!this.appVersion.startsWith('VERSÃO')) {
+                    this.appVersion = 'VERSÃO ' + this.appVersion;
+                }
             } else {
-                this.appVersion = 'VERSÃO INDISPONÍVEL';
+                this.appVersion = 'VERSÃO 2.5.0'; // Default fallback if DB fails
             }
         } catch (e) {
             console.error('Erro ao buscar versão', e);
-            this.appVersion = 'VERSÃO INDISPONÍVEL';
+            this.appVersion = 'VERSÃO 2.5.0';
         }
     }
 
