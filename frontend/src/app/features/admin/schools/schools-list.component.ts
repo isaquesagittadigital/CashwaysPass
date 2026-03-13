@@ -342,7 +342,12 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
         this.successModalTitle = 'Escola editada!';
         this.successModalMessage = 'A escola foi editada com sucesso!';
         this.showSuccessModal = true;
-        this.globalSchoolService.loadSchools(); // Update global list with new name
+        
+        // Refresh full data and global list
+        if (this.selectedSchool?.id) {
+            this.loadSchoolFullData(this.selectedSchool.id);
+        }
+        this.globalSchoolService.loadSchools(); 
     }
 
     closeSuccessModal() {

@@ -45,13 +45,13 @@
                         <div class="relative">
                             <select formControlName="modelo_contratacao"
                                 class="w-full appearance-none px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] cursor-pointer" [class.input-error]="schoolForm.get('modelo_contratacao')?.invalid && schoolForm.get('modelo_contratacao')?.touched">
-                        <p *ngIf="schoolForm.get('modelo_contratacao')?.invalid && schoolForm.get('modelo_contratacao')?.touched" class="error-text">Campo obrigatório</p>
                                 <option value="Full">Full</option>
                                 <option value="Light">Light</option>
                             </select>
                             <lucide-icon [img]="icons.ChevronDown"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
                         </div>
+                        <p *ngIf="schoolForm.get('modelo_contratacao')?.invalid && schoolForm.get('modelo_contratacao')?.touched" class="error-text mt-1">Campo obrigatório</p>
                     </div>
                     <!-- Série -->
                     <div>
@@ -59,7 +59,6 @@
                         <div class="relative">
                             <select formControlName="tipo_escola"
                                 class="w-full appearance-none px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] cursor-pointer" [class.input-error]="schoolForm.get('tipo_escola')?.invalid && schoolForm.get('tipo_escola')?.touched">
-                        <p *ngIf="schoolForm.get('tipo_escola')?.invalid && schoolForm.get('tipo_escola')?.touched" class="error-text">Campo obrigatório</p>
                                 <option value="Fundamental 1">Fundamental 1</option>
                                 <option value="Fundamental 2">Fundamental 2</option>
                                 <option value="Ensino Médio">Ensino Médio</option>
@@ -67,6 +66,7 @@
                             <lucide-icon [img]="icons.ChevronDown"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
                         </div>
+                        <p *ngIf="schoolForm.get('tipo_escola')?.invalid && schoolForm.get('tipo_escola')?.touched" class="error-text mt-1">Campo obrigatório</p>
                     </div>
                 </div>
 

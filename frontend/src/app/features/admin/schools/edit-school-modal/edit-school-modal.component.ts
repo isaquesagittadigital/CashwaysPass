@@ -57,42 +57,34 @@ export class EditSchoolModalComponent implements OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['isVisible'] && this.isVisible && this.schoolData) {
-            // Reset and patch values when opening the modal
-            this.schoolForm.reset({
+            // Reset state then patch
+            this.schoolForm.patchValue({
                 ...this.schoolData,
-                // Ensure default values for fields that might be missing
-                dias_repasse: this.schoolData.dias_repasse || 3,
+                dias_repasse: this.schoolData.dias_repasse ?? 3,
                 possui_equipamentos: this.schoolData.possui_equipamentos ?? true,
                 cobra_transacoes: this.schoolData.cobra_transacoes ?? true,
-                valor_carteira: this.schoolData.valor_carteira || 0,
-                valor_transferencia: this.schoolData.valor_transferencia || 0
+                valor_carteira: this.schoolData.valor_carteira ?? 0,
+                valor_transferencia: this.schoolData.valor_transferencia ?? 0
             });
         }
     }
 
     onSubmit() {
-        console.log('Form valid:', this.schoolForm.valid);
-        if (!this.schoolForm.valid) {
-            console.log('Form errors:', this.schoolForm.errors);
-            // Log individual control errors
-            Object.keys(this.schoolForm.controls).forEach(key => {
-                const controlErrors = this.schoolForm.get(key)?.errors;
-                if (controlErrors != null) {
-                    console.log('Key: ' + key + ', Errors: ', controlErrors);
-                }
-            });
-        }
-
         if (this.schoolForm.valid && this.schoolData?.id) {
             this.isSubmitting = true;
-            this.schoolService.updateSchool(this.schoolData.id, this.schoolForm.value).subscribe({
+            
+            // Send form values directly
+            const updatePayload = { ...this.schoolForm.value };
+
+            this.schoolService.updateSchool(this.schoolData.id, updatePayload).subscribe({
                 next: () => {
                     this.isSubmitting = false;
                     this.onSuccess.emit();
                 },
                 error: (err) => {
                     this.isSubmitting = false;
-                    alert('Erro ao atualizar escola: ' + err.message);
+                    console.error('Update error:', err);
+                    alert('Erro ao atualizar escola: ' + (err.message || JSON.stringify(err)));
                 }
             });
         } else {
