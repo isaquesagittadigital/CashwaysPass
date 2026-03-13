@@ -24,7 +24,7 @@
         </div>
 
         <!-- Navigation -->
-        <nav class="flex-1 px-3 pt-6 space-y-1 overflow-y-auto">
+        <nav class="flex-1 pl-6 pr-3 pt-6 space-y-1 overflow-y-auto">
             <button *ngFor="let item of menuItems" (click)="setActive(item.route)" [ngClass]="item.active
           ? 'bg-gradient-to-r from-[#005bb5]/10 to-[#1a73e8]/5 text-[#005bb5] border-l-[3px] border-[#005bb5]'
           : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 border-l-[3px] border-transparent'"
