@@ -47,6 +47,7 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
     alunoFilter = '';
     searchTerm = '';
     statusFilter = 'Todos';
+    walletTypeFilter = 'Alunos';
     schoolFilter = '';
 
     // Schools
@@ -130,13 +131,21 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
         // or we can pass it if the service supported it. 
         // For now, let's focus on the Turma filter which is what's in the UI.
 
+        const walletTypeMap: { [key: string]: string } = {
+            'Alunos': 'Aluno',
+            'Convidados': 'Convidado',
+            'Logistas': 'Lojista'
+        };
+        const tipoAcesso = walletTypeMap[this.walletTypeFilter] || 'Aluno';
+
         const { students, total } = await this.carteiraService.getStudentsWallet(
             activeSchoolId || undefined,
             this.statusFilter,
             this.searchTerm,
             this.currentPage,
             this.pageSize,
-            this.turmaFilter || undefined
+            this.turmaFilter || undefined,
+            tipoAcesso
         );
         
         this.students = students;
@@ -170,7 +179,7 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
 
     get hasFilters(): boolean {
         const isDefaultSchool = this.schoolFilter === this.selectedSchoolId;
-        return !!this.searchTerm || !!this.turmaFilter || this.statusFilter !== 'Todos' || (!!this.schoolFilter && !isDefaultSchool);
+        return !!this.searchTerm || !!this.turmaFilter || this.statusFilter !== 'Todos' || (!!this.schoolFilter && !isDefaultSchool) || this.walletTypeFilter !== 'Alunos';
     }
 
     onAlunoChange() {
@@ -197,6 +206,7 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
         this.searchTerm = '';
         this.turmaFilter = '';
         this.statusFilter = 'Todos';
+        this.walletTypeFilter = 'Alunos';
         this.alunoFilter = '';
         this.schoolFilter = this.selectedSchoolId || '';
         this.currentPage = 1;
@@ -447,6 +457,13 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
     async exportToCSV() {
         if (!this.selectedSchoolId) return;
 
+        const walletTypeMap: { [key: string]: string } = {
+            'Alunos': 'Aluno',
+            'Convidados': 'Convidado',
+            'Logistas': 'Lojista'
+        };
+        const tipoAcesso = walletTypeMap[this.walletTypeFilter] || 'Aluno';
+
         // Fetch all students without pagination for the current filter
         const { students } = await this.carteiraService.getStudentsWallet(
             this.selectedSchoolId,
@@ -454,7 +471,8 @@ export class EscolaWalletComponent implements OnInit, OnDestroy {
             this.searchTerm,
             1,
             999999, // High number to get everything
-            this.turmaFilter || undefined
+            this.turmaFilter || undefined,
+            tipoAcesso
         );
 
         if (students.length === 0) {

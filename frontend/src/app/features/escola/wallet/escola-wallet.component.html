@@ -20,6 +20,18 @@
             </h2>
 
             <div class="flex items-center gap-3 flex-wrap">
+                <!-- Tipo de Carteira Filter -->
+                <div class="relative group">
+                    <select [(ngModel)]="walletTypeFilter" (ngModelChange)="onFilterChange()"
+                        class="bg-white border border-gray-200 rounded-lg px-4 py-2 pr-9 text-sm text-gray-700 appearance-none cursor-pointer focus:outline-none focus:border-blue-400 hover:border-gray-300 transition-all font-medium min-w-[120px]">
+                        <option value="Alunos">Alunos</option>
+                        <option value="Convidados">Convidados</option>
+                        <option value="Logistas">Logistas</option>
+                    </select>
+                    <lucide-icon [img]="icons.ChevronDown"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors"></lucide-icon>
+                </div>
+
                 <!-- Turma Filter -->
                 <div class="relative group">
                     <select [(ngModel)]="turmaFilter" (ngModelChange)="onFilterChange()"

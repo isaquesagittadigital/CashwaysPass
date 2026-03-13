@@ -57,14 +57,15 @@ export class CarteiraService {
         searchTerm?: string,
         page: number = 1,
         pageSize: number = 8,
-        turmaId?: string
+        turmaId?: string,
+        tipoAcesso: string = 'Aluno'
     ): Promise<{ students: WalletStudent[]; total: number }> {
         try {
             // 1. Query usuarios (Alunos) — no FK joins
             let query = supabase
                 .from('usuarios')
                 .select('id, nome_completo, status, escola_id, turmaID, saldo_carteira', { count: 'exact' })
-                .eq('tipo_acesso', 'Aluno');
+                .eq('tipo_acesso', tipoAcesso);
 
             if (escolaId) {
                 query = query.eq('escola_id', escolaId);
