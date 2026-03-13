@@ -57,6 +57,16 @@ export class ReportService {
 
 
 
+    private getPeriodLabel(filter: TimeFilter): string {
+        switch (filter) {
+            case '24 horas': return 'Últimas 24 horas';
+            case '7 dias': return 'Últimos 7 dias';
+            case '30 dias': return 'Últimos 30 dias';
+            case '12 meses': return 'Últimos 12 meses';
+            default: return 'Período Atual';
+        }
+    }
+
     async getReportMetrics(escolaId?: string, filter: TimeFilter = '7 dias'): Promise<ReportMetrics> {
         const startDate = this.getStartDate(filter);
 
@@ -91,21 +101,24 @@ export class ReportService {
 
         // 6. School Info
         let schoolInfo = {
-            razaoSocial: 'Escolas Selecionadas',
-            cnpj: 'Não aplicável',
+            razaoSocial: 'Todas as Escolas',
+            cnpj: 'Consolidado',
             modeloContratacao: 'Misto',
-            periodo: 'Atual'
+            periodo: this.getPeriodLabel(filter)
         };
 
         if (escolaId) {
-            const { data: school } = await supabase.from('escola').select('nome, cnpj, modelo_contratacao').eq('id', escolaId).single();
+            const { data: school } = await supabase
+                .from('escola')
+                .select('razao_social, nome_fantasia, cnpj, modelo_contratacao')
+                .eq('id', escolaId)
+                .single();
+            
             if (school) {
-                schoolInfo.razaoSocial = `${school.nome} LTDA`;
-                schoolInfo.cnpj = school.cnpj || '12.345.678/0001-90';
+                schoolInfo.razaoSocial = school.razao_social || school.nome_fantasia || 'Escola sem nome';
+                schoolInfo.cnpj = school.cnpj || 'Não informado';
                 schoolInfo.modeloContratacao = school.modelo_contratacao || 'Full';
-                
-                const dateOptions: Intl.DateTimeFormatOptions = { month: 'long', year: 'numeric' };
-                schoolInfo.periodo = new Date().toLocaleDateString('pt-BR', dateOptions).replace(/^\w/, c => c.toUpperCase());
+                schoolInfo.periodo = this.getPeriodLabel(filter);
             }
         }
 

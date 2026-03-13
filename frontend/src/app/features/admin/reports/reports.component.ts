@@ -145,6 +145,16 @@ export class ReportsComponent implements OnInit, OnDestroy {
         return 'Meses';
     }
 
+    get barYLabels(): number[] {
+        const max = this.maxBarValue;
+        return [max, max * 0.75, max * 0.5, max * 0.25, 0];
+    }
+
+    get lineYLabels(): number[] {
+        const max = this.maxLineValue;
+        return [max, max * 0.75, max * 0.5, max * 0.25, 0];
+    }
+
     // --- Chart Logic ---
 
     get hasTransactionData(): boolean {

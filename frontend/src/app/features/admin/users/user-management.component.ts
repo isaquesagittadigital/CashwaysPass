@@ -129,13 +129,17 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         }
     }
 
-    ngOnInit() {
-        this.schoolSub = this.schoolService.selectedSchool$.subscribe(s => {
+    async ngOnInit() {
+        this.schoolSub = this.schoolService.selectedSchool$.subscribe(async s => {
             this.selectedSchoolId = s?.id || null;
             if (this.selectedSchoolId) {
                 this.currentPage = 1;
-                this.loadUsuarios();
-                this.loadTurmas();
+                this.loading = true;
+                // Run in parallel but wait for both
+                await Promise.all([
+                    this.loadUsuarios(),
+                    this.loadTurmas()
+                ]);
             }
         });
         this.loadSchools();
@@ -516,10 +520,23 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         return new Date(dateStr).toLocaleDateString('pt-BR');
     }
 
-    getTurmaName(id: string | undefined): string {
+    getTurmaName(id: string | undefined, user?: Usuario): string {
+        // Se temos o objeto turma já carregado no usuário (via join), usamos ele diretamente
+        if (user?.turma) {
+            const periodLabel = user.turma.Periodos ? ` (${user.turma.Periodos})` : '';
+            return `${user.turma.nome}${periodLabel}`;
+        }
+
         if (!id) return '-';
+        
+        // Fallback para o cache local
         const turma = this.turmas.find(t => t.id === id);
-        return turma ? turma.nome : '-';
+        if (turma) {
+            const periodLabel = turma.Periodos ? ` (${turma.Periodos})` : '';
+            return `${turma.nome}${periodLabel}`;
+        }
+        
+        return '-';
     }
 
     getEscolaName(id: string | undefined): string {

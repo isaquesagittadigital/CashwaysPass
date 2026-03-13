@@ -171,11 +171,7 @@
                 <div class="text-[12px] text-gray-500 -rotate-90 origin-center mb-[100px] -ml-2 font-medium">Valor</div>
                 <div
                     class="h-full flex flex-col justify-between py-2 pr-2 border-r border-gray-50 text-[10px] font-bold text-gray-400">
-                    <span>16.000</span>
-                    <span>12.800</span>
-                    <span>8.000</span>
-                    <span>4.000</span>
-                    <span>0</span>
+                    <span *ngFor="let label of barYLabels">{{ formatNumber(label) }}</span>
                 </div>
             </ng-container>
 
@@ -279,11 +275,7 @@
                 <div class="text-[12px] text-gray-500 -rotate-90 origin-center mb-[100px] -ml-2 font-medium">Valor</div>
                 <div
                     class="h-full flex flex-col justify-between py-2 pr-2 border-r border-gray-50 text-[10px] font-bold text-gray-400">
-                    <span>16.000</span>
-                    <span>12.800</span>
-                    <span>8.000</span>
-                    <span>4.000</span>
-                    <span>0</span>
+                    <span *ngFor="let label of lineYLabels">{{ formatNumber(label) }}</span>
                 </div>
             </ng-container>
 

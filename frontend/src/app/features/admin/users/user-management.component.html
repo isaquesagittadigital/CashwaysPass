@@ -388,7 +388,7 @@
                 </div>
                 <div class="flex-1 text-center md:text-left pt-1">
                     <h3 class="text-base font-bold text-gray-900 leading-tight">{{ selectedUser.nome_completo }}</h3>
-                    <p class="text-sm text-gray-500 mt-1">{{ getTurmaName(selectedUser.turmaID) }} - {{ selectedUser.grau_escolaridade || 'Sem grau escolar' }}</p>
+                    <p class="text-sm text-gray-500 mt-1">{{ getTurmaName(selectedUser.turmaID, selectedUser) }} - {{ selectedUser.grau_escolaridade || 'Sem grau escolar' }}</p>
                     <div class="mt-2 text-left">
                         <span class="inline-block px-3 py-1 bg-gray-50 border border-gray-100 rounded-full text-[11px] font-medium text-gray-600">
                             {{ selectedUser.cpf ? selectedUser.cpf : (selectedUser.id | number:'6.0-0')?.replace(',', '') || '000000' }}
@@ -450,7 +450,7 @@
                     <div class="flex items-center gap-2 text-[#005bb5]">
                         <!-- Note: Using Clock or similar icon instead of cloud/sun as we don't have weather icons in the list -->
                         <lucide-icon [img]="icons.Clock" class="w-5 h-5"></lucide-icon>
-                        <p class="text-sm font-medium text-gray-700">{{ getTurmaName(selectedUser.turmaID) }}</p>
+                        <p class="text-sm font-medium text-gray-700">{{ getTurmaName(selectedUser.turmaID, selectedUser) }}</p>
                     </div>
                 </div>
             </div>

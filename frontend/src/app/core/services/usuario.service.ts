@@ -15,6 +15,11 @@ export interface Usuario {
     telefone?: string;
     escola_id: string;
     turmaID?: string;
+    turma?: {
+        id: string;
+        nome: string;
+        Periodos?: string;
+    };
     tipo_acesso: UserTipoAcesso;
     status: UserStatus;
     ultimo_login?: string;
@@ -42,7 +47,7 @@ export class UsuarioService {
         try {
             let query = supabase
                 .from(this.TABLE)
-                .select('*', { count: 'exact' })
+                .select('*, turma:turmaID(id, nome, Periodos)', { count: 'exact' })
                 .eq('escola_id', escolaId)
                 .or('excluido.eq.no,excluido.is.null')
                 .order('id', { ascending: false });
@@ -175,7 +180,7 @@ export class UsuarioService {
         try {
             const { data, error } = await supabase
                 .from('turma')
-                .select('id, nome')
+                .select('id, nome, Periodos')
                 .eq('escola_id', escolaId);
             if (error) throw error;
             return data || [];
