@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SchoolManagementService } from '../../../../core/services/school-management.service';
 import { DeleteConfirmModalComponent } from '../../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
@@ -17,6 +17,7 @@ export class ProfessorManagementComponent implements OnInit {
     icons = { UserPlus, Edit, Trash2, Users, X, Plus, Save, Search, ChevronLeft, ChevronRight, RefreshCw, User: Users, ChevronDown };
     @Input() schoolId!: string;
     @Input() turmaId: string | null = null;
+    @Output() onChanged = new EventEmitter<void>();
     allProfessors: any[] = [];
     filteredProfessors: any[] = [];
     isLoading = true;
@@ -176,7 +177,7 @@ export class ProfessorManagementComponent implements OnInit {
                     }
                     this.showSuccessModal = true;
                     this.closeModal();
-
+                    this.onChanged.emit();
                     this.loadProfessors();
                 },
                 error: (err) => {
@@ -202,6 +203,7 @@ export class ProfessorManagementComponent implements OnInit {
                 this.showDeleteModal = false;
                 this.deleteLoading = false;
                 this.deleteId = null;
+                this.onChanged.emit();
                 this.loadProfessors();
 
                 // Show success modal for deletion
