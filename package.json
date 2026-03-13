@@ -6,9 +6,9 @@
         "backend-nest"
     ],
     "scripts": {
-        "supabase:prod:link": "supabase link --project-ref xlupnknqblvvlcfprghr",
-        "supabase:prod:db-push": "supabase db push --project-ref xlupnknqblvvlcfprghr",
-        "supabase:prod:deploy-functions": "supabase functions deploy --project-ref xlupnknqblvvlcfprghr",
-        "supabase:prod:secrets": "supabase secrets set --project-ref xlupnknqblvvlcfprghr"
+        "supabase:prod:link": "supabase link --project-ref syirkevmpukshbgditwz",
+        "supabase:prod:db-push": "supabase db push --project-ref syirkevmpukshbgditwz",
+        "supabase:prod:deploy-functions": "supabase functions deploy --project-ref syirkevmpukshbgditwz",
+        "supabase:prod:secrets": "supabase secrets set --project-ref syirkevmpukshbgditwz"
     }
 }

@@ -18,6 +18,7 @@ DECLARE
     v_prof_item JSONB;
     v_turma_item JSONB;
     v_student_item JSONB;
+    v_temp_pass TEXT;
     v_turma_map JSONB := '{}'::jsonb;
     v_prof_map JSONB := '{}'::jsonb;
 BEGIN
@@ -70,32 +71,40 @@ BEGIN
         deletado = false
     RETURNING id INTO v_school_id;
 
-    -- 2. Upsert Professors
+    -- 2. Create User for the School (if not exists)
+    v_temp_pass := substring(md5(random()::text), 1, 8);
+    INSERT INTO public.usuarios (nome_completo, nome, email, tipo_acesso, status, escola_id, temp_pass)
+    VALUES (v_school_json->>'nome', v_school_json->>'nome', v_school_json->>'emailEscola', 'Escola', 'active', v_school_id, v_temp_pass)
+    ON CONFLICT (email) DO UPDATE SET
+        nome_completo = EXCLUDED.nome_completo,
+        nome = EXCLUDED.nome,
+        escola_id = EXCLUDED.escola_id;
+
+    -- 3. Upsert Professors
     FOR v_prof_item IN SELECT * FROM jsonb_array_elements(v_professors_json) LOOP
         -- Upsert in professor table
         INSERT INTO public.professor (nome, especialidade, escola_id)
         VALUES (v_prof_item->>'nome', v_prof_item->>'escolaridade', v_school_id)
-        ON CONFLICT (id) DO UPDATE SET -- Note: this requires frontend to pass ID if updating, otherwise it might duplicate by name
-            nome = EXCLUDED.nome,
-            especialidade = EXCLUDED.especialidade
         RETURNING id INTO v_professor_id;
 
         -- Store map from frontend ID to DB ID
         v_prof_map := v_prof_map || jsonb_build_object(v_prof_item->>'id', v_professor_id);
 
         -- Upsert in usuarios table
-        INSERT INTO public.usuarios (nome_completo, nome, email, tipo_acesso, status, escola_id, grau_escolaridade)
-        VALUES (v_prof_item->>'nome', v_prof_item->>'nome', v_prof_item->>'email', 'Professor', 'active', v_school_id, v_prof_item->>'escolaridade')
+        v_temp_pass := substring(md5(random()::text), 1, 8);
+        INSERT INTO public.usuarios (nome_completo, nome, email, tipo_acesso, status, escola_id, grau_escolaridade, temp_pass)
+        VALUES (v_prof_item->>'nome', v_prof_item->>'nome', v_prof_item->>'email', 'Professor', 'active', v_school_id, v_prof_item->>'escolaridade', v_temp_pass)
         ON CONFLICT (email) DO UPDATE SET
             nome_completo = EXCLUDED.nome_completo,
             nome = EXCLUDED.nome,
             tipo_acesso = EXCLUDED.tipo_acesso,
             status = EXCLUDED.status,
             escola_id = EXCLUDED.escola_id,
-            grau_escolaridade = EXCLUDED.grau_escolaridade;
+            grau_escolaridade = EXCLUDED.grau_escolaridade,
+            temp_pass = COALESCE(public.usuarios.temp_pass, EXCLUDED.temp_pass);
     END LOOP;
 
-    -- 3. Upsert Turmas
+    -- 4. Upsert Turmas
     FOR v_turma_item IN SELECT * FROM jsonb_array_elements(v_turmas_json) LOOP
         INSERT INTO public.turma (
             nome, estagio, "Periodos", serie, professor, quantidade_alunos, 
@@ -107,48 +116,50 @@ BEGIN
             (v_turma_item->>'quantidade_alunos')::INT, (v_turma_item->>'data_inicio')::DATE, 
             (v_turma_item->>'data_inicio')::DATE, v_school_id, true
         )
-        -- ON CONFLICT logic for turma could be by name + escola_id if we want
         RETURNING id INTO v_turma_id;
 
         -- Store map from frontend ID to DB ID
         v_turma_map := v_turma_map || jsonb_build_object(v_turma_item->>'id', v_turma_id);
     END LOOP;
 
-    -- 4. Upsert Students
+    -- 5. Upsert Students
     FOR v_student_item IN SELECT * FROM jsonb_array_elements(v_students_json) LOOP
         v_turma_id := (v_turma_map->>(v_student_item->>'turmaId'))::UUID;
 
         -- a. Upsert Usuario
+        v_temp_pass := substring(md5(random()::text), 1, 8);
         INSERT INTO public.usuarios (
             nome_completo, nome, email, tipo_acesso, status, escola_id, 
-            turmaID, nome_mae, ra
+            turmaID, nome_mae, ra, temp_pass
         ) VALUES (
             v_student_item->>'nome', v_student_item->>'nome', v_student_item->>'emailAluno', 
             'Aluno', 'active', v_school_id, v_turma_id, 
-            v_student_item->>'responsavel', v_student_item->>'numeroCarteira'
+            v_student_item->>'responsavel', v_student_item->>'numeroCarteira', v_temp_pass
         ) ON CONFLICT (email) DO UPDATE SET
             nome_completo = EXCLUDED.nome_completo,
             nome = EXCLUDED.nome,
             escola_id = EXCLUDED.escola_id,
             turmaID = EXCLUDED.turmaID,
             nome_mae = EXCLUDED.nome_mae,
-            ra = EXCLUDED.ra
+            ra = EXCLUDED.ra,
+            temp_pass = COALESCE(public.usuarios.temp_pass, EXCLUDED.temp_pass)
         RETURNING id INTO v_user_id;
 
         -- b. Upsert Aluno
         INSERT INTO public.aluno (
-            usuario_id, escola_id, turma_id, nome, email, nome_mae, ra
+            usuario_id, escola_id, turma_id, nome, email, nome_mae, ra, temp_pass
         ) VALUES (
             v_user_id, v_school_id, v_turma_id, v_student_item->>'nome', 
             v_student_item->>'emailAluno', v_student_item->>'responsavel', 
-            v_student_item->>'numeroCarteira'
+            v_student_item->>'numeroCarteira', v_temp_pass
         ) ON CONFLICT (email) DO UPDATE SET
             usuario_id = EXCLUDED.usuario_id,
             escola_id = EXCLUDED.escola_id,
             turma_id = EXCLUDED.turma_id,
             nome = EXCLUDED.nome,
             nome_mae = EXCLUDED.nome_mae,
-            ra = EXCLUDED.ra;
+            ra = EXCLUDED.ra,
+            temp_pass = COALESCE(public.aluno.temp_pass, EXCLUDED.temp_pass);
 
         -- c. Upsert Carteira
         INSERT INTO public.carteira (
