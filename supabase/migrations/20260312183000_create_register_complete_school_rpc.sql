@@ -132,7 +132,7 @@ BEGIN
         v_temp_pass := substring(md5(random()::text), 1, 8);
         INSERT INTO public.usuarios (
             nome_completo, nome, email, tipo_acesso, status, escola_id, 
-            turmaID, nome_mae, ra, temp_pass, primeiro_acesso
+            "turmaID", nome_mae, ra, temp_pass, primeiro_acesso
         ) VALUES (
             v_student_item->>'nome', v_student_item->>'nome', v_student_item->>'emailAluno', 
             'Aluno', 'active', v_school_id, v_turma_id, 
@@ -141,7 +141,7 @@ BEGIN
             nome_completo = EXCLUDED.nome_completo,
             nome = EXCLUDED.nome,
             escola_id = EXCLUDED.escola_id,
-            turmaID = EXCLUDED.turmaID,
+            "turmaID" = EXCLUDED."turmaID",
             nome_mae = EXCLUDED.nome_mae,
             ra = EXCLUDED.ra,
             temp_pass = COALESCE(public.usuarios.temp_pass, EXCLUDED.temp_pass),
