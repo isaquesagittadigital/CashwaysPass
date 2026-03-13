@@ -87,10 +87,12 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
     // Bulk Upload Modal
     showBulkModal = false;
+    showPreviewModal = false;
     bulkLoading = false;
     bulkProgress = 0;
     bulkErrorCount = 0;
     bulkSuccessCount = 0;
+    previewUsers: any[] = [];
 
     // Form State
     isEditing = false;
@@ -301,6 +303,22 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         this.bulkErrorCount = 0;
     }
 
+    downloadTemplate() {
+        const headers = ['nome_completo', 'email', 'cpf', 'tipo_acesso', 'turma'];
+        const example = ['João Silva', 'joao@email.com', '111.111.111-11', 'Responsavel', '1º Ano A'];
+        const csvContent = headers.join(",") + "\n" + example.join(",");
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", "modelo_usuarios.csv");
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
     onFileSelected(event: any) {
         const file = event.target.files[0];
         if (file) {
@@ -308,7 +326,20 @@ export class UserManagementComponent implements OnInit, OnDestroy {
                 header: true,
                 skipEmptyLines: true,
                 complete: (results) => {
-                    this.processBulkUpload(results.data);
+                    this.previewUsers = results.data.map((row: any) => ({
+                        nome_completo: row.nome_completo || row.nome || '',
+                        email: row.email || '',
+                        cpf: row.cpf || '',
+                        tipo_acesso: (row.tipo_acesso as UserTipoAcesso) || 'Responsavel',
+                        turmaNome: row.turma || ''
+                    })).filter((u: any) => u.nome_completo !== '');
+
+                    if (this.previewUsers.length > 0) {
+                        this.showBulkModal = false;
+                        this.showPreviewModal = true;
+                    } else {
+                        alert('Nenhum usuário válido encontrado no arquivo.');
+                    }
                 },
                 error: (error) => {
                     console.error('CSV Parsing error:', error);
@@ -316,6 +347,19 @@ export class UserManagementComponent implements OnInit, OnDestroy {
                 }
             });
         }
+    }
+
+    async confirmBulkUpload() {
+        if (this.previewUsers.length === 0) return;
+        
+        this.showPreviewModal = false;
+        this.showBulkModal = true; // Voltamos para o modal original para mostrar o progresso
+        this.processBulkUpload(this.previewUsers);
+    }
+
+    closePreviewModal() {
+        this.showPreviewModal = false;
+        this.previewUsers = [];
     }
 
     async processBulkUpload(data: any[]) {

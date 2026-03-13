@@ -482,6 +482,56 @@
     (onCancel)="showDeleteConfirm = false">
 </app-delete-confirm-modal>
 
+<!-- ===================== MODAL: PREVIEW DE IMPORTAÇÃO ===================== -->
+<div *ngIf="showPreviewModal" 
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+    <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl p-8 animate-in zoom-in-95 duration-200 relative max-h-[90vh] flex flex-col">
+        <!-- Close button top right -->
+        <button (click)="closePreviewModal()" class="absolute top-6 right-6 p-2 h-auto w-auto hover:bg-gray-100 rounded-full transition-colors">
+            <lucide-icon [img]="icons.X" class="w-5 h-5 text-gray-400"></lucide-icon>
+        </button>
+
+        <div class="mb-8 shrink-0">
+            <h3 class="text-xl font-bold text-gray-900">Confirmar importação</h3>
+            <p class="text-sm text-gray-400">Revise os dados dos {{ previewUsers.length }} usuários antes de confirmar.</p>
+        </div>
+
+        <!-- Table Container -->
+        <div class="flex-1 overflow-auto border border-gray-100 rounded-2xl mb-8">
+            <table class="w-full text-left border-collapse">
+                <thead class="sticky top-0 bg-gray-50/80 backdrop-blur-sm z-10">
+                    <tr class="text-[13px] font-semibold text-gray-500 border-b border-gray-100">
+                        <th class="px-8 py-4">Nome</th>
+                        <th class="px-6 py-4">Email</th>
+                        <th class="px-6 py-4">RA/Carteira</th>
+                        <th class="px-6 py-4">Turma</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    <tr *ngFor="let u of previewUsers" class="hover:bg-gray-50/40 transition-all">
+                        <td class="px-8 py-5 text-sm font-bold text-gray-800">{{ u.nome_completo }}</td>
+                        <td class="px-6 py-5 text-sm text-gray-500">{{ u.email }}</td>
+                        <td class="px-6 py-5 text-sm text-gray-500">{{ u.cpf || '---' }}</td>
+                        <td class="px-6 py-5 text-sm font-medium text-[#00609b]">{{ u.turmaNome || '---' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer Buttons -->
+        <div class="flex gap-4 shrink-0">
+            <button (click)="closePreviewModal()"
+                class="flex-1 py-0 h-[48px] border border-gray-200 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                Cancelar
+            </button>
+            <button (click)="confirmBulkUpload()"
+                class="flex-1 py-0 h-[48px] bg-[#00609b] text-white rounded-xl font-bold hover:bg-[#004d7c] transition-all shadow-md active:scale-[0.98]">
+                Confirmar e Cadastrar
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal: Cadastro em Massa -->
 <div *ngIf="showBulkModal"
     class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in px-4">
@@ -505,7 +555,9 @@
                 </div>
                 <h3 class="text-base font-bold text-gray-900 mb-1">Clique para selecionar ou arraste o arquivo</h3>
                 <p class="text-sm text-gray-500 mb-4">Apenas arquivos .CSV são aceitos</p>
-                <a href="#" class="text-xs font-bold text-[#005bb5] hover:underline">Baixar modelo de planilha</a>
+                <button (click)="downloadTemplate()" class="text-xs font-bold text-[#005bb5] hover:underline bg-transparent border-none p-0">
+                    Baixar modelo de planilha
+                </button>
             </div>
 
             <!-- Progress State -->
