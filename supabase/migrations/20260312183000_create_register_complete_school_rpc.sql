@@ -147,11 +147,11 @@ BEGIN
 
         -- b. Upsert Aluno
         INSERT INTO public.aluno (
-            usuario_id, escola_id, turma_id, nome, email, nome_mae, ra, temp_pass
+            usuario_id, escola_id, turma_id, nome, email, nome_mae, ra, temp_pass, primeiro_acesso
         ) VALUES (
             v_user_id, v_school_id, v_turma_id, v_student_item->>'nome', 
             v_student_item->>'emailAluno', v_student_item->>'responsavel', 
-            v_student_item->>'numeroCarteira', v_temp_pass
+            v_student_item->>'numeroCarteira', v_temp_pass, false
         ) ON CONFLICT (email) DO UPDATE SET
             usuario_id = EXCLUDED.usuario_id,
             escola_id = EXCLUDED.escola_id,
@@ -159,7 +159,8 @@ BEGIN
             nome = EXCLUDED.nome,
             nome_mae = EXCLUDED.nome_mae,
             ra = EXCLUDED.ra,
-            temp_pass = COALESCE(public.aluno.temp_pass, EXCLUDED.temp_pass);
+            temp_pass = COALESCE(public.aluno.temp_pass, EXCLUDED.temp_pass),
+            primeiro_acesso = COALESCE(public.aluno.primeiro_acesso, EXCLUDED.primeiro_acesso);
 
         -- c. Upsert Carteira
         INSERT INTO public.carteira (

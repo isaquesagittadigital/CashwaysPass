@@ -279,7 +279,8 @@ export class SchoolManagementService {
                 nome_mae: data.responsavel || data.nome_mae,
                 email: email,
                 ra: ra,
-                data_nascimento: data.data_nascimento
+                data_nascimento: data.data_nascimento,
+                primeiro_acesso: false
             };
 
             if (existingAluno) {
