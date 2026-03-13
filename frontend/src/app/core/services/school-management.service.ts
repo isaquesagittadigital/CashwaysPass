@@ -91,13 +91,19 @@ export class SchoolManagementService {
         return from(
             supabase
                 .from('turma')
-                .select('*')
+                .select('*, professor_obj:usuarios(id, nome_completo, tipo_acesso)')
                 .eq('escola_id', schoolId)
                 .order('nome', { ascending: true })
         ).pipe(
             map(resp => {
                 if (resp.error) throw resp.error;
-                return resp.data || [];
+                return (resp.data || []).map(t => {
+                    const prof = (t.professor_obj as any[])?.find(u => u.tipo_acesso === 'Professor');
+                    return {
+                        ...t,
+                        professor_nome: prof ? prof.nome_completo : null
+                    };
+                });
             })
         );
     }
@@ -157,10 +163,8 @@ export class SchoolManagementService {
             .neq('excluido', 'sim');
 
         if (turmaId) {
-            // Se houver lógica de vinculação professor_turma, aplicar aqui. 
-            // Por enquanto, se a tabela 'turma' tem professor_id, podemos filtrar por lá ou buscar todos da escola.
-            // Para seguir a solicitação de "da turma", vamos assumir que queremos filtrar.
-            // Se não houver coluna turma_id em usuarios, precisaremos de uma tabela intermediária ou usar o id da turma.
+            console.log('Filtrando professores pela turma:', turmaId);
+            query = query.eq('turmaID', turmaId);
         }
 
         return from(query.order('nome_completo', { ascending: true })).pipe(

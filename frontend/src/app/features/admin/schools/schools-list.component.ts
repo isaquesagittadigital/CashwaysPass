@@ -38,6 +38,9 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
     dashboardStats: any = null;
     isLoading = false;
 
+    // Professors
+    professors: any[] = [];
+    
     // Subscription
     private schoolSub?: Subscription;
 
@@ -90,6 +93,7 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
             serie: ['', Validators.required],
             quantidade_alunos: [0, Validators.required],
             data_inicio: [new Date().toISOString().split('T')[0], Validators.required],
+            professor_id: [''],
             status: [true]
         });
     }
@@ -130,6 +134,7 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
                     }
 
                     this.loadTurmas();
+                    this.schoolService.getProfessorsBySchool(schoolId).subscribe(profs => this.professors = profs);
                     this.isLoading = false;
                 },
                 error: (e) => {
@@ -183,6 +188,12 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
         }
         if (turma) {
             this.turmaForm.patchValue(turma);
+            const prof = this.professors.find(p => p.turmaID === turma.id);
+            if (prof) {
+                this.turmaForm.patchValue({ professor_id: prof.id });
+            } else {
+                this.turmaForm.patchValue({ professor_id: '' });
+            }
         } else {
             this.turmaForm.reset({
                 status: true,
@@ -199,20 +210,32 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
         if (this.turmaForm.valid) {
             this.isSubmitting = true;
             const formValue = this.turmaForm.value;
+            const selectedProf = this.professors.find(p => p.id === formValue.professor_id);
             
             // Map data to match db columns
             const data = { 
                 ...formValue, 
                 escola_id: this.selectedSchool.id,
-                data_entrada: formValue.data_inicio
+                data_entrada: formValue.data_inicio,
+                professor: selectedProf ? selectedProf.nome_completo : null
             };
+
+            const professorId = formValue.professor_id;
+            delete data.professor_id;
 
             const obs = this.selectedTurma?.id
                 ? this.schoolService.updateTurma(this.selectedTurma.id, data)
                 : this.schoolService.createTurma(data);
 
             obs.subscribe({
-                next: () => {
+                next: (resp: any) => {
+                    const turmaSaved = Array.isArray(resp) ? resp[0] : resp;
+                    const finalTurmaId = this.selectedTurma?.id || turmaSaved?.id;
+
+                    if (professorId && finalTurmaId) {
+                        this.schoolService.updateProfessor(professorId, { turmaID: finalTurmaId }).subscribe();
+                    }
+                    
                     this.isSubmitting = false;
                     const msg = this.selectedTurma?.id ? 'Turma atualizada com sucesso' : 'Turma cadastrada com sucesso';
                     this.toastMessage = msg;

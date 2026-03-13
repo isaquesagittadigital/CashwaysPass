@@ -154,7 +154,8 @@ export class ProfessorManagementComponent implements OnInit {
             const data = {
                 ...this.professorForm.value,
                 escola_id: this.schoolId,
-                tipo_acesso: 'Professor'
+                tipo_acesso: 'Professor',
+                turmaID: this.turmaId // Vincula o professor à turma se estiver em contexto de turma
             };
 
             const obs = this.isEditing
