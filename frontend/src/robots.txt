@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /escola/
+
+Sitemap: https://cashways-pass.com/sitemap.xml
