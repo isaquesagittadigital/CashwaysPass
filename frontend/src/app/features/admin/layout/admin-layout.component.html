@@ -24,15 +24,19 @@
         </div>
 
         <!-- Navigation -->
-        <nav class="flex-1 pl-6 pr-3 pt-6 space-y-1 overflow-y-auto">
-            <button *ngFor="let item of menuItems" (click)="setActive(item.route)" [ngClass]="item.active
-          ? 'bg-gradient-to-r from-[#005bb5]/10 to-[#1a73e8]/5 text-[#005bb5] border-l-[3px] border-[#005bb5]'
-          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 border-l-[3px] border-transparent'"
-                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-r-lg text-sm font-semibold transition-all duration-200 group">
+        <nav class="flex-1 px-3 pt-6 space-y-1 overflow-y-auto">
+            <a *ngFor="let item of menuItems" 
+               [routerLink]="['/admin', item.route]"
+               routerLinkActive
+               #rla="routerLinkActive"
+               [ngClass]="rla.isActive
+                ? 'bg-gradient-to-r from-[#005bb5]/10 to-[#1a73e8]/5 text-[#005bb5] border-l-[3px] border-[#005bb5]'
+                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 border-l-[3px] border-transparent'"
+               class="w-full flex items-center gap-3 px-3 py-2.5 rounded-r-lg text-sm font-semibold transition-all duration-200 group no-underline">
                 <lucide-icon [img]="item.icon" class="w-[18px] h-[18px] flex-shrink-0"
-                    [ngClass]="item.active ? 'text-[#005bb5]' : 'text-gray-400 group-hover:text-gray-600'"></lucide-icon>
+                    [ngClass]="rla.isActive ? 'text-[#005bb5]' : 'text-gray-400 group-hover:text-gray-600'"></lucide-icon>
                 <span *ngIf="sidebarOpen" class="truncate">{{ item.label }}</span>
-            </button>
+            </a>
         </nav>
 
         <!-- Sidebar footer -->
