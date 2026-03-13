@@ -16,10 +16,7 @@
                 <app-logo className="w-36" [light]="false"></app-logo>
             </div>
             <div *ngIf="!sidebarOpen" class="flex items-center justify-center w-full">
-                <div
-                    class="w-9 h-9 bg-gradient-to-br from-[#005bb5] to-[#1a73e8] rounded-lg flex items-center justify-center">
-                    <span class="text-white font-bold text-sm">CP</span>
-                </div>
+                <app-logo [onlyMark]="true" className="w-8" [light]="false"></app-logo>
             </div>
         </div>
 
