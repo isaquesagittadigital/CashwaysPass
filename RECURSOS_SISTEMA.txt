@@ -1,0 +1,47 @@
+CASHWAYSPASS - DOCUMENTAÇÃO DE RECURSOS E FUNCIONALIDADES
+
+1. VISÃO GERAL
+O CashwaysPass (Pass 2.0) é uma plataforma robusta de gestão financeira e educacional voltada para escolas, alunos e administradores. O sistema permite o controle de saldos (Livre e Propósitos), gestão de turmas, processamento de pagamentos e análise de dados em tempo real.
+
+2. DASHBOARD ADMINISTRATIVO (ADMIN)
+- Painel de KPIs: Visualização diária, semanal e mensal de métricas essenciais.
+- Gráficos Analíticos: Gráficos de rosca e barras para comparação entre "Total Investido" vs "Total Gasto".
+- Monitoramento Financeiro: Detalhamento de saldos por escola e categoria.
+- Gestão de Escolas: Cadastro, edição e vinculação de turmas às instituições.
+- Módulo de Relatórios: Geração de relatórios analíticos em PDF com formatação automática.
+
+3. RECURSOS PARA ESCOLAS (ESCOLA)
+- Gestão de Turmas: Listagem independente de turmas (ex: 5º ano, 6º ano) com número de alunos.
+- Controle de Saldos por Turma: Monitoramento dos saldos unitários dos alunos com indicadores visuais.
+- Detalhamento de Transações: Visão histórica de movimentações financeiras no nível escolar.
+
+4. GESTÃO DE USUÁRIOS E PERFIS
+- Autenticação Multinível: Fluxo de login seguro separado por permissões (Admin, Escola, Consultor).
+- Cadastro em Massa (Bulk Import): Importação de usuários via CSV com tela de pré-visualização para conferência de dados.
+- Gestão de Senhas: Recuperação de senha via e-mail e alteração de senha segura.
+- Perfil do Usuário: Edição de dados cadastrais e preferências.
+
+5. MÓDULO FINANCEIRO E TRANSAÇÕES
+- Saldos Diferenciados: Gestão de "Saldo Livre" e "Saldo de Propósitos".
+- Transferência de Saldos: Sistema para movimentação interna de valores entre contas/turmas.
+- Processamento de Pagamentos (Transfeera): Integração via webhook e sistema de polling para confirmação e estorno de pagamentos.
+- Pré-visualização de Reembolsos/Transações: Cálculo antecipado de taxas e valores antes da confirmação.
+- Gestão de Carteira (Wallet): Visualização consolidada de balanços e investimentos.
+
+6. ESTRUTURA TÉCNICA (STACK)
+- Frontend: Angular (SPA), Tailwind CSS para estilização moderna, Lucide Icons.
+- Backend Principal: NestJS (Modular e escalável).
+- Banco de Dados e Auth: Supabase (PostgreSQL) com políticas de segurança (RLS).
+- Edge Functions (Deno): Processamento de lógica sensível e integrações externas no lado do servidor.
+- Geração de Documentos: Exportação de contratos e relatórios com formatação ABNT e PDF customizado.
+
+7. INTEGRAÇÕES E SERVIÇOS EDGE
+- Notificações: Envio automático de e-mails de acesso e transação.
+- Webhooks Financeiros: Monitoramento em tempo real de status de pagamentos via parceiros (Transfeera).
+- Cálculo de Investimentos: Lógica para distribuição e crescimento de saldos de propósitos.
+
+8. ORGANIZAÇÃO DE ARQUIVOS
+- /frontend: Código fonte da interface Angular.
+- /backend-nest: API principal e lógica de negócio em Node.js.
+- /supabase/functions: Funções serverless para operações assíncronas e seguras.
+- /supabase/migrations: Histórico de evolução do esquema do banco de dados.

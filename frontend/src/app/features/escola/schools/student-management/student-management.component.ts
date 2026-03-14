@@ -161,7 +161,10 @@ export class StudentManagementComponent implements OnInit, OnChanges {
     openAddModal() {
         this.isBulk = false;
         this.isEditing = false;
-        this.studentForm.reset({ turmaId: '', status: 'active' });
+        this.studentForm.reset({ 
+            turmaId: this.turmaId || '', 
+            status: 'active' 
+        });
         this.showModal = true;
     }
 
@@ -206,8 +209,9 @@ export class StudentManagementComponent implements OnInit, OnChanges {
                         const turma = this.turmas.find(t => 
                             t.nome?.toLowerCase() === row.turma?.toLowerCase() || 
                             t.serie?.toLowerCase() === row.turma?.toLowerCase() ||
-                            `${t.serie} ${t.nome}`.toLowerCase() === row.turma?.toLowerCase()
-                        ) || this.turmas[0];
+                            `${t.serie} ${t.nome}`.toLowerCase() === row.turma?.toLowerCase() ||
+                            t.id === row.turma // Suporte a ID literal no CSV
+                        ) || this.turmas.find(t => t.id === this.turmaId) || this.turmas[0];
 
                         return {
                             turmaId: turma?.id || '',
