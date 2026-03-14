@@ -241,35 +241,39 @@ export class StudentManagementComponent implements OnInit, OnChanges {
                 skipEmptyLines: true,
                 complete: (result) => {
                     this.previewStudents = result.data.map((row: any) => {
-                        // Priority: 
-                        // 1. Try to match the turma from CSV column
-                        // 2. If no match or no column, use the current context (this.turmId)
-                        // 3. Fallback to first available class if nothing else works
-                        
                         let matchedTurma = null;
-                        const csvTurma = (row.turma || row.turma_nome || row.turmaNome || '').toLowerCase().trim();
-
-                        if (csvTurma) {
-                            matchedTurma = this.turmas.find(t => 
-                                t.nome?.toLowerCase().trim() === csvTurma || 
-                                t.serie?.toString().toLowerCase().trim() === csvTurma ||
-                                `${t.serie} ${t.nome}`.toLowerCase().trim() === csvTurma ||
-                                `${t.serie}${isNaN(Number(t.serie)) ? '' : 'ª'} ${t.nome}`.toLowerCase().trim() === csvTurma ||
-                                t.id === csvTurma
-                            );
+                        
+                        // Precedência de Contexto:
+                        // Se estamos dentro de uma turma específica (this.turmaId), 
+                        // ignoramos o que vier no CSV para garantir que o usuário não importe para o lugar errado por engano.
+                        const currentTurmaContext = this.turmas.find(t => t.id === this.turmaId);
+                        
+                        if (currentTurmaContext) {
+                            matchedTurma = currentTurmaContext;
+                        } else {
+                            // Se não houver contexto (turmaId), tentamos mapear pelo CSV
+                            const csvTurma = (row.turma || row.turma_nome || row.turmaNome || '').toLowerCase().trim();
+                            if (csvTurma) {
+                                matchedTurma = this.turmas.find(t => 
+                                    t.nome?.toLowerCase().trim() === csvTurma || 
+                                    t.serie?.toString().toLowerCase().trim() === csvTurma ||
+                                    `${t.serie} ${t.nome}`.toLowerCase().trim() === csvTurma ||
+                                    `${t.serie}${isNaN(Number(t.serie)) ? '' : 'ª'} ${t.nome}`.toLowerCase().trim() === csvTurma ||
+                                    t.id === csvTurma
+                                );
+                            }
                         }
 
-                        // If NOT matched by CSV but we have a context turmaId, use context
-                        const currentTurmaContext = this.turmas.find(t => t.id === this.turmaId);
-                        const finalTurma = matchedTurma || currentTurmaContext || this.turmas[0];
+                        // Fallback final
+                        const finalTurma = matchedTurma || this.turmas[0];
 
                         return {
-                            turmaId: finalTurma?.id || null, // Never send empty string for UUID column
+                            turmaId: finalTurma?.id || null, 
                             turmaNome: finalTurma ? `${finalTurma.serie}${isNaN(Number(finalTurma.serie)) ? '' : 'ª'} ${finalTurma.nome}` : (row.turma || 'Sem turma'),
                             nome: row.nome || '',
                             email: row.email || '',
                             telefone: row.telefone || '',
-                            data_nascimento: row.data_nascimento || null, // Use null for empty dates
+                            data_nascimento: row.data_nascimento || null,
                             numeroCarteira: row.carteira || row.ra || ''
                         };
                     }).filter((s: any) => s.nome !== '');
