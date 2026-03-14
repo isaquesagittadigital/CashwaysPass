@@ -54,10 +54,10 @@ export class EscolaDashboardComponent implements OnInit, OnDestroy {
     filters = ['12 meses', '30 dias', '7 dias', '24 horas'];
 
     stats = [
-        { label: 'Total investido', value: 'R$ 0,00', points: '0pts', id: 'invested', icon: 'assets/icons/total-investido.svg' },
-        { label: 'Total gasto', value: 'R$ 0,00', points: '0pts', id: 'spent', icon: 'assets/icons/total-gasto.svg' },
-        { label: 'Saldo livre', value: 'R$ 0,00', points: '0pts', id: 'freeBalance', icon: 'assets/icons/saldo-livre.svg' },
-        { label: 'Saldo em propósitos', value: 'R$ 0,00', points: '0pts', id: 'purposeBalance', icon: 'assets/icons/saldo-propositos.svg' }
+        { label: 'Total investido', value: 'R$ 0,00', points: '0pts', id: 'invested', icon: TrendingUp, colorClass: 'bg-blue-500', iconColor: '#fff' },
+        { label: 'Total gasto', value: 'R$ 0,00', points: '0pts', id: 'spent', icon: ArrowDownRight, colorClass: 'bg-orange-100', iconColor: '#ffb088' },
+        { label: 'Saldo livre', value: 'R$ 0,00', points: '0pts', id: 'freeBalance', icon: CreditCard, colorClass: 'bg-[#00609b]', iconColor: '#fff' },
+        { label: 'Saldo em propósitos', value: 'R$ 0,00', points: '0pts', id: 'purposeBalance', icon: Tag, colorClass: 'bg-[#Bdec24]', iconColor: '#fff' }
     ];
 
     turmasSummary: any[] = [];
@@ -67,10 +67,8 @@ export class EscolaDashboardComponent implements OnInit, OnDestroy {
 
     // Dynamic Donut Data
     distributionData: ChartSegment[] = [
-        { label: 'Total investido', value: 0, percentage: 0, color: '#00a8e8', dashArray: '0 100', dashOffset: 0 },
-        { label: 'Total gasto', value: 0, percentage: 0, color: '#ffb088', dashArray: '0 100', dashOffset: 0 },
-        { label: 'Saldo livre', value: 0, percentage: 0, color: '#7a5af8', dashArray: '0 100', dashOffset: 0 },
-        { label: 'Saldo em propósitos', value: 0, percentage: 0, color: '#Bdec24', dashArray: '0 100', dashOffset: 0 }
+        { label: 'Saldo livre:', value: 0, percentage: 66, color: '#00609b', dashArray: '66 100', dashOffset: 0 },
+        { label: 'Saldo em propósitos:', value: 0, percentage: 34, color: '#Bdec24', dashArray: '34 100', dashOffset: -66 }
     ];
 
     // Bar chart data
@@ -127,32 +125,32 @@ export class EscolaDashboardComponent implements OnInit, OnDestroy {
             {
                 label: 'Total investido',
                 value: this.formatCurrency(data.totalInvested),
-                points: `${Math.floor(data.totalInvested)}pts`,
-                id: 'invested', icon: 'assets/icons/total-investido.svg'
+                points: `${Math.floor(data.totalInvested).toLocaleString('pt-BR')}pts`,
+                id: 'invested', icon: TrendingUp, colorClass: 'bg-[#00609b]', iconColor: '#fff'
             },
             {
                 label: 'Total gasto',
                 value: this.formatCurrency(data.totalSpent),
-                points: `${Math.floor(data.totalSpent)}pts`,
-                id: 'spent', icon: 'assets/icons/total-gasto.svg'
+                points: `${Math.floor(data.totalSpent).toLocaleString('pt-BR')}pts`,
+                id: 'spent', icon: ArrowDownRight, colorClass: 'bg-[#ffb088]/20', iconColor: '#ffb088'
             },
             {
                 label: 'Saldo livre',
                 value: this.formatCurrency(data.freeBalance),
-                points: `${Math.floor(data.freeBalance)}pts`,
-                id: 'freeBalance', icon: 'assets/icons/saldo-livre.svg'
+                points: `${Math.floor(data.freeBalance).toLocaleString('pt-BR')}pts`,
+                id: 'freeBalance', icon: CreditCard, colorClass: 'bg-[#00609b]', iconColor: '#fff'
             },
             {
                 label: 'Saldo em propósitos',
                 value: this.formatCurrency(data.purposeBalance),
-                points: `${Math.floor(data.purposeBalance)}pts`,
-                id: 'purposeBalance', icon: 'assets/icons/saldo-propositos.svg'
+                points: `${Math.floor(data.purposeBalance).toLocaleString('pt-BR')}pts`,
+                id: 'purposeBalance', icon: Tag, colorClass: 'bg-[#Bdec24]', iconColor: '#fff'
             }
         ];
     }
 
     updateDonutChart(data: DashboardStats) {
-        const total = data.totalInvested + data.totalSpent + data.freeBalance + data.purposeBalance;
+        const total = data.freeBalance + data.purposeBalance;
 
         this.hasDonutData = total > 0;
 
@@ -164,7 +162,7 @@ export class EscolaDashboardComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const values = [data.totalInvested, data.totalSpent, data.freeBalance, data.purposeBalance];
+        const values = [data.freeBalance, data.purposeBalance];
         let currentOffset = 0;
 
         this.distributionData.forEach((segment, i) => {
