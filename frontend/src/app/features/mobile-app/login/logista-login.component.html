@@ -1,0 +1,103 @@
+<div class="min-h-screen bg-[#1a233a] flex flex-col items-center font-sans overflow-x-hidden w-full max-w-[600px] mx-auto shadow-2xl relative">
+    
+    <!-- Top Logo Area -->
+    <div class="pt-16 pb-12 flex justify-center w-full">
+        <img src="assets/images/app-logo-mobile.svg" class="w-64 object-contain" alt="Cashways Pass Logo">
+    </div>
+
+    <!-- Main Login Container -->
+    <div class="flex-1 w-full bg-[#004595] rounded-t-[80px] mt-4 flex flex-col items-center px-8 pt-20">
+        
+        <div class="w-full max-w-[360px] flex flex-col items-center">
+            
+            <!-- Error Message -->
+            <div *ngIf="errorMessage" class="w-full mb-6 bg-red-500/10 border border-red-500/50 rounded-xl p-3 text-red-200 text-xs text-center">
+                {{ errorMessage }}
+            </div>
+
+            <form class="w-full space-y-6" (submit)="onLogin($event)">
+                
+                <!-- Email Field -->
+                <div class="space-y-1">
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <lucide-icon [img]="icons.User" class="h-5 w-5 text-gray-400"></lucide-icon>
+                        </div>
+                        <input type="email" required [(ngModel)]="email" name="email"
+                            class="input-field"
+                            placeholder="Ex.: user@gmail.com" />
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="space-y-1">
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <lucide-icon [img]="icons.Key" class="h-5 w-5 text-gray-400"></lucide-icon>
+                        </div>
+                        <input [type]="showPassword ? 'text' : 'password'" required [(ngModel)]="password" name="password"
+                            class="input-field"
+                            placeholder="Informe a sua senha" />
+                    </div>
+                </div>
+
+                <!-- Access Button -->
+                <button type="submit" [disabled]="isLoading"
+                    class="w-full btn-access-account mt-4">
+                    <span *ngIf="!isLoading">ACESSAR CONTA</span>
+                    <div *ngIf="isLoading" class="w-5 h-5 border-2 border-[#004595]/30 border-t-[#004595] rounded-full animate-spin"></div>
+                </button>
+
+                <!-- Google Link -->
+                <button type="button" (click)="onGoogleLogin()" class="w-full btn-google-login">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
+                    Entrar com o Google
+                </button>
+            </form>
+
+            <!-- Links -->
+            <div class="w-full flex justify-between mt-12 px-2">
+                <a routerLink="/app/forgot-password" class="text-white text-[13px] font-bold border-b border-white pb-0.5 no-underline">Esqueci a senha</a>
+                <a routerLink="/register" class="text-white text-[13px] font-bold border-b border-white pb-0.5 no-underline">Primeiro acesso</a>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Error Modal (Bottom Sheet Style) -->
+    <div *ngIf="showErrorModal" class="fixed inset-0 z-50 flex items-end justify-center error-modal-container">
+        <!-- Overlay close area -->
+        <div class="absolute inset-0" (click)="closeErrorModal()"></div>
+        
+        <div class="error-modal-content animate-slide-up relative">
+            <!-- Pull bar for mobile feel -->
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+
+            <!-- Close button -->
+            <button (click)="closeErrorModal()" class="absolute right-6 top-8 text-gray-400 hover:text-gray-600 transition-colors">
+                <lucide-icon [img]="icons.X" class="w-6 h-6"></lucide-icon>
+            </button>
+
+            <!-- Sad icon in lime circle -->
+            <div class="w-16 h-16 bg-[#BCE72C] rounded-full flex items-center justify-center mb-6">
+                <lucide-icon [img]="icons.Frown" class="w-9 h-9 text-[#004595]"></lucide-icon>
+            </div>
+
+            <!-- Content -->
+            <h2 class="text-xl font-bold text-gray-900 mb-2">Dados não reconhecidos</h2>
+            <p class="text-base text-gray-500 mb-10">Verifique os seus dados ou tente novamente.</p>
+
+            <!-- Actions -->
+            <div class="space-y-4 pb-4">
+                <button routerLink="/forgot-password" (click)="closeErrorModal()" class="w-full btn-access-account h-[56px] !rounded-[12px] !text-[14px]">
+                    RECUPERAR SENHA
+                </button>
+                <button (click)="closeErrorModal()" class="w-full h-[56px] border border-gray-200 rounded-[12px] text-[#004595] font-black uppercase text-[14px] hover:bg-gray-50 transition-all shadow-sm">
+                    TENTE NOVAMENTE
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>

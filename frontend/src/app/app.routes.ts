@@ -12,10 +12,25 @@ import { EscolaReportsComponent } from './features/escola/reports/escola-reports
 import { EscolaPerfilComponent } from './features/escola/profile/escola-perfil.component';
 import { authGuard } from './core/guards/auth.guard';
 
+import { AppLoginComponent } from './features/mobile-app/login/logista-login.component';
+import { AppForgotPasswordComponent } from './features/mobile-app/forgot-password/app-forgot-password.component';
+import { LogistaDashboardComponent } from './features/mobile-app/dashboard/logista-dashboard.component';
+
 export const routes: Routes = [
     // Login - página inicial
     { path: '', component: LoginComponent, title: 'Login | Cashways Pass' },
     { path: 'login', redirectTo: '', pathMatch: 'full' },
+
+    // App Interface (Mobile style)
+    { path: 'app/login', component: AppLoginComponent, title: 'Login App | Cashways Pass' },
+    { path: 'app/forgot-password', component: AppForgotPasswordComponent, title: 'Recuperar Senha | Cashways Pass' },
+    { path: 'app/dashboard', component: LogistaDashboardComponent, canActivate: [authGuard], title: 'Dashboard | Cashways Pass' },
+    { path: 'app', redirectTo: 'app/login', pathMatch: 'full' },
+    
+    // Legacy Redirects
+    { path: 'logista/login', redirectTo: 'app/login' },
+    { path: 'logista/dashboard', redirectTo: 'app/dashboard' },
+    { path: 'logista', redirectTo: 'app/dashboard', pathMatch: 'full' },
 
     // Admin panel
     {

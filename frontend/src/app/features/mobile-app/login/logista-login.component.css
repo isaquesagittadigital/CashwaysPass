@@ -1,0 +1,115 @@
+:host {
+    display: block;
+    background-color: #0f172a;
+    min-height: 100vh;
+}
+
+.btn-access-account {
+    display: flex;
+    padding: 12px 18px;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    align-self: stretch;
+    border-radius: 8px;
+    border: 3px solid #4FDF57;
+    background: #BCE72C;
+    box-shadow: 0 0 0 1px rgba(10, 13, 18, 0.18) inset, 
+                0 -2px 0 0 rgba(10, 13, 18, 0.05) inset, 
+                0 1px 2px 0 rgba(10, 13, 18, 0.05);
+    color: #004595;
+    font-weight: 900;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+}
+
+.btn-access-account:hover {
+    filter: brightness(0.95);
+    transform: translateY(1px);
+}
+
+.btn-access-account:disabled {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    color: #94a3b8;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.btn-google-login {
+    display: flex;
+    padding: 10px 16px;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    align-self: stretch; 
+    border-radius: 8px;
+    border: 1px solid #D5D7DA;
+    background: #FFF;
+    box-shadow: 0 0 0 1px rgba(10, 13, 18, 0.18) inset, 
+                0 -2px 0 0 rgba(10, 13, 18, 0.05) inset, 
+                0 1px 2px 0 rgba(10, 13, 18, 0.05);
+    color: #414651;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-google-login:hover {
+    background: #f9fafb;
+    border-color: #cbd5e1;
+}
+
+.input-field {
+    display: flex;
+    padding: 14px 22px; 
+    padding-left: 52px; /* Aumentado para abrir espaço para o ícone absoluto */
+    align-items: center;
+    gap: 8px;
+    align-self: stretch;
+    border-radius: 8px;
+    border: 3px solid #4FDF57;
+    background: #FFF;
+    box-shadow: 0 1px 2px 0 rgba(10, 13, 18, 0.05);
+    width: 100%;
+    outline: none;
+    transition: all 0.2s ease;
+    color: #374151;
+    font-weight: 500;
+}
+
+.input-field:focus {
+    border-color: #add136;
+    box-shadow: 0 0 0 4px rgba(79, 223, 87, 0.1);
+}
+
+.input-field::placeholder {
+    color: #D1D5DB;
+}
+
+/* Bottom Sheet Animations */
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.error-modal-container {
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+}
+
+.error-modal-content {
+    border-top-left-radius: 32px;
+    border-top-right-radius: 32px;
+    background: white;
+    width: 100%;
+    max-width: 600px; /* Alinhado com o container principal */
+    position: absolute;
+    bottom: 0;
+    padding: 32px 24px;
+    box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.1), 0 -8px 10px -6px rgba(0, 0, 0, 0.1);
+}

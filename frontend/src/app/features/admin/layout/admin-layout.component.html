@@ -57,45 +57,43 @@
 
         <!-- Header -->
         <header
-            class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 md:px-8 flex-shrink-0 shadow-sm transition-all duration-300">
-            <div class="flex items-center gap-3 md:gap-6">
+            class="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-6 md:px-10 flex-shrink-0 transition-all duration-300">
+            <div class="flex items-center gap-4">
                 <button (click)="toggleSidebar()"
                     class="p-2 -ml-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors md:hidden">
                     <lucide-icon [img]="icons.Menu" class="w-6 h-6"></lucide-icon>
                 </button>
 
-                <!-- Branding Context -->
-                <div
-                    class="hidden sm:flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
-                    <span class="text-xs font-medium text-gray-500">Admin</span>
-                    <div class="w-1 h-1 rounded-full bg-gray-300"></div>
-                    <span class="text-xs font-bold text-gray-400">{{ activeRoute | titlecase }}</span>
+                <!-- Branding Context Pill -->
+                <div class="flex items-center gap-3 bg-gray-50/50 p-1 pr-4 rounded-full border border-gray-200/60 shadow-sm">
+                    <div class="bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Admin</span>
+                    </div>
+                    <span class="text-[13px] font-bold text-gray-500 tracking-tight">Painel administrativo</span>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3 md:gap-6">
+            <div class="flex items-center gap-6">
                 <!-- School Selector -->
-                <div class="relative min-w-[140px] md:min-w-[200px]">
+                <div class="relative min-w-[220px]">
                     <select [(ngModel)]="selectedSchool" (ngModelChange)="onSchoolChange($event)"
                         [compareWith]="compareSchools"
-                        class="w-full bg-white border border-gray-200 rounded-lg px-2 md:px-4 py-2 text-xs md:text-sm font-semibold text-gray-700 outline-none appearance-none focus:border-[#00609b] transition-all cursor-pointer shadow-sm pr-8 md:pr-10">
+                        class="w-full bg-white border border-gray-200/80 rounded-xl px-4 py-2.5 text-[13px] font-bold text-gray-700 outline-none appearance-none focus:ring-2 focus:ring-[#00609b]/10 focus:border-[#00609b] transition-all cursor-pointer shadow-sm pr-10">
                         <option *ngFor="let school of schools" [ngValue]="school">{{ school.name }}</option>
                     </select>
                     <lucide-icon [img]="icons.ChevronDown"
-                        class="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
+                        class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
                 </div>
 
-                <!-- User profile details -->
-                <div class="flex items-center gap-3 border-l border-gray-100 pl-3 md:pl-6">
-                    <div class="text-right hidden sm:block leading-tight">
-                        <p class="text-sm font-bold text-gray-800">{{ currentUser?.nome_completo || currentUser?.nome ||
-                            'Admin' }}</p>
-                        <p class="text-[11px] text-gray-400">{{ currentUser?.email || 'admin@exemplo.com' }}</p>
+                <!-- User Profile (Avatar Left) -->
+                <div class="flex items-center gap-3 pl-6 border-l border-gray-100">
+                    <div class="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center shadow-lg overflow-hidden border-2 border-slate-800">
+                        <!-- Mimicking the avatar in image -->
+                        <app-logo [onlyMark]="true" className="w-5 text-white" [light]="true"></app-logo>
                     </div>
-                    <div
-                        class="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center border border-gray-200 shadow-sm overflow-hidden group hover:border-[#00609b] transition-all cursor-pointer">
-                        <lucide-icon [img]="icons.UserCircle"
-                            class="w-6 h-6 text-gray-400 group-hover:text-[#00609b] transition-all"></lucide-icon>
+                    <div class="text-left leading-tight">
+                        <p class="text-[13px] font-black text-gray-800">{{ currentUser?.nome_completo || currentUser?.nome || 'Admin' }}</p>
+                        <p class="text-[11px] font-medium text-gray-400 tracking-tight">{{ currentUser?.email || 'admin@exemplo.com' }}</p>
                     </div>
                 </div>
             </div>

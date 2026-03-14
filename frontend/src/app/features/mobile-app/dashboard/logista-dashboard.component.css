@@ -1,0 +1,51 @@
+:host {
+    display: block;
+    background-color: #0f172a;
+    min-height: 100vh;
+}
+
+/* Custom background for the dashboard container to match the login flow */
+.min-h-screen {
+    background: linear-gradient(180deg, #1a233a 0%, #004595 100%);
+    border-top-left-radius: 40px;
+    border-top-right-radius: 40px;
+}
+
+/* Glassmorphism effect for backdrops */
+.backdrop-blur-sm {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Animation for entry */
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-entry {
+    animation: slideUpFade 0.6s ease-out forwards;
+}
+
+/* Styling the coin drop shadow */
+.drop-shadow-md {
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* Button hover effects */
+button {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure the fixed bottom nav stays centered within the 600px max-width container */
+.fixed.bottom-8 {
+    left: 50%;
+    transform: translateX(-50%);
+}

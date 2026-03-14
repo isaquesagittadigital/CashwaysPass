@@ -1,0 +1,81 @@
+<div class="min-h-screen bg-[#004595] flex flex-col items-center font-sans overflow-x-hidden w-full max-w-[600px] mx-auto shadow-2xl relative">
+    
+    <!-- Top Profile Section -->
+    <div class="w-full pt-12 pb-8 px-6 flex items-center gap-6">
+        <div class="w-24 h-24 rounded-full border-[3px] border-[#add136] bg-white/10 flex items-center justify-center overflow-hidden shadow-lg backdrop-blur-sm">
+            <lucide-icon [img]="icons.User" class="w-12 h-12 text-white/40"></lucide-icon>
+        </div>
+        <div class="flex flex-col">
+            <h1 class="text-white text-2xl font-black">{{ userName }}</h1>
+            <p class="text-white/70 text-base font-medium uppercase tracking-wider">{{ userRole }}</p>
+        </div>
+    </div>
+
+    <!-- Metrics Section -->
+    <div class="w-full px-6 grid grid-cols-2 gap-4 mt-2">
+        <!-- Success/Sales Card -->
+        <div class="bg-white rounded-[16px] p-4 pt-8 relative shadow-xl">
+            <div class="absolute -top-3 left-4 flex gap-0.5">
+                <lucide-icon [img]="icons.Coins" class="w-10 h-10 text-[#fbbd23] drop-shadow-md"></lucide-icon>
+            </div>
+            <p class="text-[#004595] text-[13px] font-black uppercase mb-1">Total em vendas</p>
+            <p class="text-[#004595] text-xl font-black">{{ stats.total_vendas | currency:'BRL':'symbol':'1.2-2' }}</p>
+        </div>
+
+        <!-- Returns Card -->
+        <div class="bg-white rounded-[16px] p-4 pt-8 relative shadow-xl">
+            <div class="absolute -top-3 left-4 flex gap-0.5">
+                <lucide-icon [img]="icons.Coins" class="w-10 h-10 text-[#fbbd23] drop-shadow-md"></lucide-icon>
+            </div>
+            <p class="text-[#004595] text-[13px] font-black uppercase mb-1">Total devoluções</p>
+            <p class="text-[#004595] text-xl font-black">{{ stats.total_devolucao | currency:'BRL':'symbol':'1.2-2' }}</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="w-full px-6 grid grid-cols-2 gap-6 mt-12 pb-32">
+        <!-- Venda Button -->
+        <button class="flex flex-col items-center gap-3 group">
+            <div class="w-full aspect-square bg-gradient-to-br from-[#add136] to-[#4FDF57] rounded-[24px] flex items-center justify-center shadow-lg group-active:scale-95 transition-all">
+                <lucide-icon [img]="icons.DollarSign" class="w-16 h-16 text-[#004595]"></lucide-icon>
+            </div>
+            <span class="text-white font-black uppercase text-base tracking-wide">Venda</span>
+        </button>
+
+        <!-- Devolução Button -->
+        <button class="flex flex-col items-center gap-3 group">
+            <div class="w-full aspect-square bg-gradient-to-br from-[#add136] to-[#4FDF57] rounded-[24px] flex items-center justify-center shadow-lg group-active:scale-95 transition-all">
+                <lucide-icon [img]="icons.RefreshCw" class="w-16 h-16 text-[#004595]"></lucide-icon>
+            </div>
+            <span class="text-white font-black uppercase text-base tracking-wide">Devolução</span>
+        </button>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <div class="fixed bottom-8 w-full max-w-[600px] px-6 flex justify-between items-end">
+        <!-- Perfil -->
+        <button class="flex flex-col items-center gap-2 group">
+            <div class="w-16 h-16 bg-[#add136] rounded-full flex items-center justify-center shadow-lg group-active:scale-90 transition-all">
+                <lucide-icon [img]="icons.User" class="w-8 h-8 text-[#004595]"></lucide-icon>
+            </div>
+            <span class="text-white text-xs font-black uppercase">Perfil</span>
+        </button>
+
+        <!-- Histórico -->
+        <button class="flex flex-col items-center gap-2 group">
+            <div class="w-20 h-20 bg-[#add136] rounded-full flex items-center justify-center shadow-xl group-active:scale-90 transition-all -mb-2 border-4 border-[#004595]">
+                <lucide-icon [img]="icons.Clock" class="w-10 h-10 text-[#004595]"></lucide-icon>
+            </div>
+            <span class="text-white text-xs font-black uppercase">Histórico</span>
+        </button>
+
+        <!-- Sair -->
+        <button (click)="logout()" class="flex flex-col items-center gap-2 group">
+            <div class="w-16 h-16 bg-[#add136] rounded-full flex items-center justify-center shadow-lg group-active:scale-90 transition-all">
+                <lucide-icon [img]="icons.LogOut" class="w-8 h-8 text-[#004595] pl-1"></lucide-icon>
+            </div>
+            <span class="text-white text-xs font-black uppercase">Sair</span>
+        </button>
+    </div>
+
+</div>
