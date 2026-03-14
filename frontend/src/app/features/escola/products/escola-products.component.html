@@ -131,136 +131,145 @@
 </div>
 
 
-<!-- ===================== FORM MODAL (Create/Edit) ===================== -->
-<div *ngIf="showFormModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+<!-- ===================== FORM DRAWER (Create/Edit) ===================== -->
+<div *ngIf="showFormModal" 
+     class="fixed inset-0 z-[100] flex justify-end bg-black/40 backdrop-blur-sm animate-in fade-in duration-300"
+     (click)="closeFormModal()">
+    <div class="bg-white w-full max-w-[480px] h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-500"
+         (click)="$event.stopPropagation()">
+        
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
-            <h2 class="text-lg font-bold text-gray-900">
+        <div class="px-8 py-6 border-b border-gray-100 flex items-center justify-between shrink-0">
+            <h2 class="text-xl font-bold text-gray-900">
                 {{ isEditing ? 'Editar produto' : 'Cadastrar produto' }}
             </h2>
-            <button (click)="closeFormModal()" class="p-1.5 rounded-lg hover:bg-gray-100 transition">
-                <lucide-icon [img]="icons.X" class="w-5 h-5 text-gray-400"></lucide-icon>
+            <button (click)="closeFormModal()" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <lucide-icon [img]="icons.X" class="w-6 h-6 text-gray-400"></lucide-icon>
             </button>
         </div>
 
-        <!-- Form -->
-        <div class="px-6 py-5 space-y-4">
-            <!-- Image Upload -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Imagem do produto</label>
-                <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-[#005bb5] transition"
-                    (click)="fileInput.click()">
-                    <input #fileInput type="file" (change)="onImageSelected($event)" accept="image/*" class="hidden">
-                    <div *ngIf="!imagePreview" class="py-4">
-                        <lucide-icon [img]="icons.Upload" class="w-8 h-8 text-gray-300 mx-auto mb-2"></lucide-icon>
-                        <p class="text-sm text-gray-400">Clique para enviar uma imagem</p>
-                        <p class="text-xs text-gray-300 mt-1">PNG, JPG até 5MB</p>
+        <!-- Body -->
+        <div class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
+            <!-- Image Area -->
+            <div class="space-y-4">
+                <div class="relative w-full aspect-[16/10] bg-gray-100 rounded-2xl overflow-hidden flex items-center justify-center border border-gray-100">
+                    <img *ngIf="imagePreview" [src]="imagePreview" class="w-full h-full object-cover">
+                    <lucide-icon *ngIf="!imagePreview" [img]="icons.Image" class="w-16 h-16 text-gray-300"></lucide-icon>
+                </div>
+                <button (click)="fileInput.click()" 
+                        class="w-full py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 flex items-center justify-center gap-2 hover:bg-gray-50 transition-all shadow-sm">
+                    <lucide-icon [img]="icons.Upload" class="w-4 h-4 text-gray-400"></lucide-icon>
+                    Enviar imagem de capa
+                </button>
+                <input #fileInput type="file" (change)="onImageSelected($event)" accept="image/*" class="hidden">
+            </div>
+
+            <!-- Status Toggle -->
+            <div class="flex items-center justify-between">
+                <label class="text-sm font-bold text-gray-700">Status *</label>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-medium" [ngClass]="form.status ? 'text-gray-400' : 'text-gray-900'">Inativo</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" [(ngModel)]="form.status" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00609b]"></div>
+                    </label>
+                    <span class="text-xs font-medium" [ngClass]="form.status ? 'text-gray-900' : 'text-gray-400'">Ativo</span>
+                </div>
+            </div>
+
+            <!-- Basic Info -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Nome do produto</label>
+                    <input type="text" [(ngModel)]="form.nome" placeholder="Nome do produto"
+                           class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] transition-colors text-sm">
+                </div>
+                <div>
+                    <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Descrição curta</label>
+                    <input type="text" [(ngModel)]="form.descricao" placeholder="Insira uma breve descrição do produto"
+                           class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] transition-colors text-sm">
+                </div>
+            </div>
+
+            <!-- Grid: Price & Limit -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Preço</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">R$</span>
+                        <input type="number" [(ngModel)]="form.preco"
+                               class="w-full border border-gray-200 rounded-xl p-3 pl-10 outline-none focus:border-[#00609b] transition-colors text-sm"
+                               placeholder="0">
                     </div>
-                    <img *ngIf="imagePreview" [src]="imagePreview" class="w-full h-40 object-cover rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Limite por aluno</label>
+                    <input type="number" [(ngModel)]="form.limite_por_aluno"
+                           class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] transition-colors text-sm"
+                           placeholder="0">
                 </div>
             </div>
 
-            <!-- Nome -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nome do produto *</label>
-                <input type="text" [(ngModel)]="form.nome" placeholder="Ex: Lanche Especial"
-                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#005bb5]">
+            <!-- Grid: Dates -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Vigência - início</label>
+                    <div class="relative">
+                        <input type="date" [(ngModel)]="form.data_vigencia_inicio"
+                               class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] transition-colors text-sm appearance-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Vigência - fim</label>
+                    <div class="relative">
+                        <input type="date" [(ngModel)]="form.data_vigencia_final"
+                               class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] transition-colors text-sm appearance-none">
+                    </div>
+                </div>
             </div>
 
-            <!-- Descrição -->
+            <!-- Turmas -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
-                <textarea [(ngModel)]="form.descricao" rows="3" placeholder="Descreva o produto..."
-                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#005bb5] resize-none"></textarea>
-            </div>
-
-            <!-- Preço -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Preço <span class="text-[#005bb5]">*</span></label>
+                <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Turmas vinculadas</label>
                 <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">R$</span>
-                    <input type="number" [(ngModel)]="form.preco" min="0" step="0.01"
-                        (input)="form.preco = form.preco < 0 ? 0 : form.preco"
-                        class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#005bb5]">
+                    <select [(ngModel)]="selectedTurmaId" (change)="addTurma()"
+                            class="w-full border border-gray-200 rounded-xl p-3 pr-10 outline-none focus:border-[#00609b] transition-colors text-sm bg-white appearance-none">
+                        <option value="">Selecionar turmas</option>
+                        <option *ngFor="let turma of turmas" [value]="turma.id">
+                            {{ turma.serie ? turma.serie + ' ' : '' }}{{ turma.nome }}
+                        </option>
+                    </select>
+                    <lucide-icon [img]="icons.ChevronDown" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
                 </div>
-            </div>
 
-            <!-- Quantidade (New Request) -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Quantidade de Produtos</label>
-                <input type="number" [(ngModel)]="form.quantidade" min="0"
-                    (input)="form.quantidade = form.quantidade < 0 ? 0 : form.quantidade"
-                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#005bb5]">
-            </div>
-
-            <!-- Turmas Vinculadas -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Vincular à turma <span class="text-[#005bb5]">*</span></label>
-                <select [(ngModel)]="selectedTurmaId" (change)="addTurma()"
-                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:border-[#005bb5]">
-                    <option value="">Selecione a turma</option>
-                    <option *ngFor="let turma of turmas" [value]="turma.id">
-                        {{ turma.serie ? turma.serie + ' ' : '' }}{{ turma.nome }}
-                    </option>
-                </select>
-                
                 <!-- Selected Turmas Pills -->
                 <div *ngIf="form.turma_ids.length > 0" class="flex flex-wrap gap-2 mt-3">
                     <div *ngFor="let turmaId of form.turma_ids" 
-                         class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 shadow-sm">
+                         class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-100 rounded-lg text-xs font-bold text-[#00609b]">
                         <span>{{ getTurmaName(turmaId) }}</span>
-                        <button type="button" (click)="removeTurma(turmaId)" class="p-0.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition">
+                        <button (click)="removeTurma(turmaId)" class="hover:text-blue-800">
                             <lucide-icon [img]="icons.X" class="w-3.5 h-3.5"></lucide-icon>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Vigência & Limite side by side -->
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Vigência início</label>
-                    <input type="date" [(ngModel)]="form.data_vigencia_inicio"
-                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#005bb5]">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Vigência final</label>
-                    <input type="date" [(ngModel)]="form.data_vigencia_final"
-                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#005bb5]">
-                </div>
-            </div>
-
-            <!-- Limite per student -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Limite por aluno</label>
-                <input type="number" [(ngModel)]="form.limite_por_aluno" min="1"
-                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#005bb5]">
-            </div>
-
-
-
-            <!-- Status -->
-            <div class="flex items-center gap-3">
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" [(ngModel)]="form.status" class="sr-only peer">
-                    <div
-                        class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-[#005bb5] after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all">
-                    </div>
-                </label>
-                <span class="text-sm text-gray-700">Produto ativo</span>
+            <!-- Optional: Keep Quantity if needed by backend, but hide/move to end -->
+            <div *ngIf="false"> <!-- Hidden per image layout -->
+                <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Quantidade</label>
+                <input type="number" [(ngModel)]="form.quantidade" class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] transition-colors text-sm">
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="px-6 pb-6 flex gap-3">
+        <div class="p-8 border-t border-gray-100 flex gap-4 shrink-0">
             <button (click)="closeFormModal()"
-                class="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition">
+                    class="flex-1 py-4 border border-gray-200 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all">
                 Cancelar
             </button>
             <button (click)="submitForm()" [disabled]="formLoading || !form.nome.trim()"
-                class="flex-1 py-2.5 bg-[#005bb5] text-white rounded-lg text-sm font-medium hover:bg-[#004a98] transition disabled:opacity-50 disabled:cursor-not-allowed">
-                {{ formLoading ? 'Salvando...' : (isEditing ? 'Salvar alterações' : 'Cadastrar produto') }}
+                    class="flex-1 py-4 bg-[#00609b] text-white rounded-xl font-bold hover:bg-[#004d7c] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-900/10">
+                {{ formLoading ? 'Salvando...' : (isEditing ? 'Salvar alterações' : 'Confirmar e Cadastrar') }}
             </button>
         </div>
     </div>

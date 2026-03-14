@@ -10,19 +10,7 @@
             <p class="text-gray-500 mt-1">Gerencie {{ isAdmin ? 'escolas cadastradas' : 'dados da sua escola' }} no
                 sistema.</p>
         </div>
-        <div class="flex items-center gap-5 mt-4 sm:mt-0" *ngIf="isAdmin">
-            <button (click)="onDeleteSchool()"
-                class="flex items-center gap-2 px-2 py-2 text-[#E71B24] rounded-lg hover:bg-red-50 font-bold transition-colors">
-                <img src="assets/icons/LixoVermeelho.svg" alt="Excluir" class="w-[18px] h-[18px]" /> Excluir escola
-            </button>
-            <button (click)="openEditModal()"
-                class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 font-bold shadow-sm transition-colors">
-                <img src="assets/icons/Edit1.svg" alt="Editar" class="w-[18px] h-[18px]" /> Editar escola
-            </button>
-            <button routerLink="/admin/escolas/cadastro"
-                class="flex items-center gap-2 px-5 py-2.5 bg-[#00609b] text-white rounded-lg hover:bg-[#0070b4] font-bold shadow-sm transition-colors"><lucide-icon
-                    [img]="icons.Plus" class="w-5 h-5" strokeWidth="3"></lucide-icon> Cadastrar escola</button>
-        </div>
+
     </div>
 
     <!-- Container Branco Principal -->

@@ -18,7 +18,8 @@ import {
     Package,
     Calendar,
     Upload,
-    CheckCircle2
+    CheckCircle2,
+    ChevronDown
 } from 'lucide-angular';
 import { ProdutoService, Produto, ProdutoForm } from '../../../core/services/produto.service';
 import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
@@ -33,7 +34,7 @@ import { supabase } from '../../../core/supabase';
 })
 export class EscolaProductsComponent implements OnInit, OnDestroy { 
     // Triggering re-save
-    icons = { ArrowLeft, Search, Plus, Eye, Pencil, Trash2, X, PlusCircle, Users, Image, Package, Calendar, Upload, CheckCircle2 };
+    icons = { ArrowLeft, Search, Plus, Eye, Pencil, Trash2, X, PlusCircle, Users, Image, Package, Calendar, Upload, CheckCircle2, ChevronDown };
 
     // Data
     products: Produto[] = [];
