@@ -203,9 +203,31 @@ export class ReportsComponent implements OnInit, OnDestroy {
     }
 
     async exportReport() {
-        if (this.isExporting) return;
+        if (this.isExporting || !this.metrics) return;
         this.isExporting = true;
-        // Logic to export via exportService
-        setTimeout(() => this.isExporting = false, 2000);
+        
+        try {
+            await this.exportService.exportReportToPdf({
+                schoolInfo: this.metrics.schoolInfo,
+                filter: this.activeFilter,
+                metrics: {
+                    totalRevenue: this.metrics.totalRevenue,
+                    totalDevices: this.metrics.totalDevices,
+                    totalStudents: this.metrics.totalStudents,
+                    transferProvision: this.metrics.transferProvision,
+                    totalTransferred: this.metrics.totalTransferred,
+                    expenseProvision: this.metrics.expenseProvision,
+                    transactionCount: this.metrics.transactionCount
+                },
+                charts: [
+                    { id: 'transactionChart', title: 'Distribuição de Transações' },
+                    { id: 'billingChart', title: `Faturamento - Modelo ${this.billingModel}` }
+                ]
+            });
+        } catch (error) {
+            console.error('Erro ao exportar relatório:', error);
+        } finally {
+            this.isExporting = false;
+        }
     }
 }
