@@ -319,21 +319,40 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         document.body.removeChild(link);
     }
 
-    onFileSelected(event: any) {
+    onFileChange(event: any) {
         const file = event.target.files[0];
         if (file) {
+            this.formLoading = true;
             Papa.parse(file, {
                 header: true,
                 skipEmptyLines: true,
                 complete: (results) => {
-                    this.previewUsers = results.data.map((row: any) => ({
-                        nome_completo: row.nome_completo || row.nome || '',
-                        email: row.email || '',
-                        cpf: row.cpf || '',
-                        tipo_acesso: (row.tipo_acesso as UserTipoAcesso) || 'Responsavel',
-                        turmaNome: row.turma || ''
-                    })).filter((u: any) => u.nome_completo !== '');
+                    this.previewUsers = results.data.map((row: any) => {
+                        // Tentar encontrar a turma se informada
+                        let turmaId = '';
+                        let turmaNome = row.turma || '';
+                        
+                        if (turmaNome && this.turmas.length > 0) {
+                            const found = this.turmas.find(t => 
+                                t.nome?.toLowerCase().includes(turmaNome.toLowerCase())
+                            );
+                            if (found) {
+                                turmaId = found.id;
+                                turmaNome = found.nome;
+                            }
+                        }
 
+                        return {
+                            nome_completo: row.nome_completo || row.nome || '',
+                            email: row.email || '',
+                            cpf: row.cpf || '',
+                            tipo_acesso: (row.tipo_acesso as UserTipoAcesso) || 'Responsavel',
+                            turmaID: turmaId,
+                            turmaNome: turmaNome
+                        };
+                    }).filter((u: any) => u.nome_completo !== '');
+
+                    this.formLoading = false;
                     if (this.previewUsers.length > 0) {
                         this.showBulkModal = false;
                         this.showPreviewModal = true;
@@ -342,6 +361,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
                     }
                 },
                 error: (error) => {
+                    this.formLoading = false;
                     console.error('CSV Parsing error:', error);
                     alert('Erro ao processar o arquivo CSV.');
                 }
@@ -353,7 +373,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         if (this.previewUsers.length === 0) return;
         
         this.showPreviewModal = false;
-        this.showBulkModal = true; // Voltamos para o modal original para mostrar o progresso
+        this.showBulkModal = true;
         this.processBulkUpload(this.previewUsers);
     }
 
@@ -377,6 +397,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
                 email: row.email,
                 cpf: row.cpf,
                 tipo_acesso: (row.tipo_acesso as UserTipoAcesso) || 'Responsavel',
+                turmaID: row.turmaID || null,
                 escola_id: this.selectedSchoolId,
                 status: 'active'
             };

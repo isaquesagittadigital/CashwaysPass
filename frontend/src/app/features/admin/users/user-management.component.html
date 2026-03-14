@@ -482,37 +482,75 @@
     (onCancel)="showDeleteConfirm = false">
 </app-delete-confirm-modal>
 
-<!-- ===================== MODAL: PREVIEW DE IMPORTAÇÃO ===================== -->
-<div *ngIf="showPreviewModal" 
+<!-- ===================== MODAL: IMPORTAÇÃO EM MASSA (UPLOAD) ===================== -->
+<div *ngIf="showBulkModal && bulkProgress === 0 && !bulkLoading" 
     class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-    <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl p-8 animate-in zoom-in-95 duration-200 relative max-h-[90vh] flex flex-col">
-        <!-- Close button top right -->
-        <button (click)="closePreviewModal()" class="absolute top-6 right-6 p-2 h-auto w-auto hover:bg-gray-100 rounded-full transition-colors">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl p-10 animate-in zoom-in-95 duration-200 relative">
+        <button (click)="showBulkModal = false" class="absolute top-8 right-8 p-2 hover:bg-gray-100 rounded-full transition-colors">
             <lucide-icon [img]="icons.X" class="w-5 h-5 text-gray-400"></lucide-icon>
         </button>
 
-        <div class="mb-8 shrink-0">
-            <h3 class="text-xl font-bold text-gray-900">Confirmar importação</h3>
-            <p class="text-sm text-gray-400">Revise os dados dos {{ previewUsers.length }} usuários antes de confirmar.</p>
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-900">Importação em massa</h3>
+        </div>
+
+        <div class="bg-[#F8FAFC] border-2 border-dashed border-[#E2E8F0] rounded-[2rem] p-12 flex flex-col items-center text-center relative mb-8 hover:border-[#00609b] transition-colors group cursor-pointer">
+            <input type="file" (change)="onFileChange($event)" accept=".csv" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+            
+            <div class="w-24 h-24 bg-white rounded-full shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <lucide-icon [img]="icons.Upload" class="w-12 h-12 text-[#00609b] opacity-20"></lucide-icon>
+            </div>
+
+            <h4 class="text-lg font-bold text-[#1E293B] mb-2">Arraste seu arquivo ou procure no computador</h4>
+            <p class="text-sm text-gray-400 mb-8 max-w-[280px] mx-auto leading-relaxed">O arquivo deve estar no formato .CSV e seguir o modelo padrão do sistema.</p>
+            
+            <button (click)="downloadTemplate(); $event.stopPropagation()" class="flex items-center gap-2 text-[#00609b] font-bold text-sm hover:underline relative z-20">
+                <lucide-icon [img]="icons.FileSpreadsheet" class="w-4 h-4"></lucide-icon>
+                Baixar modelo CSV
+            </button>
+        </div>
+
+        <button class="w-full bg-[#00609b] text-white py-4 rounded-2xl font-bold hover:bg-[#004d7c] transition-all shadow-lg shadow-blue-900/10 active:scale-[0.98]">
+            Procurar arquivo
+        </button>
+    </div>
+</div>
+
+<!-- ===================== MODAL: PREVIEW DE IMPORTAÇÃO ===================== -->
+<div *ngIf="showPreviewModal" 
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl p-10 animate-in zoom-in-95 duration-200 relative max-h-[90vh] flex flex-col">
+        <button (click)="closePreviewModal()" class="absolute top-8 right-8 p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <lucide-icon [img]="icons.X" class="w-5 h-5 text-gray-400"></lucide-icon>
+        </button>
+
+        <div class="mb-10 shrink-0">
+            <h3 class="text-2xl font-bold text-gray-900">Confirmar importação</h3>
+            <p class="text-sm text-gray-400 mt-1">Revise os dados dos {{ previewUsers.length }} usuários antes de confirmar.</p>
         </div>
 
         <!-- Table Container -->
-        <div class="flex-1 overflow-auto border border-gray-100 rounded-2xl mb-8">
+        <div class="flex-1 overflow-auto border border-gray-100 rounded-2xl mb-10 custom-scrollbar">
             <table class="w-full text-left border-collapse">
-                <thead class="sticky top-0 bg-gray-50/80 backdrop-blur-sm z-10">
-                    <tr class="text-[13px] font-semibold text-gray-500 border-b border-gray-100">
-                        <th class="px-8 py-4">Nome</th>
-                        <th class="px-6 py-4">Email</th>
-                        <th class="px-6 py-4">RA/Carteira</th>
-                        <th class="px-6 py-4">Turma</th>
+                <thead class="sticky top-0 bg-gray-50/90 backdrop-blur-sm z-10">
+                    <tr class="text-[13px] font-bold text-gray-500 border-b border-gray-100 text-uppercase tracking-wider">
+                        <th class="px-8 py-5">Nome</th>
+                        <th class="px-6 py-5">Email</th>
+                        <th class="px-6 py-5">CPF</th>
+                        <th class="px-6 py-5">Tipo / Turma</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                    <tr *ngFor="let u of previewUsers" class="hover:bg-gray-50/40 transition-all">
-                        <td class="px-8 py-5 text-sm font-bold text-gray-800">{{ u.nome_completo }}</td>
-                        <td class="px-6 py-5 text-sm text-gray-500">{{ u.email }}</td>
-                        <td class="px-6 py-5 text-sm text-gray-500">{{ u.cpf || '---' }}</td>
-                        <td class="px-6 py-5 text-sm font-medium text-[#00609b]">{{ u.turmaNome || '---' }}</td>
+                    <tr *ngFor="let u of previewUsers" class="hover:bg-gray-50/60 transition-all group">
+                        <td class="px-8 py-5 text-sm font-bold text-gray-800 group-hover:text-[#00609b]">{{ u.nome_completo }}</td>
+                        <td class="px-6 py-5 text-sm text-gray-500 font-medium">{{ u.email }}</td>
+                        <td class="px-6 py-5 text-sm text-gray-500 font-medium">{{ u.cpf || '---' }}</td>
+                        <td class="px-6 py-5 text-sm">
+                            <span class="px-3 py-1 bg-blue-50 text-[#00609b] rounded-lg font-bold text-[11px] uppercase whitespace-nowrap">
+                                {{ u.tipo_acesso }}
+                            </span>
+                            <span *ngIf="u.turmaNome" class="ml-2 text-gray-400 font-medium">— {{ u.turmaNome }}</span>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -521,83 +559,53 @@
         <!-- Footer Buttons -->
         <div class="flex gap-4 shrink-0">
             <button (click)="closePreviewModal()"
-                class="flex-1 py-0 h-[48px] border border-gray-200 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                class="flex-1 py-4 border border-gray-200 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 transition-all text-sm uppercase tracking-widest">
                 Cancelar
             </button>
             <button (click)="confirmBulkUpload()"
-                class="flex-1 py-0 h-[48px] bg-[#00609b] text-white rounded-xl font-bold hover:bg-[#004d7c] transition-all shadow-md active:scale-[0.98]">
+                class="flex-1 py-4 bg-[#00609b] text-white rounded-2xl font-bold hover:bg-[#004d7c] transition-all shadow-lg shadow-blue-900/10 active:scale-[0.98] text-sm uppercase tracking-widest">
                 Confirmar e Cadastrar
             </button>
         </div>
     </div>
 </div>
 
-<!-- Modal: Cadastro em Massa -->
-<div *ngIf="showBulkModal"
-    class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in px-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up">
-        <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h2 class="text-lg font-bold text-gray-900">Cadastro em massa</h2>
-            <button (click)="showBulkModal = false" [disabled]="bulkLoading" class="p-1.5 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-30">
-                <lucide-icon [img]="icons.X" class="w-5 h-5 text-gray-400"></lucide-icon>
-            </button>
+<!-- ===================== LOADING OVERLAY (PARSING / PROCESSING) ===================== -->
+<div *ngIf="formLoading || bulkLoading" 
+    class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white/80 backdrop-blur-md animate-in fade-in duration-300">
+    <div class="relative w-20 h-20 mb-6">
+        <div class="absolute inset-0 border-4 border-[#00609b]/10 rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-[#00609b] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+    <h3 class="text-xl font-bold text-gray-900 mb-2">
+        {{ bulkLoading ? 'Cadastrando usuários...' : 'Processando arquivo...' }}
+    </h3>
+    <p class="text-sm text-gray-500 font-medium italic animate-pulse">
+        {{ bulkLoading ? (bulkProgress + '% concluído') : 'Aguarde um momento.' }}
+    </p>
+
+    <!-- Progress Bar (Only during bulk upload) -->
+    <div *ngIf="bulkLoading" class="w-64 h-1.5 bg-gray-100 rounded-full mt-6 overflow-hidden">
+        <div class="h-full bg-[#00609b] transition-all duration-300" [style.width.%]="bulkProgress"></div>
+    </div>
+</div>
+
+<!-- Result Modal (When 100%) -->
+<div *ngIf="bulkProgress === 100 && !bulkLoading"
+    class="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm p-10 flex flex-col items-center text-center animate-in scale-95 duration-200">
+        <div class="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mb-6">
+            <lucide-icon [img]="icons.CheckCircle2" class="w-10 h-10 text-green-500"></lucide-icon>
         </div>
-
-        <!-- Content -->
-        <div class="p-8">
-            <!-- Upload Area -->
-            <div *ngIf="!bulkLoading && bulkProgress === 0" 
-                class="border-2 border-dashed border-gray-200 rounded-2xl p-10 flex flex-col items-center text-center hover:border-[#005bb5] transition-colors group cursor-pointer relative">
-                <input type="file" (change)="onFileSelected($event)" accept=".csv" class="absolute inset-0 opacity-0 cursor-pointer">
-                <div class="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <lucide-icon [img]="icons.Upload" class="w-8 h-8 text-[#005bb5]"></lucide-icon>
-                </div>
-                <h3 class="text-base font-bold text-gray-900 mb-1">Clique para selecionar ou arraste o arquivo</h3>
-                <p class="text-sm text-gray-500 mb-4">Apenas arquivos .CSV são aceitos</p>
-                <button (click)="downloadTemplate()" class="text-xs font-bold text-[#005bb5] hover:underline bg-transparent border-none p-0">
-                    Baixar modelo de planilha
-                </button>
-            </div>
-
-            <!-- Progress State -->
-            <div *ngIf="bulkLoading || (bulkProgress > 0 && bulkProgress < 100)" class="space-y-6 py-4">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-bold text-gray-700">Processando usuários...</span>
-                    <span class="text-sm font-bold text-[#005bb5]">{{ bulkProgress }}%</span>
-                </div>
-                <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                    <div class="bg-[#005bb5] h-full transition-all duration-300" [style.width.%]="bulkProgress"></div>
-                </div>
-                <p class="text-xs text-center text-gray-400">Por favor, não feche esta janela enquanto o processo é finalizado.</p>
-            </div>
-
-            <!-- Result State -->
-            <div *ngIf="bulkProgress === 100" class="text-center py-4">
-                <div class="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-6">
-                    <lucide-icon [img]="icons.CheckCircle2" class="w-10 h-10 text-green-500"></lucide-icon>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">Processamento concluído!</h3>
-                <div class="flex justify-center gap-8 mt-6">
-                    <div>
-                        <p class="text-2xl font-bold text-green-600">{{ bulkSuccessCount }}</p>
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Sucesso</p>
-                    </div>
-                    <div>
-                        <p class="text-2xl font-bold text-red-500">{{ bulkErrorCount }}</p>
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Falhas</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="p-6 border-t border-gray-100">
-            <button (click)="showBulkModal = false" [disabled]="bulkLoading"
-                class="w-full py-0 bg-gray-50 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-100 transition-all active:scale-95 disabled:opacity-50">
-                {{ bulkProgress === 100 ? 'Concluir' : 'Cancelar' }}
-            </button>
-        </div>
+        <h3 class="text-2xl font-bold text-gray-900 mb-2">Importação finalizada!</h3>
+        <p class="text-gray-500 text-sm mb-8 leading-relaxed">
+            Foram cadastrados <strong>{{ bulkSuccessCount }}</strong> usuários com sucesso.<br>
+            <span *ngIf="bulkErrorCount > 0" class="text-red-500">Ocorreram {{ bulkErrorCount }} falhas.</span>
+        </p>
+        <button (click)="bulkProgress = 0" 
+            class="w-full py-4 bg-[#00609b] text-white rounded-2xl font-bold hover:bg-[#004d7c] transition-all shadow-md uppercase text-sm tracking-widest">
+            Concluído
+        </button>
     </div>
 </div>
 
