@@ -122,6 +122,12 @@ export class UsuarioService {
                 .single();
 
             if (error) throw error;
+            
+            // Sincronizar com tabelas relacionadas se for Aluno
+            if (usuario.tipo_acesso === 'Aluno' && data) {
+                await this.syncWithAlunoTable(data.id, usuario);
+            }
+
             return { success: true, data: data as Usuario };
         } catch (error) {
             console.error('Error creating user:', error);
@@ -177,13 +183,17 @@ export class UsuarioService {
 
             if (Object.keys(alunoUpdates).length === 0) return;
 
+            // Usar upsert para garantir que o registro exista na tabela aluno
             const { error } = await supabase
                 .from('aluno')
-                .update(alunoUpdates)
-                .eq('usuario_id', usuarioId);
+                .upsert({ 
+                    ...alunoUpdates, 
+                    usuario_id: usuarioId,
+                    primeiro_acesso: false 
+                }, { onConflict: 'usuario_id' });
 
             if (error) {
-                console.warn('Could not sync with aluno table (User might not have record in aluno table yet):', error.message);
+                console.warn('Erro ao sincronizar com tabela aluno:', error.message);
             }
 
             // 3. Sync with 'carteira' table if RA is provided
