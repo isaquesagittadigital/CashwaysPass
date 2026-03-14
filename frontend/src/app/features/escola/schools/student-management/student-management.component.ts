@@ -217,12 +217,15 @@ export class StudentManagementComponent implements OnInit, OnChanges {
     }
 
     downloadTemplate() {
-        const csvContent = "nome,email,telefone,data_nascimento,turma,carteira\nJoão Silva,joao@email.com,11999999999,2012-05-10,Turma A,AA0001";
+        const currentTurma = this.turmas.find(t => t.id === this.turmaId);
+        const turmaLabel = currentTurma ? `${currentTurma.serie}${isNaN(Number(currentTurma.serie)) ? '' : 'ª'} ${currentTurma.nome}` : "Turma A";
+        
+        const csvContent = `nome,email,telefone,data_nascimento,turma,carteira\nJoão Silva,joao@email.com,11999999999,2012-05-10,${turmaLabel},AA0001`;
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
-        link.setAttribute("download", "modelo_alunos.csv");
+        link.setAttribute("download", `modelo_alunos_${turmaLabel.replace(/\s+/g, '_').toLowerCase()}.csv`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -251,17 +254,18 @@ export class StudentManagementComponent implements OnInit, OnChanges {
                                 t.nome?.toLowerCase().trim() === csvTurma || 
                                 t.serie?.toString().toLowerCase().trim() === csvTurma ||
                                 `${t.serie} ${t.nome}`.toLowerCase().trim() === csvTurma ||
-                                `${t.serie} ${t.nome}`.toLowerCase().replace(/[^a-z0-9]/g, '') === csvTurma.replace(/[^a-z0-9]/g, '') ||
+                                `${t.serie}${isNaN(Number(t.serie)) ? '' : 'ª'} ${t.nome}`.toLowerCase().trim() === csvTurma ||
                                 t.id === csvTurma
                             );
                         }
 
                         // If NOT matched by CSV but we have a context turmaId, use context
-                        const finalTurma = matchedTurma || this.turmas.find(t => t.id === this.turmaId) || this.turmas[0];
+                        const currentTurmaContext = this.turmas.find(t => t.id === this.turmaId);
+                        const finalTurma = matchedTurma || currentTurmaContext || this.turmas[0];
 
                         return {
                             turmaId: finalTurma?.id || null, // Never send empty string for UUID column
-                            turmaNome: finalTurma ? `${finalTurma.serie} ${finalTurma.nome}` : (row.turma || 'Sem turma'),
+                            turmaNome: finalTurma ? `${finalTurma.serie}${isNaN(Number(finalTurma.serie)) ? '' : 'ª'} ${finalTurma.nome}` : (row.turma || 'Sem turma'),
                             nome: row.nome || '',
                             email: row.email || '',
                             telefone: row.telefone || '',
