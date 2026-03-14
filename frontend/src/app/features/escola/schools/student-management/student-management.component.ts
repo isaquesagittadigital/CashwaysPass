@@ -39,6 +39,8 @@ export class StudentManagementComponent implements OnInit, OnChanges {
     showDeleteModal = false;
     deleteId: string | null = null;
     deleteLoading = false;
+    deleteModalEntityName = 'aluno';
+    deleteModalEntityArticle = 'o';
 
     showSuccessModal = false;
     successModalTitle = '';
@@ -58,6 +60,9 @@ export class StudentManagementComponent implements OnInit, OnChanges {
 
     // Email state
     isSendingEmail: { [key: string]: boolean } = {};
+
+    // Selection
+    selectedIds: Set<string> = new Set();
 
     constructor(
         private schoolService: SchoolManagementService,
@@ -146,6 +151,33 @@ export class StudentManagementComponent implements OnInit, OnChanges {
 
     prevPage() {
         if (this.currentPage > 1) this.currentPage--;
+    }
+
+    // Selection Logic
+    toggleAllSelection(event: any) {
+        const checked = event.target.checked;
+        if (checked) {
+            this.paginatedStudents.forEach(s => this.selectedIds.add(s.id));
+        } else {
+            this.paginatedStudents.forEach(s => this.selectedIds.delete(s.id));
+        }
+    }
+
+    toggleStudentSelection(studentId: string) {
+        if (this.selectedIds.has(studentId)) {
+            this.selectedIds.delete(studentId);
+        } else {
+            this.selectedIds.add(studentId);
+        }
+    }
+
+    isStudentSelected(studentId: string): boolean {
+        return this.selectedIds.has(studentId);
+    }
+
+    get allPaginatedSelected(): boolean {
+        return this.paginatedStudents.length > 0 && 
+               this.paginatedStudents.every(s => this.selectedIds.has(s.id));
     }
 
     closeModal() {
@@ -299,28 +331,54 @@ export class StudentManagementComponent implements OnInit, OnChanges {
     }
 
     onDelete(id: string) {
+        if (id === 'bulk') {
+            if (this.selectedIds.size === 0) {
+                alert('Selecione ao menos um aluno para excluir.');
+                return;
+            }
+            this.deleteModalEntityName = this.selectedIds.size > 1 ? 'alunos' : 'aluno';
+            this.deleteModalEntityArticle = this.selectedIds.size > 1 ? 'os' : 'o';
+        } else {
+            this.deleteModalEntityName = 'aluno';
+            this.deleteModalEntityArticle = 'o';
+        }
         this.deleteId = id;
         this.showDeleteModal = true;
     }
 
-    confirmDelete() {
+    async confirmDelete() {
         if (!this.deleteId) return;
         this.deleteLoading = true;
-        this.schoolService.deleteStudent(this.deleteId).subscribe({
-            next: () => {
-                this.showDeleteModal = false;
-                this.deleteLoading = false;
-                this.deleteId = null;
-                this.loadStudents();
-
+        
+        try {
+            if (this.deleteId === 'bulk') {
+                const idsArray = Array.from(this.selectedIds);
+                let successCount = 0;
+                
+                for (const id of idsArray) {
+                    await this.schoolService.deleteStudent(id).toPromise();
+                    successCount++;
+                }
+                
+                this.selectedIds.clear();
+                this.successModalTitle = 'Alunos excluídos!';
+                this.successModalMessage = `${successCount} alunos foram removidos com sucesso!`;
+            } else {
+                await this.schoolService.deleteStudent(this.deleteId).toPromise();
                 this.successModalTitle = 'Aluno excluído!';
                 this.successModalMessage = 'O aluno foi removido com sucesso!';
-                this.showSuccessModal = true;
-            },
-            error: () => {
-                this.deleteLoading = false;
             }
-        });
+
+            this.showDeleteModal = false;
+            this.deleteLoading = false;
+            this.deleteId = null;
+            this.loadStudents();
+            this.showSuccessModal = true;
+        } catch (error) {
+            console.error('Error deleting student(s):', error);
+            alert('Ocorreu um erro ao excluir. Verifique se o aluno possui vínculos ativos.');
+            this.deleteLoading = false;
+        }
     }
 
     cancelDelete() {

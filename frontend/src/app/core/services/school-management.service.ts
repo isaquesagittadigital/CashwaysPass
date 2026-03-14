@@ -451,12 +451,48 @@ export class SchoolManagementService {
         }
     }
 
-    deleteStudent(id: string): Observable<any> {
-        return from(
-            supabase
+    deleteStudent(id: string): Observable<void> {
+        return from((async () => {
+            // 1. Buscar o aluno para obter o usuario_id
+            const { data: student, error: getError } = await supabase
+                .from('aluno')
+                .select('usuario_id, ra')
+                .eq('id', id)
+                .single();
+            
+            if (getError) throw getError;
+
+            // 2. Se tiver ra/carteira, limpar da tabela carteira
+            if (student.ra) {
+                await supabase
+                    .from('carteira')
+                    .delete()
+                    .eq('carteira_code', student.ra);
+            }
+
+            // 3. Deletar registro da tabela aluno
+            const { error: alunoError } = await supabase
                 .from('aluno')
                 .delete()
-                .eq('id', id)
+                .eq('id', id);
+            
+            if (alunoError) throw alunoError;
+
+            // 4. Se tiver usuario_id, fazer o soft delete em usuarios
+            if (student.usuario_id) {
+                const { error: userError } = await supabase
+                    .from('usuarios')
+                    .update({ 
+                        deleted: true, 
+                        status: 'inactive', 
+                        excluido: 'sim' 
+                    })
+                    .eq('id', student.usuario_id);
+                
+                if (userError) throw userError;
+            }
+        })()).pipe(
+            map(() => { return; })
         );
     }
 }

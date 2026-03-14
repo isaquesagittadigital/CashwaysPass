@@ -41,7 +41,8 @@
             <thead>
                 <tr class="text-sm font-semibold text-gray-500 border-b border-gray-50">
                     <th class="pl-8 pr-4 py-6 w-12 text-center">
-                        <input type="checkbox" class="rounded border-gray-200 text-[#00609b] focus:ring-[#00609b]">
+                        <input type="checkbox" [checked]="allPaginatedSelected" (change)="toggleAllSelection($event)"
+                            class="rounded border-gray-300 text-[#00609b] focus:ring-[#00609b] w-4 h-4 cursor-pointer">
                     </th>
                     <th class="px-4 py-6">Carteira</th>
                     <th class="px-4 py-6">Nome do aluno</th>
@@ -51,9 +52,12 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
-                <tr *ngFor="let student of paginatedStudents" class="hover:bg-gray-50/40 transition-all group">
+                <tr *ngFor="let student of paginatedStudents" 
+                    [ngClass]="{'bg-blue-50/50': isStudentSelected(student.id)}"
+                    class="hover:bg-gray-50/40 transition-all group">
                     <td class="pl-8 pr-4 py-5 text-center">
-                        <input type="checkbox" class="rounded border-gray-200 text-[#00609b] focus:ring-[#00609b]">
+                        <input type="checkbox" [checked]="isStudentSelected(student.id)" (change)="toggleStudentSelection(student.id)"
+                            class="rounded border-gray-300 text-[#00609b] focus:ring-[#00609b] w-4 h-4 cursor-pointer">
                     </td>
                     <td class="px-4 py-5 text-sm font-bold text-gray-800">{{ student.numeroCarteira || '---' }}</td>
                     <td class="px-4 py-5 font-bold text-gray-800 text-[15px]">{{ student.nome || student.nome_completo
@@ -321,7 +325,7 @@
     </app-action-success-modal>
 
     <!-- Delete Confirm Modal -->
-    <app-delete-confirm-modal entityName="aluno" entityArticle="o" [isVisible]="showDeleteModal"
+    <app-delete-confirm-modal [entityName]="deleteModalEntityName" [entityArticle]="deleteModalEntityArticle" [isVisible]="showDeleteModal"
         [isLoading]="deleteLoading" (onConfirm)="confirmDelete()" (onCancel)="cancelDelete()">
     </app-delete-confirm-modal>
 </div>
