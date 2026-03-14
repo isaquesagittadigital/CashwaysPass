@@ -537,7 +537,6 @@
                         <th class="px-8 py-5">Nome</th>
                         <th class="px-6 py-5">Email</th>
                         <th class="px-6 py-5">CPF</th>
-                        <th class="px-6 py-5">Tipo / Turma</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -545,12 +544,6 @@
                         <td class="px-8 py-5 text-sm font-bold text-gray-800 group-hover:text-[#00609b]">{{ u.nome_completo }}</td>
                         <td class="px-6 py-5 text-sm text-gray-500 font-medium">{{ u.email }}</td>
                         <td class="px-6 py-5 text-sm text-gray-500 font-medium">{{ u.cpf || '---' }}</td>
-                        <td class="px-6 py-5 text-sm">
-                            <span class="px-3 py-1 bg-blue-50 text-[#00609b] rounded-lg font-bold text-[11px] uppercase whitespace-nowrap">
-                                {{ u.tipo_acesso }}
-                            </span>
-                            <span *ngIf="u.turmaNome" class="ml-2 text-gray-400 font-medium">— {{ u.turmaNome }}</span>
-                        </td>
                     </tr>
                 </tbody>
             </table>
