@@ -238,21 +238,35 @@ export class StudentManagementComponent implements OnInit, OnChanges {
                 skipEmptyLines: true,
                 complete: (result) => {
                     this.previewStudents = result.data.map((row: any) => {
-                        const turma = this.turmas.find(t => 
-                            t.nome?.toLowerCase() === row.turma?.toLowerCase() || 
-                            t.serie?.toLowerCase() === row.turma?.toLowerCase() ||
-                            `${t.serie} ${t.nome}`.toLowerCase() === row.turma?.toLowerCase() ||
-                            t.id === row.turma // Suporte a ID literal no CSV
-                        ) || this.turmas.find(t => t.id === this.turmaId) || this.turmas[0];
+                        // Priority: 
+                        // 1. Try to match the turma from CSV column
+                        // 2. If no match or no column, use the current context (this.turmId)
+                        // 3. Fallback to first available class if nothing else works
+                        
+                        let matchedTurma = null;
+                        const csvTurma = (row.turma || row.turma_nome || row.turmaNome || '').toLowerCase().trim();
+
+                        if (csvTurma) {
+                            matchedTurma = this.turmas.find(t => 
+                                t.nome?.toLowerCase().trim() === csvTurma || 
+                                t.serie?.toString().toLowerCase().trim() === csvTurma ||
+                                `${t.serie} ${t.nome}`.toLowerCase().trim() === csvTurma ||
+                                `${t.serie} ${t.nome}`.toLowerCase().replace(/[^a-z0-9]/g, '') === csvTurma.replace(/[^a-z0-9]/g, '') ||
+                                t.id === csvTurma
+                            );
+                        }
+
+                        // If NOT matched by CSV but we have a context turmaId, use context
+                        const finalTurma = matchedTurma || this.turmas.find(t => t.id === this.turmaId) || this.turmas[0];
 
                         return {
-                            turmaId: turma?.id || '',
-                            turmaNome: turma ? `${turma.serie} ${turma.nome}` : row.turma,
+                            turmaId: finalTurma?.id || null, // Never send empty string for UUID column
+                            turmaNome: finalTurma ? `${finalTurma.serie} ${finalTurma.nome}` : (row.turma || 'Sem turma'),
                             nome: row.nome || '',
                             email: row.email || '',
                             telefone: row.telefone || '',
-                            data_nascimento: row.data_nascimento || '',
-                            numeroCarteira: row.carteira || ''
+                            data_nascimento: row.data_nascimento || null, // Use null for empty dates
+                            numeroCarteira: row.carteira || row.ra || ''
                         };
                     }).filter((s: any) => s.nome !== '');
 

@@ -251,7 +251,8 @@ export class SchoolManagementService {
     async createStudent(data: any): Promise<{ success: boolean; error?: any }> {
         try {
             const email = data.emailAluno || data.email;
-            const ra = data.numeroCarteira || data.ra;
+            const ra = data.numeroCarteira || data.ra || data.ra_aluno;
+            const tId = data.turmaId || data.turma_id || data.turmaID || null;
 
             // 1. Manual Upsert into usuarios table
             let userId: any;
@@ -268,7 +269,7 @@ export class SchoolManagementService {
                 tipo_acesso: 'Aluno',
                 status: data.status || 'active',
                 escola_id: data.escola_id,
-                turmaID: data.turmaId,
+                turmaID: tId,
                 nome_mae: data.responsavel || data.nome_mae,
                 ra: ra,
                 primeiro_acesso: false
@@ -301,13 +302,13 @@ export class SchoolManagementService {
             const alunoPayload = {
                 usuario_id: userId,
                 escola_id: data.escola_id,
-                turma_id: data.turmaId,
+                turma_id: tId,
                 nome: data.nome,
                 nome_completo: data.nome,
                 nome_mae: data.responsavel || data.nome_mae,
                 email: email,
                 ra: ra,
-                data_nascimento: data.data_nascimento,
+                data_nascimento: data.data_nascimento || null,
                 primeiro_acesso: false
             };
 
@@ -335,7 +336,7 @@ export class SchoolManagementService {
                 const carteiraPayload = {
                     Usuario: userId,
                     carteira_code: ra,
-                    turmaID: data.turmaId,
+                    turmaID: tId,
                     escola_id: data.escola_id
                 };
 
@@ -373,12 +374,13 @@ export class SchoolManagementService {
     async updateStudent(id: string, data: any): Promise<{ success: boolean; error?: any }> {
         try {
             const email = data.emailAluno || data.email;
-            const ra = data.numeroCarteira || data.ra;
+            const ra = data.numeroCarteira || data.ra || data.ra_aluno;
+            const tId = data.turmaId || data.turma_id || data.turmaID || null;
 
             // 1. Get current student and linked user
             const { data: student, error: getError } = await supabase
                 .from('aluno')
-                .select('usuario_id')
+                .select('usuario_id, ra, email')
                 .eq('id', id)
                 .single();
             
@@ -393,7 +395,7 @@ export class SchoolManagementService {
                         nome: data.nome,
                         email: email,
                         status: data.status,
-                        turmaID: data.turmaId,
+                        turmaID: tId,
                         nome_mae: data.responsavel || data.nome_mae,
                         ra: ra,
                         primeiro_acesso: data.primeiro_acesso ?? false
@@ -405,13 +407,13 @@ export class SchoolManagementService {
             const { error: alunoError } = await supabase
                 .from('aluno')
                 .update({
-                    turma_id: data.turmaId,
+                    turma_id: tId,
                     nome: data.nome,
                     nome_completo: data.nome,
                     nome_mae: data.responsavel || data.nome_mae,
                     email: email,
                     ra: ra,
-                    data_nascimento: data.data_nascimento
+                    data_nascimento: data.data_nascimento || null
                 })
                 .eq('id', id);
 
@@ -428,7 +430,7 @@ export class SchoolManagementService {
                 const carteiraPayload = {
                     Usuario: student.usuario_id,
                     carteira_code: ra,
-                    turmaID: data.turmaId,
+                    turmaID: tId,
                     escola_id: data.escola_id
                 };
 
