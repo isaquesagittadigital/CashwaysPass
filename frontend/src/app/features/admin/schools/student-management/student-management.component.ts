@@ -161,7 +161,10 @@ export class StudentManagementComponent implements OnInit, OnChanges {
     openAddModal() {
         this.isBulk = false;
         this.isEditing = false;
-        this.studentForm.reset({ turmaId: '', status: 'active' });
+        this.studentForm.reset({ 
+            turmaId: this.turmaId || '', 
+            status: 'active' 
+        });
         this.showModal = true;
     }
 
@@ -203,11 +206,27 @@ export class StudentManagementComponent implements OnInit, OnChanges {
                 skipEmptyLines: true,
                 complete: (result) => {
                     this.previewStudents = result.data.map((row: any) => {
-                        const turma = this.turmas.find(t => 
-                            t.nome?.toLowerCase() === row.turma?.toLowerCase() || 
-                            t.serie?.toLowerCase() === row.turma?.toLowerCase() ||
-                            `${t.serie} ${t.nome}`.toLowerCase() === row.turma?.toLowerCase()
-                        ) || this.turmas[0];
+                        // Priority: 1. If we are already inside a specific class (turmaId), use it.
+                        // 2. If not, try to find a match in the CSV data.
+                        // 3. Last fallback: first available class.
+                        
+                        let turma: any;
+                        
+                        if (this.turmaId) {
+                            turma = this.turmas.find(t => t.id === this.turmaId);
+                        }
+                        
+                        if (!turma && row.turma) {
+                            turma = this.turmas.find(t => 
+                                t.nome?.toLowerCase() === row.turma?.toLowerCase() || 
+                                t.serie?.toLowerCase() === row.turma?.toLowerCase() ||
+                                `${t.serie} ${t.nome}`.toLowerCase() === row.turma?.toLowerCase()
+                            );
+                        }
+                        
+                        if (!turma) {
+                            turma = this.turmas[0];
+                        }
 
                         return {
                             turmaId: turma?.id || '',
