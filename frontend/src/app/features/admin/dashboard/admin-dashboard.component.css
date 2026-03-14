@@ -16,7 +16,11 @@
 }
 
 .dashboard-title {
-    @apply text-[32px] font-semibold text-gray-900 tracking-tight;
+    @apply text-2xl md:text-[32px] font-semibold text-gray-900 tracking-tight;
+}
+
+.data-table {
+    @apply w-full text-left min-w-[800px];
 }
 
 .dashboard-subtitle {

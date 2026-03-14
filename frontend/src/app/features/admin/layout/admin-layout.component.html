@@ -11,9 +11,12 @@
         ]">
 
         <!-- Logo area -->
-        <div class="h-16 flex items-center px-4 border-b border-gray-100">
-            <div *ngIf="sidebarOpen" class="flex items-center gap-2">
-                <app-logo className="w-36" [light]="false"></app-logo>
+        <div class="h-16 flex items-center px-4 border-b border-gray-100 shrink-0">
+            <div *ngIf="sidebarOpen" class="flex items-center justify-between w-full">
+                <app-logo className="w-32" [light]="false"></app-logo>
+                <button (click)="toggleSidebar()" class="md:hidden p-1 text-gray-400 hover:text-gray-600">
+                    <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+                </button>
             </div>
             <div *ngIf="!sidebarOpen" class="flex items-center justify-center w-full">
                 <app-logo [onlyMark]="true" className="w-8" [light]="false"></app-logo>

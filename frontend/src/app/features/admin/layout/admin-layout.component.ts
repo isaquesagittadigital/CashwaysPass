@@ -81,6 +81,9 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        if (window.innerWidth < 768) {
+            this.sidebarOpen = false;
+        }
         const storedUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
         if (storedUser) {
             try {
