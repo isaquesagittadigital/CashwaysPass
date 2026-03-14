@@ -380,7 +380,8 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
     }
 
     formatCurrency(value: number | undefined): string {
-        if (value === undefined) return 'R$ 0,00';
-        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        if (value === undefined || value === null) return 'R$ 0,00';
+        const formatted = value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return `R$ ${formatted}`;
     }
 }

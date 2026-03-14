@@ -150,7 +150,7 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
 
     // --- Currency formatting ---
     formatCurrency(value: number): string {
-        return `R$${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 
     formatDate(dateStr: string): string {
