@@ -68,11 +68,11 @@
                     <td class="px-4 py-5">
                         <div class="flex items-center justify-center gap-3">
                             <button (click)="onDelete(student.id)"
-                                class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors btn-custom-height">
                                 <lucide-icon [img]="icons.Trash2" class="w-5 h-5 text-red-400"></lucide-icon>
                             </button>
                             <button (click)="onSendEmail(student)" [disabled]="isSendingEmail[student.id]"
-                                class="p-2 text-gray-400 hover:bg-blue-50 rounded-lg transition-colors">
+                                class="p-2 text-gray-400 hover:bg-blue-50 rounded-lg transition-colors btn-custom-height">
                                 <lucide-icon *ngIf="!isSendingEmail[student.id]" [img]="icons.Mail"
                                     class="w-5 h-5"></lucide-icon>
                                 <div *ngIf="isSendingEmail[student.id]"
@@ -80,7 +80,7 @@
                                 </div>
                             </button>
                             <button (click)="openEditModal(student)"
-                                class="p-2 text-gray-400 border border-gray-100 rounded-lg hover:bg-gray-50 transition-all">
+                                class="p-2 text-gray-400 border border-gray-100 rounded-lg hover:bg-gray-50 transition-all btn-custom-height">
                                 <lucide-icon [img]="icons.Edit" class="w-5 h-5"></lucide-icon>
                             </button>
                         </div>
