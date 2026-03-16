@@ -23,6 +23,7 @@ import {
 import { EventoService, Evento } from '../../../core/services/evento.service';
 import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
 import { SchoolService, School } from '../../../core/services/school.service';
+import { ImageCompressionService } from '../../../core/services/image-compression.service';
 
 @Component({
     selector: 'app-events',
@@ -85,7 +86,8 @@ export class EventsComponent implements OnInit, OnDestroy {
     constructor(
         private eventoService: EventoService,
         private schoolService: SchoolService,
-        private router: Router
+        private router: Router,
+        private compressionService: ImageCompressionService
     ) { }
 
     ngOnInit() {
@@ -211,13 +213,13 @@ export class EventsComponent implements OnInit, OnDestroy {
         this.showFormModal = false;
     }
 
-    onImageSelected(event: any) {
+    async onImageSelected(event: any) {
         const file = event.target.files[0];
         if (file) {
-            this.imageFile = file;
+            this.imageFile = await this.compressionService.compressImage(file);
             const reader = new FileReader();
             reader.onload = (e: any) => this.imagePreview = e.target.result;
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(this.imageFile);
         }
     }
 

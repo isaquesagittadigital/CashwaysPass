@@ -25,6 +25,7 @@ import { ProdutoService, Produto, ProdutoForm } from '../../../core/services/pro
 import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
 import { SchoolService, School } from '../../../core/services/school.service';
 import { supabase } from '../../../core/supabase';
+import { ImageCompressionService } from '../../../core/services/image-compression.service';
 
 @Component({
     selector: 'app-escola-products',
@@ -73,7 +74,8 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
     constructor(
         private produtoService: ProdutoService,
         private schoolService: SchoolService,
-        private router: Router
+        private router: Router,
+        private compressionService: ImageCompressionService
     ) { }
 
     ngOnInit() {
@@ -236,10 +238,12 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
         this.editingProductId = null;
     }
 
-    onImageSelected(event: Event) {
+    async onImageSelected(event: Event) {
         const input = event.target as HTMLInputElement;
         if (input.files && input.files[0]) {
-            this.imageFile = input.files[0];
+            const originalFile = input.files[0];
+            this.imageFile = await this.compressionService.compressImage(originalFile);
+            
             const reader = new FileReader();
             reader.onload = (e) => {
                 this.imagePreview = e.target?.result as string;

@@ -16,6 +16,7 @@ import {
     EyeOff
 } from 'lucide-angular';
 import { ProfileService, UserProfile } from '../../../core/services/profile.service';
+import { ImageCompressionService } from '../../../core/services/image-compression.service';
 
 @Component({
     selector: 'app-perfil',
@@ -48,7 +49,8 @@ export class PerfilComponent implements OnInit {
     constructor(
         private fb: FormBuilder,
         private profileService: ProfileService,
-        private router: Router
+        private router: Router,
+        private compressionService: ImageCompressionService
     ) {
         this.profileForm = this.fb.group({
             nome_completo: ['', Validators.required],
@@ -99,13 +101,13 @@ export class PerfilComponent implements OnInit {
             ? null : { mismatch: true };
     }
 
-    onFileSelected(event: any) {
+    async onFileSelected(event: any) {
         const file = event.target.files[0];
         if (file) {
-            this.selectedFile = file;
+            this.selectedFile = await this.compressionService.compressImage(file);
             const reader = new FileReader();
             reader.onload = (e: any) => this.previewUrl = e.target.result;
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(this.selectedFile);
         }
     }
 
