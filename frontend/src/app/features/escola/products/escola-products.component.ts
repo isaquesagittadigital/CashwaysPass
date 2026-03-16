@@ -53,6 +53,7 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
     formLoading = false;
     imageFile: File | null = null;
     imagePreview: string = '';
+    displayPreco: string = ''; // New field for masked price display
     form: ProdutoForm = this.getEmptyForm();
 
     // Delete Confirm Modal
@@ -150,7 +151,26 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
 
     // --- Currency formatting ---
     formatCurrency(value: number): string {
-        return `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+    }
+
+    onPriceKeydown(event: KeyboardEvent) {
+        if (['-', 'e', 'E', '+'].includes(event.key)) {
+            event.preventDefault();
+        }
+    }
+
+    applyPriceMask(event: any) {
+        let val = event.target.value.replace(/\D/g, '');
+        const amount = val ? parseInt(val) / 100 : 0;
+        
+        this.form.preco = amount;
+        this.displayPreco = new Intl.NumberFormat('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
+        
+        event.target.value = this.displayPreco;
     }
 
     formatDate(dateStr: string): string {
@@ -170,6 +190,7 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
         this.form = this.getEmptyForm();
         this.imageFile = null;
         this.imagePreview = '';
+        this.displayPreco = '';
         this.selectedTurmaId = '';
         this.showFormModal = true;
     }
@@ -193,6 +214,10 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
         this.selectedTurmaId = '';
         this.imageFile = null;
         this.imagePreview = product.url_imagem || '';
+        this.displayPreco = new Intl.NumberFormat('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(product.preco);
         this.showFormModal = true;
     }
 

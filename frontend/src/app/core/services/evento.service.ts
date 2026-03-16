@@ -12,6 +12,7 @@ export interface Evento {
     ativo: boolean;
     turma_id?: string; // Optional for backward compatibility
     turma_ids?: string[]; // New field for multiple turmas
+    todas_turmas?: boolean; // New field for all turmas
     lojistas_convidados: string[];
     created_at?: string;
     updated_at?: string;

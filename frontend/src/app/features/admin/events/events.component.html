@@ -87,7 +87,8 @@
                     </div>
                     <div class="flex items-center gap-2 text-xs text-gray-500">
                         <lucide-icon [img]="icons.Users" class="w-3.5 h-3.5 text-gray-400"></lucide-icon>
-                        {{ ev.turma_ids?.length || 0 }} turmas vinculadas
+                        <span *ngIf="ev.todas_turmas">Todas as turmas</span>
+                        <span *ngIf="!ev.todas_turmas">{{ ev.turma_ids?.length || 0 }} turmas vinculadas</span>
                     </div>
                     <div class="flex items-center gap-2 text-xs text-gray-500">
                         <lucide-icon [img]="icons.Mail" class="w-3.5 h-3.5 text-gray-400"></lucide-icon>
@@ -216,6 +217,7 @@
                     <select [(ngModel)]="selectedTurmaId" (change)="addTurma()"
                         class="w-full appearance-none px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] cursor-pointer transition-all">
                         <option value="">Selecione a turma</option>
+                        <option value="ALL">Todas as Turmas (Evento único)</option>
                         <option *ngFor="let t of turmas" [value]="t.id">{{ t.nome }}</option>
                     </select>
                     <lucide-icon [img]="icons.ChevronDown"
@@ -223,7 +225,16 @@
                 </div>
 
                 <!-- Turma Badges -->
-                <div class="flex flex-wrap gap-2 mt-2" *ngIf="form.turma_ids.length > 0">
+                <div class="flex flex-wrap gap-2 mt-2" *ngIf="form.turma_ids.length > 0 || form.todas_turmas">
+                    <!-- Global Badge -->
+                    <div *ngIf="form.todas_turmas"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-[#005bb5]/10 border border-[#005bb5]/20 rounded-lg text-xs font-bold text-[#005bb5] shadow-sm animate-scale-up">
+                        Todas as Turmas
+                        <button (click)="removeTurma('ALL')" class="p-0.5 hover:bg-white rounded-md transition-colors">
+                            <lucide-icon [img]="icons.X" class="w-3.5 h-3.5 text-[#005bb5] font-bold"></lucide-icon>
+                        </button>
+                    </div>
+
                     <div *ngFor="let id of form.turma_ids"
                         class="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 shadow-sm animate-scale-up">
                         {{ getTurmaName(id) }}
@@ -330,6 +341,29 @@
                 <div class="flex items-center gap-3">
                     <lucide-icon [img]="icons.CalendarDays" class="w-5 h-5 text-[#005bb5]"></lucide-icon>
                     <span class="text-sm text-gray-600">{{ formatDate(selectedDetailsEvent.data_evento) }}</span>
+                </div>
+            </div>
+
+            <!-- Turmas Vinculadas Card -->
+            <div class="bg-blue-50/30 border border-blue-100/50 rounded-xl p-4">
+                <h4 class="text-xs font-bold text-gray-900 mb-3">
+                    Turma(s) vinculada(s)
+                </h4>
+                
+                <div *ngIf="selectedDetailsEvent.todas_turmas" class="flex items-center gap-3 bg-white border border-blue-100 rounded-lg p-3 shadow-sm">
+                    <lucide-icon [img]="icons.Users" class="w-4 h-4 text-[#005bb5]"></lucide-icon>
+                    <span class="text-sm font-bold text-[#005bb5]">Todas as turmas da escola</span>
+                </div>
+
+                <div class="space-y-2" *ngIf="!selectedDetailsEvent.todas_turmas && (selectedDetailsEvent.turma_ids?.length || 0) > 0">
+                    <div *ngFor="let id of selectedDetailsEvent.turma_ids" class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
+                        <lucide-icon [img]="icons.Users" class="w-4 h-4 text-gray-400"></lucide-icon>
+                        <span class="text-sm text-gray-700">{{ getTurmaName(id) }}</span>
+                    </div>
+                </div>
+
+                <div *ngIf="!selectedDetailsEvent.todas_turmas && (selectedDetailsEvent.turma_ids?.length || 0) === 0" class="text-center py-4 text-sm text-gray-400">
+                    Nenhuma turma vinculada a este evento.
                 </div>
             </div>
 

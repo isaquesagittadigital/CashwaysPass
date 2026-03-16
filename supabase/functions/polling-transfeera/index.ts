@@ -71,14 +71,31 @@ Deno.serve(async (req) => {
             // 4. Se estiver pago, atualiza o Banco
             console.log(`Status de SUCESSO detectado (${status}). Iniciando processamento...`);
             
-            // 4.1 Idempotência: Verificar se já foi pago antes para não creditar duas vezes
-            const { data: currentInv } = await supabaseClient
+            // 4.1 Idempotência e Existência: Verificar se o registro existe e seu status
+            const { data: currentInv, error: fetchError } = await supabaseClient
                 .from('investimento_aluno')
-                .select('status_investimento')
+                .select('id, status_investimento, id_user, valor')
                 .eq('id_pix_transfeera', id_pix)
-                .single()
+                .maybeSingle()
 
-            if (currentInv && currentInv.status_investimento === 'PAGO') {
+            if (fetchError) {
+                console.error("Erro ao buscar investimento:", fetchError);
+                throw new Error("Erro interno ao consultar o banco de dados.");
+            }
+
+            if (!currentInv) {
+                console.log(`[POLLING] Investimento não encontrado para id_pix: ${id_pix}`);
+                return new Response(JSON.stringify({ 
+                    success: false, 
+                    status: 'NOT_FOUND_IN_DB',
+                    message: 'Este Pix não está registrado no sistema Cashways.' 
+                }), {
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                    status: 200,
+                })
+            }
+
+            if (currentInv.status_investimento === 'PAGO') {
                  console.log("Pagamento já processado anteriormente.");
                  return new Response(JSON.stringify({ 
                     success: true, 
@@ -97,11 +114,11 @@ Deno.serve(async (req) => {
                 .update({ status_investimento: 'PAGO' })
                 .eq('id_pix_transfeera', id_pix) 
                 .select()
-                .single()
+                .maybeSingle()
 
-            if (investError) {
+            if (investError || !investimentoUpdated) {
                 console.error("Erro ao atualizar Supabase (Investimento):", investError);
-                throw new Error("Erro ao atualizar status do investimento.");
+                throw new Error("Erro ao atualizar status do investimento ou registro desapareceu.");
             }
             
              // 4.3 Atualizar Saldo do Usuário e Logs

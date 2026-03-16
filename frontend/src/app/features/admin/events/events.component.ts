@@ -60,6 +60,7 @@ export class EventsComponent implements OnInit, OnDestroy {
         descricao_curta: '',
         data_evento: '',
         turma_ids: [] as string[], // Changed to array for multi-select
+        todas_turmas: false, // New field for all turmas
         ativo: true,
         capa_url: '',
         lojistas_convidados: [] as string[]
@@ -179,6 +180,7 @@ export class EventsComponent implements OnInit, OnDestroy {
             descricao_curta: event.descricao_curta || '',
             data_evento: event.data_evento || '',
             turma_ids: event.turma_ids || (event.turma_id ? [event.turma_id] : []), // Handle migration from single to multi
+            todas_turmas: !!event.todas_turmas,
             ativo: event.ativo,
             capa_url: event.capa_url || '',
             lojistas_convidados: [...(event.lojistas_convidados || [])]
@@ -194,6 +196,7 @@ export class EventsComponent implements OnInit, OnDestroy {
             descricao_curta: '',
             data_evento: '',
             turma_ids: [],
+            todas_turmas: false,
             ativo: true,
             capa_url: '',
             lojistas_convidados: []
@@ -232,14 +235,26 @@ export class EventsComponent implements OnInit, OnDestroy {
     }
 
     addTurma() {
+        if (this.selectedTurmaId === 'ALL') {
+            this.form.todas_turmas = true;
+            this.form.turma_ids = [];
+            this.selectedTurmaId = '';
+            return;
+        }
+
         if (this.selectedTurmaId && !this.form.turma_ids.includes(this.selectedTurmaId)) {
+            this.form.todas_turmas = false;
             this.form.turma_ids.push(this.selectedTurmaId);
         }
         this.selectedTurmaId = '';
     }
 
     removeTurma(id: string) {
-        this.form.turma_ids = this.form.turma_ids.filter(t => t !== id);
+        if (id === 'ALL') {
+            this.form.todas_turmas = false;
+        } else {
+            this.form.turma_ids = this.form.turma_ids.filter(t => t !== id);
+        }
     }
 
     async submitForm() {

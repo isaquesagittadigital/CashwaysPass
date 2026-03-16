@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Bubble Integration Tester</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f7f6; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
+        pre { background: #eee; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        button { background: #3eaf7c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #349a6a; }
+        .status { margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Tester de Integração</h1>
+        <p>Testando ação: <strong>list-schools</strong></p>
+        <button id="testBtn">Executar Teste API</button>
+        <div class="status" id="status"></div>
+        <h3>Resultado:</h3>
+        <pre id="result">Aguardando teste...</pre>
+    </div>
+
+    <script>
+        const btn = document.getElementById('testBtn');
+        const resultDiv = document.getElementById('result');
+        const statusDiv = document.getElementById('status');
+
+        const URL = 'https://syirkevmpukshbgditwz.supabase.co/functions/v1/bubble-integration?action=list-schools';
+        const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5aXJrZXZtcHVrc2hiZ2RpdHd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwOTAxNjcsImV4cCI6MjA4ODY2NjE2N30.m4vNNZ33EUfcCxjeU78ctFyPIKxu9nFgPdLE9Y5xGDw';
+
+        btn.onclick = async () => {
+            statusDiv.innerText = 'Chamando API...';
+            resultDiv.innerText = 'Carregando...';
+            try {
+                const response = await fetch(URL, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + KEY,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                statusDiv.innerText = 'Status: ' + response.status;
+                resultDiv.innerText = JSON.stringify(data, null, 2);
+            } catch (error) {
+                statusDiv.innerText = 'Erro na requisição';
+                resultDiv.innerText = error.message;
+            }
+        };
+    </script>
+</body>
+</html>

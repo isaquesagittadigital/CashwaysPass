@@ -1,0 +1,44 @@
+DOCUMENTAÇÃO CURL - INTEGRAÇÃO BUBBLE.IO + SUPABASE (PASS 2.0)
+
+URL BASE: https://syirkevmpukshbgditwz.supabase.co/functions/v1/bubble-integration
+
+AUTENTICAÇÃO: Utilize a chave 'Anon Key' ou 'Service Role' do seu projeto no header Authorization.
+
+--------------------------------------------------------------------------------
+0. LISTAR ESCOLAS ATIVAS
+Finalidade: Retorna a lista de escolas com status 'active' e não deletadas.
+
+curl -X GET 'https://syirkevmpukshbgditwz.supabase.co/functions/v1/bubble-integration?action=list-schools' \
+  -H 'Authorization: Bearer SUPABASE_KEY_AQUI'
+
+--------------------------------------------------------------------------------
+1. LISTAR TURMAS POR ESCOLA
+Finalidade: Retorna a lista de turmas vinculadas a uma escola específica.
+
+curl -X GET 'https://syirkevmpukshbgditwz.supabase.co/functions/v1/bubble-integration?action=list-turmas&escola_id=[ID_DA_ESCOLA]' \
+  -H 'Authorization: Bearer SUPABASE_KEY_AQUI'
+
+--------------------------------------------------------------------------------
+2. LISTAR ALUNOS POR TURMA
+Finalidade: Retorna a lista de alunos vinculados a uma turma específica.
+
+curl -X GET 'https://syirkevmpukshbgditwz.supabase.co/functions/v1/bubble-integration?action=list-alunos&turma_id=[ID_DA_TURMA]' \
+  -H 'Authorization: Bearer SUPABASE_KEY_AQUI'
+
+--------------------------------------------------------------------------------
+3. ATIVAR CONTA DO ALUNO (PRIMEIRO ACESSO / DEFINIR SENHA)
+Finalidade: Cria o usuário no Supabase Auth, define a senha e altera o status para 'active' e 'acessado'.
+
+curl -X POST 'https://syirkevmpukshbgditwz.supabase.co/functions/v1/bubble-integration' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer SUPABASE_KEY_AQUI' \
+  -d '{
+    "action": "activate-account",
+    "student_id": [ID_DO_USUARIO_NA_TABELA_USUARIOS],
+    "password": "senha_escolhida_pelo_aluno"
+  }'
+
+--------------------------------------------------------------------------------
+COMANDO PARA DEPLOY (NO SEU TERMINAL LOCAL):
+supabase functions deploy bubble-integration --no-verify-jwt
+--------------------------------------------------------------------------------
