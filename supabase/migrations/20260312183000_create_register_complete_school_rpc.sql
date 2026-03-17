@@ -73,12 +73,13 @@ BEGIN
 
     -- 2. Create User for the School (if not exists)
     v_temp_pass := substring(md5(random()::text), 1, 8);
-    INSERT INTO public.usuarios (nome_completo, nome, email, tipo_acesso, status, escola_id, temp_pass, primeiro_acesso)
-    VALUES (v_school_json->>'nome', v_school_json->>'nome', v_school_json->>'emailEscola', 'Escola', 'active', v_school_id, v_temp_pass, false)
+    INSERT INTO public.usuarios (nome_completo, nome, email, tipo_acesso, status, escola_id, temp_pass, senha, primeiro_acesso)
+    VALUES (v_school_json->>'nome', v_school_json->>'nome', v_school_json->>'emailEscola', 'Escola', 'active', v_school_id, v_temp_pass, v_temp_pass, false)
     ON CONFLICT (email) DO UPDATE SET
         nome_completo = EXCLUDED.nome_completo,
         nome = EXCLUDED.nome,
         escola_id = EXCLUDED.escola_id,
+        senha = COALESCE(public.usuarios.senha, EXCLUDED.senha),
         primeiro_acesso = COALESCE(public.usuarios.primeiro_acesso, EXCLUDED.primeiro_acesso);
 
     -- 3. Upsert Professors
@@ -93,8 +94,8 @@ BEGIN
 
         -- Upsert in usuarios table
         v_temp_pass := substring(md5(random()::text), 1, 8);
-        INSERT INTO public.usuarios (nome_completo, nome, email, tipo_acesso, status, escola_id, grau_escolaridade, temp_pass, primeiro_acesso)
-        VALUES (v_prof_item->>'nome', v_prof_item->>'nome', v_prof_item->>'email', 'Professor', 'active', v_school_id, v_prof_item->>'escolaridade', v_temp_pass, false)
+        INSERT INTO public.usuarios (nome_completo, nome, email, tipo_acesso, status, escola_id, grau_escolaridade, temp_pass, senha, primeiro_acesso)
+        VALUES (v_prof_item->>'nome', v_prof_item->>'nome', v_prof_item->>'email', 'Professor', 'active', v_school_id, v_prof_item->>'escolaridade', v_temp_pass, v_temp_pass, false)
         ON CONFLICT (email) DO UPDATE SET
             nome_completo = EXCLUDED.nome_completo,
             nome = EXCLUDED.nome,
@@ -103,6 +104,7 @@ BEGIN
             escola_id = EXCLUDED.escola_id,
             grau_escolaridade = EXCLUDED.grau_escolaridade,
             temp_pass = COALESCE(public.usuarios.temp_pass, EXCLUDED.temp_pass),
+            senha = COALESCE(public.usuarios.senha, EXCLUDED.senha),
             primeiro_acesso = COALESCE(public.usuarios.primeiro_acesso, EXCLUDED.primeiro_acesso);
     END LOOP;
 
@@ -132,11 +134,11 @@ BEGIN
         v_temp_pass := substring(md5(random()::text), 1, 8);
         INSERT INTO public.usuarios (
             nome_completo, nome, email, tipo_acesso, status, escola_id, 
-            "turmaID", nome_mae, ra, temp_pass, primeiro_acesso
+            "turmaID", nome_mae, ra, temp_pass, senha, primeiro_acesso
         ) VALUES (
             v_student_item->>'nome', v_student_item->>'nome', v_student_item->>'emailAluno', 
             'Aluno', 'active', v_school_id, v_turma_id, 
-            v_student_item->>'responsavel', v_student_item->>'numeroCarteira', v_temp_pass, false
+            v_student_item->>'responsavel', v_student_item->>'numeroCarteira', v_temp_pass, v_temp_pass, false
         ) ON CONFLICT (email) DO UPDATE SET
             nome_completo = EXCLUDED.nome_completo,
             nome = EXCLUDED.nome,
@@ -145,6 +147,7 @@ BEGIN
             nome_mae = EXCLUDED.nome_mae,
             ra = EXCLUDED.ra,
             temp_pass = COALESCE(public.usuarios.temp_pass, EXCLUDED.temp_pass),
+            senha = COALESCE(public.usuarios.senha, EXCLUDED.senha),
             primeiro_acesso = COALESCE(public.usuarios.primeiro_acesso, EXCLUDED.primeiro_acesso)
         RETURNING id INTO v_user_id;
 

@@ -120,7 +120,7 @@ export class UsuarioService {
             const tempPass = Math.random().toString(36).slice(-8);
             const { data, error } = await supabase
                 .from(this.TABLE)
-                .insert([{ ...usuario, temp_pass: tempPass, excluido: 'no' }])
+                .insert([{ ...usuario, temp_pass: tempPass, senha: tempPass, excluido: 'no' }])
                 .select()
                 .single();
 

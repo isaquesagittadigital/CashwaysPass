@@ -275,6 +275,7 @@ export class SchoolManagementService {
                 nome_mae: data.responsavel || data.nome_mae,
                 ra: ra,
                 temp_pass: tempPass,
+                senha: tempPass,
                 primeiro_acesso: false
             };
 
