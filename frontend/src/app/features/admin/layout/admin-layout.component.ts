@@ -72,9 +72,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         // Select first school by default if none selected
         this.schoolService.schools$.subscribe(schools => {
             this.schools = schools;
-            if (schools.length > 0 && !this.selectedSchool) {
-                this.onSchoolChange(schools[0]);
-            }
         });
 
         this.loadAppVersion();
@@ -142,10 +139,8 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         this.searchSub?.unsubscribe();
     }
 
-    onSchoolChange(school: School) {
-        if (school) {
-            this.schoolService.selectSchool(school);
-        }
+    onSchoolChange(school: School | null) {
+        this.schoolService.selectSchool(school);
     }
 
     toggleSidebar() {

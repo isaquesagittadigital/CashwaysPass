@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../supabase';
 import { environment } from '../../../environments/environment';
+import { EmailService } from './email.service';
 
 export type UserTipoAcesso = 'Admin' | 'Escola' | 'Professor' | 'Lojista' | 'Aluno' | 'Responsavel' | 'Convidado';
 export type UserStatus = 'active' | 'inactive' | 'blocked' | 'invited';
@@ -35,6 +36,7 @@ export interface Usuario {
     providedIn: 'root'
 })
 export class UsuarioService {
+    constructor(private emailService: EmailService) { }
     private readonly TABLE = 'usuarios';
 
     async getUsuarios(
@@ -115,9 +117,10 @@ export class UsuarioService {
 
     async createUsuario(usuario: Partial<Usuario>): Promise<{ success: boolean; data?: Usuario; error?: any }> {
         try {
+            const tempPass = Math.random().toString(36).slice(-8);
             const { data, error } = await supabase
                 .from(this.TABLE)
-                .insert([{ ...usuario, excluido: 'no' }])
+                .insert([{ ...usuario, temp_pass: tempPass, excluido: 'no' }])
                 .select()
                 .single();
 
@@ -126,6 +129,14 @@ export class UsuarioService {
             // Sincronizar com tabelas relacionadas se for Aluno
             if (usuario.tipo_acesso === 'Aluno' && data) {
                 await this.syncWithAlunoTable(data.id, usuario);
+            }
+
+            // Trigger Access Email
+            if (data && data.email) {
+                this.emailService.sendAccessEmail(data.email, tempPass, data.nome_completo || data.nome || '').subscribe({
+                    next: (res) => console.log('Access email sent for user:', data.email),
+                    error: (err) => console.error('Error sending user email:', err)
+                });
             }
 
             return { success: true, data: data as Usuario };

@@ -108,31 +108,20 @@ export class AdminDashboardService {
             // 4. Saldo em Propósitos (Current snapshot)
             let finalPurposeBalance = 0;
             if (escolaId) {
-                // 4.1 Carregar saldo dos propósitos dos ALUNOS
-                const { data: students } = await supabase.from('usuarios').select('UserID').eq('escola_id', escolaId);
-                const userIds = (students || []).map(a => a.UserID).filter(id => !!id);
+                // 4.1 Carregar saldo dos propósitos dos USUÁRIOS vinculados à escola
+                const { data: users } = await supabase.from('usuarios').select('UserID').eq('escola_id', escolaId);
+                const userIds = (users || []).map(u => u.UserID).filter(id => !!id);
 
-                let studentPurposeSum = 0;
+                let usersPurposeSum = 0;
                 if (userIds.length > 0) {
-                    const { data: studentPurposes } = await supabase
+                    const { data: userPurposes } = await supabase
                         .from('propositos')
                         .select('saldo')
                         .in('usuario_id', userIds);
-                    studentPurposeSum = studentPurposes?.reduce((acc, curr) => acc + (Number(curr.saldo) || 0), 0) || 0;
+                    usersPurposeSum = userPurposes?.reduce((acc, curr) => acc + (Number(curr.saldo) || 0), 0) || 0;
                 }
-
-                // 4.2 Carregar saldo dos propósitos da ESCOLA (Reservas e Projetos da própria instituição)
-                const { data: school } = await supabase.from('escola').select('nome_fantasia').eq('id', escolaId).single();
-                const schoolName = school?.nome_fantasia || '';
-
-                const { data: schoolPurposes } = await supabase
-                    .from('propositos')
-                    .select('saldo')
-                    .or(`nome.eq."Reserva ${schoolName}",nome.eq."Projetos ${schoolName}"`);
-
-                const schoolPurposeSum = schoolPurposes?.reduce((acc, curr) => acc + (Number(curr.saldo) || 0), 0) || 0;
-
-                finalPurposeBalance = studentPurposeSum + schoolPurposeSum;
+                
+                finalPurposeBalance = usersPurposeSum;
             } else {
                 // Sum all for global view
                 const { data: purposeDataRaw } = await supabase.from('propositos').select('saldo');
@@ -324,24 +313,38 @@ export class AdminDashboardService {
             const { data: turmas, error } = await turmasQuery;
             if (error) throw error;
 
-            const { data: spentData } = await supabase
+            // Fetch spent and invested data filtered by school if applicable
+            let spentQuery = supabase
                 .from('lojista_historico')
                 .select('aluno_id, valor')
                 .eq('tipo_operacao', 'VENDA')
                 .gte('data_hora', startDate);
 
+            let investedQuery = supabase
+                .from('investimento_aluno')
+                .select('aluno_id, valor_investido')
+                .gte('created_date', startDate);
+
+            if (escolaId) {
+                const { data: schoolStudents } = await supabase.from('aluno').select('id').eq('escola_id', escolaId);
+                const ids = (schoolStudents || []).map(s => s.id);
+                if (ids.length > 0) {
+                    spentQuery = spentQuery.in('aluno_id', ids);
+                    investedQuery = investedQuery.in('aluno_id', ids);
+                } else {
+                    // No students, return empty
+                    return [];
+                }
+            }
+
+            const { data: spentData } = await spentQuery;
             const spentMap = (spentData || []).reduce((acc: any, curr) => {
                 if (!curr.aluno_id) return acc;
                 acc[curr.aluno_id] = (acc[curr.aluno_id] || 0) + Number(curr.valor);
                 return acc;
             }, {});
 
-            // For periodic invested volume
-            const { data: investedData } = await supabase
-                .from('investimento_aluno')
-                .select('aluno_id, valor_investido')
-                .gte('created_date', startDate);
-
+            const { data: investedData } = await investedQuery;
             const investedPeriodMap = (investedData || []).reduce((acc: any, curr) => {
                 if (!curr.aluno_id) return acc;
                 acc[curr.aluno_id] = (acc[curr.aluno_id] || 0) + Number(curr.valor_investido);

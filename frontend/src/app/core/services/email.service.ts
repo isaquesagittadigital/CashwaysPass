@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, delay, of } from 'rxjs';
+import { from, Observable, of } from 'rxjs';
+import { supabase } from '../supabase';
 
 @Injectable({
     providedIn: 'root'
@@ -7,10 +8,26 @@ import { Observable, delay, of } from 'rxjs';
 export class EmailService {
     constructor() { }
 
+    /**
+     * Sends an access email with temporary password via Supabase Edge Function
+     */
+    sendAccessEmail(email: string, tempPassword: string, name: string): Observable<any> {
+        if (!email || !tempPassword) return of({ error: 'Email or password missing' });
+
+        return from(
+            supabase.functions.invoke('send-access-email', {
+                body: {
+                    email,
+                    temp_password: tempPassword,
+                    nome: name || 'Usuário'
+                }
+            })
+        );
+    }
+
     sendStudentWelcomeEmail(studentId: string, email: string): Observable<boolean> {
-        // Placeholder logic for calling the edge function
-        console.log(`Sending welcome email to student ${studentId} at ${email}`);
-        // Simulate network delay to show loading state in UI
-        return of(true).pipe(delay(1500));
+        // Keeping this for backward compatibility if used elsewhere, but redirecting logic
+        console.log(`Deprecated: use sendAccessEmail instead. Sending to ${email}`);
+        return of(true);
     }
 }

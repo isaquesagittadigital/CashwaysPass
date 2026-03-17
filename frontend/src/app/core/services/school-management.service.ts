@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../supabase';
-import { from, Observable } from 'rxjs';
+import { from, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { EmailService } from './email.service';
 
 export interface School {
     id: string;
@@ -30,7 +31,7 @@ export interface School {
     providedIn: 'root'
 })
 export class SchoolManagementService {
-    constructor() { }
+    constructor(private emailService: EmailService) { }
 
     getSchools(): Observable<School[]> {
         return from(
@@ -262,6 +263,7 @@ export class SchoolManagementService {
                 .eq('email', email)
                 .single();
 
+            const tempPass = Math.random().toString(36).slice(-8);
             const userPayload = {
                 nome_completo: data.nome,
                 nome: data.nome,
@@ -272,6 +274,7 @@ export class SchoolManagementService {
                 turmaID: tId,
                 nome_mae: data.responsavel || data.nome_mae,
                 ra: ra,
+                temp_pass: tempPass,
                 primeiro_acesso: false
             };
 
@@ -351,6 +354,12 @@ export class SchoolManagementService {
                         .insert(carteiraPayload);
                 }
             }
+
+            // 4. Send Access Email (The DB trigger should also catch this, but direct service call ensures delivery)
+            this.emailService.sendAccessEmail(email, tempPass, data.nome).subscribe({
+                next: (result) => console.log('Welcome email sent successfully:', result),
+                error: (err) => console.error('Failed to send welcome email:', err)
+            });
 
             return { success: true };
         } catch (error) {

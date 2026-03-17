@@ -90,9 +90,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     async ngOnInit() {
         this.selectionSub = this.schoolService.selectedSchool$.subscribe(school => {
-            if (school) {
-                this.loadDashboardData(school.id);
-            }
+            this.loadDashboardData(school?.id);
         });
     }
 
