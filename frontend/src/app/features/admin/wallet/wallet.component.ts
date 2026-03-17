@@ -272,8 +272,8 @@ export class WalletComponent implements OnInit, OnDestroy {
                     ];
 
                     this.purposes = defaultPurposes.map(def => {
-                        const dbP = dbPurposes.find(p => p.nome === def.nome);
-                        return dbP ? dbP : def;
+                        const dbP = dbPurposes.find(p => p.nome.toLowerCase() === def.nome.toLowerCase());
+                        return dbP ? { ...dbP, nome: def.nome } : def;
                     });
 
                     const now = new Date();

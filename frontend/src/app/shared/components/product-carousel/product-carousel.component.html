@@ -1,0 +1,104 @@
+<section class="w-full py-8">
+  <div class="flex items-center justify-between mb-6 px-4">
+    <h2 class="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+      <lucide-icon [img]="icons.Tag" class="w-6 h-6 text-blue-600"></lucide-icon>
+      {{ title }}
+    </h2>
+    <div class="flex gap-2" *ngIf="products.length > 1">
+      <button 
+        (click)="prev()" 
+        class="p-2 rounded-full bg-white dark:bg-gray-800 shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-all border border-gray-100 dark:border-gray-600 text-gray-700 dark:text-gray-200"
+      >
+        <lucide-icon [img]="icons.ChevronLeft" class="w-5 h-5"></lucide-icon>
+      </button>
+      <button 
+        (click)="next()" 
+        class="p-2 rounded-full bg-white dark:bg-gray-800 shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-all border border-gray-100 dark:border-gray-600 text-gray-700 dark:text-gray-200"
+      >
+        <lucide-icon [img]="icons.ChevronRight" class="w-5 h-5"></lucide-icon>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="flex justify-center items-center h-64">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+
+  <div *ngIf="!isLoading && products.length === 0" class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-12 text-center">
+    <div class="inline-flex items-center justify-center p-4 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
+      <lucide-icon [img]="icons.Tag" class="w-8 h-8 text-gray-400"></lucide-icon>
+    </div>
+    <p class="text-gray-500 dark:text-gray-400">Nenhum produto em destaque encontrado.</p>
+  </div>
+
+  <div *ngIf="!isLoading && products.length > 0" class="relative overflow-hidden px-4">
+    <div 
+      class="flex transition-transform duration-500 ease-out gap-4"
+      [style.transform]="'translateX(-' + (currentIndex * 100) + '%)'"
+    >
+      <div *ngFor="let product of products" class="min-w-full md:min-w-[50%] lg:min-w-[33.33%] shrink-0 px-2 pb-6">
+        <div class="bg-white dark:bg-gray-900 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-800 group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+          <!-- Image Section -->
+          <div class="relative h-48 sm:h-56 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 overflow-hidden">
+            <img 
+              *ngIf="product.url_imagem" 
+              [src]="product.url_imagem" 
+              [alt]="product.nome"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            >
+            <div *ngIf="!product.url_imagem" class="w-full h-full flex items-center justify-center">
+              <lucide-icon [img]="icons.Tag" class="w-16 h-16 text-blue-200 dark:text-gray-600"></lucide-icon>
+            </div>
+            
+            <!-- Category Badge -->
+            <div class="absolute top-4 left-4">
+              <span class="px-3 py-1 bg-white/90 dark:bg-black/70 backdrop-blur-sm text-xs font-semibold rounded-full text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50">
+                {{ product.categoria }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Content Section -->
+          <div class="p-5">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1">
+              {{ product.nome }}
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 h-10">
+              {{ product.descricao }}
+            </p>
+            
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Preço</p>
+                <p class="text-xl font-extrabold text-blue-600 dark:text-blue-400">
+                  {{ formatPrice(product.preco) }}
+                </p>
+              </div>
+              
+              <button 
+                class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none transition-all duration-300 font-medium active:scale-95"
+              >
+                <lucide-icon [img]="icons.ShoppingCart" class="w-4 h-4"></lucide-icon>
+                <span>Comprar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicators -->
+    <div class="flex justify-center gap-2 mt-4" *ngIf="products.length > 1">
+      <button 
+        *ngFor="let p of products; let i = index" 
+        (click)="setIndex(i)"
+        class="h-1.5 rounded-full transition-all duration-300"
+        [class.w-8]="currentIndex === i"
+        [class.w-3]="currentIndex !== i"
+        [class.bg-blue-600]="currentIndex === i"
+        [class.bg-gray-200]="currentIndex !== i"
+        [class.dark:bg-gray-700]="currentIndex !== i"
+      ></button>
+    </div>
+  </div>
+</section>

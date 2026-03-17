@@ -98,7 +98,7 @@ export class AdminDashboardService {
 
             // 3. Saldo Livre (Current snapshot)
             let freeBalanceQuery = supabase
-                .from('aluno')
+                .from('usuarios')
                 .select('saldo_carteira');
 
             if (escolaId) freeBalanceQuery = freeBalanceQuery.eq('escola_id', escolaId);
@@ -109,8 +109,8 @@ export class AdminDashboardService {
             let finalPurposeBalance = 0;
             if (escolaId) {
                 // 4.1 Carregar saldo dos propósitos dos ALUNOS
-                const { data: students } = await supabase.from('aluno').select('user_id').eq('escola_id', escolaId);
-                const userIds = (students || []).map(a => a.user_id).filter(id => !!id);
+                const { data: students } = await supabase.from('usuarios').select('UserID').eq('escola_id', escolaId);
+                const userIds = (students || []).map(a => a.UserID).filter(id => !!id);
 
                 let studentPurposeSum = 0;
                 if (userIds.length > 0) {
@@ -139,32 +139,15 @@ export class AdminDashboardService {
                 finalPurposeBalance = purposeDataRaw?.reduce((acc, curr) => acc + (Number(curr.saldo) || 0), 0) || 0;
             }
 
-            // Proportional Data Adjustment
-            // If the sum of spent, free, and purpose exceeds the total invested, scale them down proportionally.
-            let adjustedSpent = totalSpent;
-            let adjustedFree = freeBalance;
-            let adjustedPurpose = finalPurposeBalance;
-
-            const sumOthers = totalSpent + freeBalance + finalPurposeBalance;
-            if (sumOthers > totalInvested && totalInvested > 0) {
-                const ratio = totalInvested / sumOthers;
-                adjustedSpent = totalSpent * ratio;
-                adjustedFree = freeBalance * ratio;
-                adjustedPurpose = finalPurposeBalance * ratio;
-            } else if (totalInvested === 0) {
-                adjustedSpent = 0;
-                adjustedFree = 0;
-                adjustedPurpose = 0;
-            }
-
+            // Returning snapshots (Raw values are preferred for accurate accounting)
             return {
                 totalInvested,
-                totalSpent: adjustedSpent,
-                freeBalance: adjustedFree,
-                purposeBalance: adjustedPurpose,
+                totalSpent,
+                freeBalance,
+                purposeBalance: finalPurposeBalance,
                 totalStudents,
-                saldo_livre: freeBalance,      // RAW value for school view
-                saldo_propositos: finalPurposeBalance // RAW value for school view
+                saldo_livre: freeBalance,
+                saldo_propositos: finalPurposeBalance
             };
         } catch (error) {
             console.error('Error fetching dashboard stats:', error);

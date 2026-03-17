@@ -11,8 +11,8 @@
         </div>
     </div>
 
-    <!-- Metrics Section -->
-    <div class="w-full px-6 grid grid-cols-2 gap-4 mt-2">
+    <!-- Metrics Section (Lojista/Admin) -->
+    <div *ngIf="userRole !== 'Aluno'" class="w-full px-6 grid grid-cols-2 gap-4 mt-2">
         <!-- Success/Sales Card -->
         <div class="bg-white rounded-[16px] p-4 pt-8 relative shadow-xl">
             <div class="absolute -top-3 left-4 flex gap-0.5">
@@ -32,8 +32,17 @@
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="w-full px-6 grid grid-cols-2 gap-6 mt-12 pb-32">
+    <!-- Student Products Carousel -->
+    <div class="w-full mt-6 bg-white dark:bg-gray-900 rounded-t-[40px] shadow-2xl flex-1 pb-24">
+        <app-product-carousel 
+            title="Lanchonete da Escola"
+        ></app-product-carousel>
+        
+        <!-- Other student actions could go here -->
+    </div>
+
+    <!-- Quick Actions (Lojista) -->
+    <div *ngIf="userRole !== 'Aluno'" class="w-full px-6 grid grid-cols-2 gap-6 mt-12 pb-32">
         <!-- Venda Button -->
         <button class="flex flex-col items-center gap-3 group">
             <div class="w-full aspect-square bg-gradient-to-br from-[#add136] to-[#4FDF57] rounded-[24px] flex items-center justify-center shadow-lg group-active:scale-95 transition-all">

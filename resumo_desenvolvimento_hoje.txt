@@ -1,0 +1,35 @@
+RESUMO DO DESENVOLVIMENTO - 16/03/2026
+
+Nesta sessão, foram realizadas diversas melhorias no sistema Cashways Pass, focando em UX, gestão de eventos, segurança de dados e infraestrutura.
+
+1. GESTÃO DE EVENTOS (TODAS AS TURMAS)
+- Implementada a opção "Todas as turmas" no cadastro de eventos.
+- Modificado o banco de dados (tabela public.eventos) com a coluna 'todas_turmas'.
+- Atualizados os componentes de Admin e Escola para suportar eventos globais.
+- Ajuste na listagem de eventos para exibir o selo "Todas as turmas".
+- Remoção do ícone de calendário no input de data (Escola) conforme solicitado.
+
+2. MÁSCARA DE MOEDA (REAIS)
+- Implementada máscara automática para o campo de preço em Produtos.
+- Formatação em tempo real no padrão BRL (ex: R$ 1.200,00).
+- Aplicado nos componentes de Produtos do Admin e da Escola.
+
+3. COMPACTAÇÃO DE IMAGENS
+- Criado o ImageCompressionService para otimização de arquivos.
+- Implementada compactação via Canvas (redimensionamento para 1200px e redução de qualidade JPEG).
+- Integrado em todos os fluxos de upload: Produtos, Eventos e Perfis.
+- Resolvido o erro de falha no upload para arquivos de imagem grandes.
+
+4. MANUTENÇÃO E CREDENCIAIS
+- Atualização da chave de API da Brevo (SMTP) no backend-nest.
+- Limpeza completa (Reset) do banco de dados no Supabase.
+- Manutenção exclusiva do usuário master: cashways.br@outlook.com.
+- Criação da "Escola Padrão Cashways" e "Turma A" para inicialização do ambiente.
+- Configuração de acesso 'Admin' para o usuário principal, permitindo acesso dual (Admin/Escola).
+
+5. INFRAESTRUTURA E DEPLOY
+- Sincronização de todo o código desenvolvido com o repositório Git (branch main).
+- Deploy bem-sucedido do Frontend na Vercel: https://pass.cashways.app
+- Deploy bem-sucedido do Backend (NestJS) na Vercel: https://backend-nest-six.vercel.app
+
+O sistema encontra-se estável, com dados reiniciados e novas funcionalidades de performance de imagem e facilidade de cadastro operacionais.

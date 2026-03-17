@@ -10,6 +10,7 @@ export interface UserProfile {
     cpf?: string;
     telefone?: string;
     cargo?: string;
+    escola_id?: string;
 }
 
 @Injectable({
@@ -25,7 +26,7 @@ export class ProfileService {
         if (user) {
             const { data, error } = await supabase
                 .from('usuarios')
-                .select('id, nome_completo, email, foto_url, cpf, telefone, tipo_acesso')
+                .select('id, nome_completo, email, foto_url, cpf, telefone, tipo_acesso, escola_id')
                 .eq('UserID', user.id)
                 .maybeSingle(); // maybeSingle para não lançar erro se não encontrar
 
@@ -41,7 +42,7 @@ export class ProfileService {
                 const userData = JSON.parse(storedUser);
                 const { data, error } = await supabase
                     .from('usuarios')
-                    .select('id, nome_completo, email, foto_url, cpf, telefone, tipo_acesso')
+                    .select('id, nome_completo, email, foto_url, cpf, telefone, tipo_acesso, escola_id')
                     .eq('id', userData.id)
                     .maybeSingle();
                 

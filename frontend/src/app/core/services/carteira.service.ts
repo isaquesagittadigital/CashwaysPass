@@ -174,8 +174,8 @@ export class CarteiraService {
                 // Priority for wallet code: Carteira table > Aluno.ra > Default
                 const walletCode = carteiraMap[u.id] || matchedAluno?.ra || '000000';
                 
-                // Priority for balance: Aluno table > Usuario table (fallback)
-                const balance = matchedAluno ? Number(matchedAluno.saldo_carteira) : (Number(u.saldo_carteira) || 0);
+                // Priority for balance: Usuario table (primary) — fallback to Aluno if needed
+                const balance = (Number(u.saldo_carteira) !== 0) ? Number(u.saldo_carteira) : (Number(matchedAluno?.saldo_carteira) || 0);
 
                 return {
                     id: String(u.id),
@@ -205,7 +205,7 @@ export class CarteiraService {
             const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(alunoId);
             
             // Get aluno data
-            let query = supabase.from('aluno').select('id, nome, saldo_carteira, escola_id');
+            let query = supabase.from('aluno').select('id, nome, saldo_carteira, escola_id, usuario_id, user_id');
             
             if (isUuid) {
                 query = query.eq('id', alunoId);
@@ -217,14 +217,11 @@ export class CarteiraService {
 
             if (alunoError) throw alunoError;
 
-            // Get user status and turmaID separately
+            // Get user status and UserID using the usuario_id (Integer) link
             const { data: userData } = await supabase
                 .from('usuarios')
-                .select('status, turmaID')
-                .eq('tipo_acesso', 'Aluno')
-                .eq('escola_id', alunoData.escola_id)
-                .ilike('nome_completo', `%${alunoData.nome}%`)
-                .limit(1)
+                .select('status, turmaID, UserID, saldo_carteira')
+                .eq('id', alunoData.usuario_id)
                 .single();
 
             // Get turma info separately if turmaID exists
@@ -240,7 +237,7 @@ export class CarteiraService {
                 }
             }
 
-            const purposes = await this.getStudentPurposes(alunoId);
+            const purposes = await this.getStudentPurposes(userData?.UserID || alunoData.user_id || '');
             const saldoPropositos = purposes.reduce((acc, p) => acc + p.saldo, 0);
 
             return {
@@ -248,7 +245,7 @@ export class CarteiraService {
                 nome: alunoData.nome || 'Sem nome',
                 turma: turmaInfo,
                 status: userData?.status || 'active',
-                saldo_carteira: Number(alunoData.saldo_carteira) || 0,
+                saldo_carteira: userData ? (Number(userData.saldo_carteira) || 0) : (Number(alunoData.saldo_carteira) || 0),
                 saldo_propositos: saldoPropositos
             };
         } catch (error) {
@@ -257,12 +254,47 @@ export class CarteiraService {
         }
     }
 
-    async getStudentPurposes(alunoId: string): Promise<Purpose[]> {
+    async getStudentPurposes(userId: string): Promise<Purpose[]> {
+        if (!userId) return [];
         try {
-            const { data, error } = await supabase
+            // First treat userId as the Auth UUID (usuario_id in propositos)
+            let { data, error } = await supabase
                 .from('propositos')
                 .select('id, nome, saldo')
-                .eq('aluno_id', alunoId);
+                .eq('usuario_id', userId);
+
+            // Fallback: If no data found and userId looks like a UUID (could be an aluno.id)
+            if ((!data || data.length === 0) && userId.includes('-')) {
+                // 1. Check if it's an aluno.id and get its usuario_id
+                const { data: alunoLink } = await supabase
+                    .from('aluno')
+                    .select('usuario_id')
+                    .eq('id', userId)
+                    .limit(1);
+                
+                let actualAuthUuid = '';
+                
+                if (alunoLink && alunoLink[0]?.usuario_id) {
+                    // 2. Get UserID from usuarios using that integer link
+                    const { data: userLink } = await supabase
+                        .from('usuarios')
+                        .select('UserID')
+                        .eq('id', alunoLink[0].usuario_id)
+                        .limit(1);
+                    
+                    if (userLink && userLink[0]?.UserID) {
+                        actualAuthUuid = userLink[0].UserID;
+                    }
+                }
+
+                if (actualAuthUuid && actualAuthUuid !== userId) {
+                    const retry = await supabase
+                        .from('propositos')
+                        .select('id, nome, saldo')
+                        .eq('usuario_id', actualAuthUuid);
+                    data = retry.data;
+                }
+            }
 
             if (error) throw error;
             return (data || []).map((p: any) => ({

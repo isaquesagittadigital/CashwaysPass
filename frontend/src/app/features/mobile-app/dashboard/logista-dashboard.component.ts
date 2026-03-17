@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { LucideAngularModule, User, DollarSign, RefreshCw, Clock, LogOut, Coins, CircleDollarSign } from 'lucide-angular';
 import { LojistaService, LojistaStats } from '../../../core/services/lojista.service';
+import { ProductCarouselComponent } from '../../../shared/components/product-carousel/product-carousel.component';
 
 @Component({
   selector: 'app-logista-dashboard',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, RouterModule],
+  imports: [CommonModule, LucideAngularModule, RouterModule, ProductCarouselComponent],
   templateUrl: './logista-dashboard.component.html',
   styleUrls: ['./logista-dashboard.component.css']
 })
