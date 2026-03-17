@@ -48,7 +48,7 @@ export class SchoolService {
         }
     }
 
-    selectSchool(school: School) {
+    selectSchool(school: School | null) {
         this.selectedSchoolSubject.next(school);
     }
 

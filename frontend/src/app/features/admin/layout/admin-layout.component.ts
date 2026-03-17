@@ -157,7 +157,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         this.router.navigate(['/']);
     }
 
-    compareSchools(s1: School, s2: School): boolean {
+    compareSchools(s1: School | null, s2: School | null): boolean {
         return s1 && s2 ? s1.id === s2.id : s1 === s2;
     }
 }
