@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import {
@@ -45,7 +46,7 @@ interface ChartSegment {
 @Component({
     selector: 'app-admin-dashboard',
     standalone: true,
-    imports: [CommonModule, LucideAngularModule, RouterModule],
+    imports: [CommonModule, LucideAngularModule, RouterModule, FormsModule],
     templateUrl: './admin-dashboard.component.html',
     styleUrls: ['./admin-dashboard.component.css']
 })

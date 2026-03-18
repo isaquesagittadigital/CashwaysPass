@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import {
@@ -47,7 +48,7 @@ interface ChartSegment {
 @Component({
     selector: 'app-escola-dashboard',
     standalone: true,
-    imports: [CommonModule, LucideAngularModule, RouterModule],
+    imports: [CommonModule, LucideAngularModule, RouterModule, FormsModule],
     templateUrl: './escola-dashboard.component.html',
     styleUrls: ['./escola-dashboard.component.css']
 })
