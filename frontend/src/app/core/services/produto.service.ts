@@ -119,11 +119,11 @@ export class ProdutoService {
                     descricao: product.descricao,
                     preco: product.preco,
                     url_imagem: product.url_imagem,
-                    'Data_vigencia_incio': product.data_vigencia_inicio,
-                    'Data_vigencia_final': product.data_vigencia_final,
+                    'Data_vigencia_incio': product.data_vigencia_inicio || null,
+                    'Data_vigencia_final': product.data_vigencia_final || null,
                     'limete_por_aluno': product.limite_por_aluno,
                     'Status': product.status,
-                    turma_ids: product.turma_ids,
+                    turma_ids: product.turma_ids && product.turma_ids.length > 0 ? product.turma_ids : [],
                     quantidade: product.quantidade,
                     categoria: product.categoria
                 })
@@ -147,11 +147,11 @@ export class ProdutoService {
                     descricao: product.descricao,
                     preco: product.preco,
                     url_imagem: product.url_imagem,
-                    'Data_vigencia_incio': product.data_vigencia_inicio,
-                    'Data_vigencia_final': product.data_vigencia_final,
+                    'Data_vigencia_incio': product.data_vigencia_inicio || null,
+                    'Data_vigencia_final': product.data_vigencia_final || null,
                     'limete_por_aluno': product.limite_por_aluno,
                     'Status': product.status,
-                    turma_ids: product.turma_ids,
+                    turma_ids: product.turma_ids && product.turma_ids.length > 0 ? product.turma_ids : [],
                     quantidade: product.quantidade,
                     categoria: product.categoria
                 })

@@ -298,7 +298,8 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
             this.closeFormModal();
             await this.loadProducts();
         } else {
-            alert('Erro ao salvar produto. Tente novamente.');
+            console.error('Erro ao salvar produto:', result.error);
+            alert('Erro ao salvar produto. Verifique o console para mais detalhes.');
         }
     }
 

@@ -175,13 +175,13 @@ export class ProfileService {
         const filePath = `avatars/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
-            .from('perfil')
+            .from('usuarios')
             .upload(filePath, file);
 
         if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabase.storage
-            .from('perfil')
+            .from('usuarios')
             .getPublicUrl(filePath);
 
         const { error: updateError } = await supabase
