@@ -175,7 +175,7 @@ export class StudentManagementComponent implements OnInit, OnChanges {
         this.editingId = student.id;
         this.studentForm.patchValue({
             ...student,
-            turmaId: student.turmaId || student.turma?.id || '',
+            turmaId: student.turma_id || student.turmaId || student.turma?.id || '',
             responsavel: student.responsavel || student.nome_mae || '',
             email_responsavel: student.email_responsavel || '',
             telefone: student.telefone || student.user?.telefone || '',
