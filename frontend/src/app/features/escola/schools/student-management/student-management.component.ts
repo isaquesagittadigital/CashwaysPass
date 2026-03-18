@@ -75,6 +75,7 @@ export class StudentManagementComponent implements OnInit, OnChanges {
             nome: ['', Validators.required],
             responsavel: [''],
             email: ['', [Validators.required, Validators.email]],
+            email_responsavel: ['', [Validators.email]],
             telefone: [''],
             data_nascimento: [''],
             numeroCarteira: ['', [Validators.maxLength(8)]],
@@ -208,6 +209,7 @@ export class StudentManagementComponent implements OnInit, OnChanges {
             ...student,
             turmaId: student.turmaId || student.turma?.id || '',
             responsavel: student.responsavel || student.nome_mae || '',
+            email_responsavel: student.email_responsavel || '',
             telefone: student.telefone || student.user?.telefone || '',
             data_nascimento: student.data_nascimento || ''
         });
@@ -223,7 +225,7 @@ export class StudentManagementComponent implements OnInit, OnChanges {
         const currentTurma = this.turmas.find(t => t.id === this.turmaId);
         const turmaLabel = currentTurma ? `${currentTurma.serie}${isNaN(Number(currentTurma.serie)) ? '' : 'ª'} ${currentTurma.nome}` : "Turma A";
         
-        const csvContent = `nome,email,telefone,data_nascimento,turma,carteira\nJoão Silva,joao@email.com,11999999999,2012-05-10,${turmaLabel},AA0001`;
+        const csvContent = `nome,email,telefone,data_nascimento,turma,carteira,email_responsavel\nJoão Silva,joao@email.com,11999999999,2012-05-10,${turmaLabel},AA0001,responsavel@email.com`;
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
@@ -277,7 +279,8 @@ export class StudentManagementComponent implements OnInit, OnChanges {
                             email: row.email || '',
                             telefone: row.telefone || '',
                             data_nascimento: row.data_nascimento || null,
-                            numeroCarteira: row.carteira || row.ra || ''
+                            numeroCarteira: row.carteira || row.ra || '',
+                            email_responsavel: row.email_responsavel || row.emailResponsavel || ''
                         };
                     }).filter((s: any) => s.nome !== '');
 

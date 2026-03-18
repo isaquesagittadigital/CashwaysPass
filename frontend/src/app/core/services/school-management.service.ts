@@ -313,7 +313,8 @@ export class SchoolManagementService {
                 email: email,
                 ra: ra,
                 data_nascimento: data.data_nascimento || null,
-                primeiro_acesso: false
+                primeiro_acesso: false,
+                email_responsavel: data.email_responsavel || null
             };
 
             if (existingAluno) {
@@ -327,6 +328,39 @@ export class SchoolManagementService {
                     .from('aluno')
                     .insert(alunoPayload);
                 if (alunoError) throw alunoError;
+            }
+
+            // 5. Create Guardian Account if email provided
+            if (data.email_responsavel) {
+                const guardianEmail = data.email_responsavel;
+                const { data: existingGuardian } = await supabase
+                    .from('usuarios')
+                    .select('id')
+                    .eq('email', guardianEmail)
+                    .single();
+
+                if (!existingGuardian) {
+                    const guardianPass = Math.random().toString(36).slice(-8);
+                    const guardianPayload = {
+                        nome_completo: (data.responsavel || data.nome_mae || 'Responsável'),
+                        nome: (data.responsavel || data.nome_mae || 'Responsável'),
+                        email: guardianEmail,
+                        tipo_acesso: 'Responsavel',
+                        status: 'active',
+                        escola_id: data.escola_id,
+                        temp_pass: guardianPass,
+                        senha: guardianPass,
+                        primeiro_acesso: false
+                    };
+                    
+                    const { error: guardianError } = await supabase
+                        .from('usuarios')
+                        .insert(guardianPayload);
+                    
+                    if (!guardianError) {
+                        this.emailService.sendAccessEmail(guardianEmail, guardianPass, guardianPayload.nome).subscribe();
+                    }
+                }
             }
 
             // 3. Manual Upsert into carteira table
@@ -390,7 +424,7 @@ export class SchoolManagementService {
             // 1. Get current student and linked user
             const { data: student, error: getError } = await supabase
                 .from('aluno')
-                .select('usuario_id, ra, email')
+                .select('usuario_id, ra, email, email_responsavel')
                 .eq('id', id)
                 .single();
             
@@ -423,11 +457,45 @@ export class SchoolManagementService {
                     nome_mae: data.responsavel || data.nome_mae,
                     email: email,
                     ra: ra,
-                    data_nascimento: data.data_nascimento || null
+                    data_nascimento: data.data_nascimento || null,
+                    email_responsavel: data.email_responsavel || null
                 })
                 .eq('id', id);
 
             if (alunoError) throw alunoError;
+
+            // Guardian Account Handle
+            if (data.email_responsavel && data.email_responsavel !== student.email_responsavel) {
+                const guardianEmail = data.email_responsavel;
+                const { data: existingGuardian } = await supabase
+                    .from('usuarios')
+                    .select('id')
+                    .eq('email', guardianEmail)
+                    .single();
+
+                if (!existingGuardian) {
+                    const guardianPass = Math.random().toString(36).slice(-8);
+                    const guardianPayload = {
+                        nome_completo: (data.responsavel || data.nome_mae || 'Responsável'),
+                        nome: (data.responsavel || data.nome_mae || 'Responsável'),
+                        email: guardianEmail,
+                        tipo_acesso: 'Responsavel',
+                        status: 'active',
+                        escola_id: data.escola_id,
+                        temp_pass: guardianPass,
+                        senha: guardianPass,
+                        primeiro_acesso: false
+                    };
+                    
+                    const { error: guardianError } = await supabase
+                        .from('usuarios')
+                        .insert(guardianPayload);
+                    
+                    if (!guardianError) {
+                        this.emailService.sendAccessEmail(guardianEmail, guardianPass, guardianPayload.nome).subscribe();
+                    }
+                }
+            }
 
             // 4. Update or Create carteira
             if (ra && student.usuario_id) {
