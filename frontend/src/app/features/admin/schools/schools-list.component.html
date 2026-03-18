@@ -219,7 +219,7 @@
                                             <select formControlName="professor_id"
                                                 class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] appearance-none pr-10 text-sm bg-white transition-colors">
                                                 <option value="">Selecione um professor</option>
-                                                <option *ngFor="let prof of professors" [value]="prof.id">{{ prof.nome_completo }}</option>
+                                                <option *ngFor="let prof of professorsInSelectedTurma" [value]="prof.id">{{ prof.nome_completo }}</option>
                                             </select>
                                             <lucide-icon [img]="icons.ChevronDown"
                                                 class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-gray-400"></lucide-icon>

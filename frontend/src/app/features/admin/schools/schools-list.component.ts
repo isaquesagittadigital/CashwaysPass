@@ -190,6 +190,15 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
         this.filterTurmas();
     }
 
+    get professorsInSelectedTurma(): any[] {
+        if (!this.selectedTurma) return this.professors;
+        // Filtramos a lista de professores da escola para mostrar apenas os vinculados a esta turma
+        return this.professors.filter(p => 
+            p.turmaID === this.selectedTurma.id || 
+            p.id === this.selectedTurma.professor_id
+        );
+    }
+
     selectTurmaToEdit(turma: any | null) {
         this.selectedTurma = turma;
         // Se for uma nova turma, garantir que a aba de dados esteja ativa

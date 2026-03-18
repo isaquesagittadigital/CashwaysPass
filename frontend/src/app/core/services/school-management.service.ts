@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../supabase';
 import { from, Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { EmailService } from './email.service';
 
 export interface School {
@@ -162,14 +162,28 @@ export class SchoolManagementService {
             .eq('escola_id', schoolId)
             .eq('tipo_acesso', 'Professor')
             .or('deleted.is.null,deleted.eq.false')
-            .neq('excluido', 'sim');
+            .neq('excluido', 'sim')
+            .order('nome_completo', { ascending: true });
 
         if (turmaId) {
-            console.log('Filtrando professores pela turma:', turmaId);
-            query = query.eq('turmaID', turmaId);
+            // Se tiver turmaId, queremos professores que tenham essa turmaID OU que sejam o professor_id naquela turma
+            return from(supabase.from('turma').select('professor_id').eq('id', turmaId).single()).pipe(
+                switchMap((turmaResp: any) => {
+                    const respId = turmaResp.data?.professor_id;
+                    let filter = `turmaID.eq.${turmaId}`;
+                    if (respId) {
+                        filter += `,id.eq.${respId}`;
+                    }
+                    return from(query.or(filter));
+                }),
+                map((resp: any) => {
+                    if (resp.error) throw resp.error;
+                    return resp.data || [];
+                })
+            );
         }
 
-        return from(query.order('nome_completo', { ascending: true })).pipe(
+        return from(query).pipe(
             map(resp => {
                 if (resp.error) throw resp.error;
                 return resp.data || [];
