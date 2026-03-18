@@ -208,24 +208,21 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
         this.turmaForm.patchValue(turma);
 
         // Identificar o ID do professor responsável de forma robusta
-        let profId = '';
+        // Agora prioritariamente usamos professor_id da tabela turma
+        let profId = turma.professor_id || '';
         
-        // 1. Tentar encontrar no professor_obj (que vem no JOIN do getTurmasBySchool)
-        if (turma.professor_obj && Array.isArray(turma.professor_obj)) {
-            const prof = turma.professor_obj.find((u: any) => u.tipo_acesso === 'Professor');
-            if (prof) profId = prof.id;
-        }
-
-        // 2. Se não encontrou, buscar na lista de professores carregada (pelo campo turmaID)
-        if (!profId && this.professors.length > 0) {
-            const prof = this.professors.find(p => p.turmaID === turma.id);
-            if (prof) profId = prof.id;
-        }
-
-        // 3. Fallback: Se ainda não encontrou mas temos o nome texto na turma, tentar bater pelo nome (menos preciso)
-        if (!profId && turma.professor && this.professors.length > 0) {
-            const prof = this.professors.find(p => p.nome_completo === turma.professor);
-            if (prof) profId = prof.id;
+        // Fallback apenas para dados legados (se houver)
+        if (!profId) {
+            // 1. Tentar encontrar no professor_obj (que vem no JOIN do getTurmasBySchool)
+            // Agora professor_obj é um objeto único, não mais array
+            if (turma.professor_obj) {
+                profId = turma.professor_obj.id;
+            }
+            // 2. Se não encontrou, buscar na lista de professores carregada (pelo campo turmaID legado)
+            else if (this.professors.length > 0) {
+                const prof = this.professors.find(p => p.turmaID === turma.id);
+                if (prof) profId = prof.id;
+            }
         }
 
         this.turmaForm.patchValue({ professor_id: profId });
@@ -247,7 +244,8 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
             };
 
             const professorId = formValue.professor_id;
-            delete data.professor_id;
+            // NÃO removemos mais o professor_id pois agora ele existe na tabela turma
+            // delete data.professor_id;
 
             const obs = this.selectedTurma?.id
                 ? this.schoolService.updateTurma(this.selectedTurma.id, data)
@@ -255,21 +253,8 @@ export class SchoolsListComponent implements OnInit, OnDestroy {
 
             obs.subscribe({
                 next: async (resp: any) => {
-                    const turmaSaved = Array.isArray(resp) ? resp[0] : resp;
-                    const finalTurmaId = this.selectedTurma?.id || turmaSaved?.id;
-
-                    if (finalTurmaId) {
-                        // 1. Limpar vínculo de qualquer professor anterior desta turma (se houver)
-                        const oldProfs = this.professors.filter(p => p.turmaID === finalTurmaId && p.id !== professorId);
-                        for (const op of oldProfs) {
-                            await this.schoolService.updateProfessor(op.id, { turmaID: null }).toPromise();
-                        }
-
-                        // 2. Vincular o novo professor selecionado
-                        if (professorId) {
-                            await this.schoolService.updateProfessor(professorId, { turmaID: finalTurmaId }).toPromise();
-                        }
-                    }
+                    // O vínculo agora é mantido via professor_id na tabela turma,
+                    // removi a lógica legada que atualizava usuarios.turmaID para permitir múltiplos
                     
                     this.isSubmitting = false;
                     const msg = this.selectedTurma?.id ? 'Turma atualizada com sucesso' : 'Turma cadastrada com sucesso';
