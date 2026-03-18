@@ -92,17 +92,18 @@ export class SchoolManagementService {
         return from(
             supabase
                 .from('turma')
-                .select('*, professor_obj:usuarios(id, nome_completo, tipo_acesso)')
+                .select('*, professor_obj:usuarios!professor_id(id, nome_completo, tipo_acesso)')
                 .eq('escola_id', schoolId)
                 .order('nome', { ascending: true })
         ).pipe(
             map(resp => {
                 if (resp.error) throw resp.error;
                 return (resp.data || []).map(t => {
-                    const prof = (t.professor_obj as any[])?.find(u => u.tipo_acesso === 'Professor');
+                    // Agora professor_obj será um único objeto por causa da FK em turma
+                    const prof = t.professor_obj;
                     return {
                         ...t,
-                        professor_nome: prof ? prof.nome_completo : null
+                        professor_nome: prof ? prof.nome_completo : (t.professor || null)
                     };
                 });
             })

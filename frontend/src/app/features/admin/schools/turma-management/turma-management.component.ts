@@ -102,12 +102,12 @@ export class TurmaManagementComponent implements OnInit {
             const data = { 
                 ...formValue, 
                 escola_id: this.schoolId,
-                professor: professor ? professor.nome_completo : '',
+                professor: professor ? professor.nome_completo : '', // fallback for name
                 data_entrada: formValue.data_inicio
             };
             
-            // Remove professor_id as it doesn't exist in the table
-            delete data.professor_id;
+            // NÃO removemos mais o professor_id pois agora ele existe na tabela turma
+            // delete data.professor_id;
 
             const obs = this.isEditing
                 ? this.schoolService.updateTurma(this.editingId!, data)
