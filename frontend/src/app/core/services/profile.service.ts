@@ -7,6 +7,7 @@ export interface UserProfile {
     nome_completo: string;
     email: string;
     foto_url?: string;
+    foto_perfil?: string;
     cpf?: string;
     telefone?: string;
     cargo?: string;
@@ -26,7 +27,7 @@ export class ProfileService {
         if (user) {
             const { data, error } = await supabase
                 .from('usuarios')
-                .select('id, nome_completo, email, foto_url, cpf, telefone, tipo_acesso, escola_id')
+                .select('id, nome_completo, email, foto_perfil, cpf, telefone, tipo_acesso, escola_id')
                 .eq('UserID', user.id)
                 .maybeSingle(); // maybeSingle para não lançar erro se não encontrar
 
@@ -42,7 +43,7 @@ export class ProfileService {
                 const userData = JSON.parse(storedUser);
                 const { data, error } = await supabase
                     .from('usuarios')
-                    .select('id, nome_completo, email, foto_url, cpf, telefone, tipo_acesso, escola_id')
+                    .select('id, nome_completo, email, foto_perfil, cpf, telefone, tipo_acesso, escola_id')
                     .eq('id', userData.id)
                     .maybeSingle();
                 
@@ -57,10 +58,26 @@ export class ProfileService {
         if (profile) {
             return {
                 ...profile,
+                foto_url: profile.foto_perfil, // Mapeia a coluna DB para o campo da interface
                 cargo: profile.tipo_acesso
             };
         }
         return null;
+    }
+
+    private updateLocalCache(updateData: Partial<UserProfile>) {
+        // Atualiza a cache no localStorage para refletir em outras partes do app
+        const storedLocal = localStorage.getItem('currentUser');
+        if (storedLocal) {
+            const parsedLocal = JSON.parse(storedLocal);
+            localStorage.setItem('currentUser', JSON.stringify({ ...parsedLocal, ...updateData }));
+        }
+
+        const storedSession = sessionStorage.getItem('currentUser');
+        if (storedSession) {
+            const parsedSession = JSON.parse(storedSession);
+            sessionStorage.setItem('currentUser', JSON.stringify({ ...parsedSession, ...updateData }));
+        }
     }
 
     async updateProfile(data: Partial<UserProfile>): Promise<void> {
@@ -103,18 +120,7 @@ export class ProfileService {
 
         if (error) throw error;
 
-        // Atualiza a cache no localStorage para refletir em outras partes do app
-        const storedLocal = localStorage.getItem('currentUser');
-        if (storedLocal) {
-            const parsedLocal = JSON.parse(storedLocal);
-            localStorage.setItem('currentUser', JSON.stringify({ ...parsedLocal, ...updateData }));
-        }
-        
-        const storedSession = sessionStorage.getItem('currentUser');
-        if (storedSession) {
-            const parsedSession = JSON.parse(storedSession);
-            sessionStorage.setItem('currentUser', JSON.stringify({ ...parsedSession, ...updateData }));
-        }
+        this.updateLocalCache(updateData);
     }
 
     async updateAvatar(file: File): Promise<string> {
@@ -136,21 +142,24 @@ export class ProfileService {
         const filePath = `avatars/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
-            .from('usuarios')
+            .from('perfil')
             .upload(filePath, file);
 
         if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabase.storage
-            .from('usuarios')
+            .from('perfil')
             .getPublicUrl(filePath);
 
         const { error: updateError } = await supabase
             .from('usuarios')
-            .update({ foto_url: publicUrl })
+            .update({ foto_perfil: publicUrl })
             .eq(queryField, targetId);
 
         if (updateError) throw updateError;
+
+        // Atualiza cache local para refletir a nova imagem sem precisar de refresh de página
+        this.updateLocalCache({ foto_url: publicUrl });
 
         return publicUrl;
     }

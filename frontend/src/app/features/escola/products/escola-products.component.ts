@@ -141,7 +141,9 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
     }
 
     addTurma() {
-        if (this.selectedTurmaId && !this.form.turma_ids.includes(this.selectedTurmaId)) {
+        if (this.selectedTurmaId === 'all') {
+            this.form.turma_ids = [];
+        } else if (this.selectedTurmaId && !this.form.turma_ids.includes(this.selectedTurmaId)) {
             this.form.turma_ids.push(this.selectedTurmaId);
         }
         this.selectedTurmaId = '';
@@ -264,9 +266,11 @@ export class EscolaProductsComponent implements OnInit, OnDestroy {
                 }
             } catch (error) {
                 console.error('Failed to upload image:', error);
-                alert('Erro ao fazer upload da imagem. O produto será salvo sem alteração na imagem ou tente novamente.');
-                this.formLoading = false;
-                return;
+                const proceed = confirm('Erro ao enviar a imagem. Deseja prosseguir e salvar o produto sem a imagem?');
+                if (!proceed) {
+                    this.formLoading = false;
+                    return;
+                }
             }
         }
 

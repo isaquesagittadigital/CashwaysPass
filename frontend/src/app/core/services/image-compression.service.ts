@@ -59,7 +59,16 @@ export class ImageCompressionService {
           canvas.toBlob(
             (blob) => {
               if (blob) {
-                const compressedFile = new File([blob], file.name, {
+                // Ajusta a extensão do nome se estivermos convertendo para jpeg
+                let fileName = file.name;
+                const lastDotIndex = fileName.lastIndexOf('.');
+                if (lastDotIndex !== -1) {
+                  fileName = fileName.substring(0, lastDotIndex) + '.jpg';
+                } else {
+                  fileName = fileName + '.jpg';
+                }
+
+                const compressedFile = new File([blob], fileName, {
                   type: 'image/jpeg',
                   lastModified: Date.now(),
                 });

@@ -234,7 +234,7 @@ export class SchoolManagementService {
     getStudentsBySchool(schoolId: string, turmaId?: string): Observable<any[]> {
         let query = supabase
             .from('aluno')
-            .select('*, numeroCarteira:ra, turma:turma_id(nome, serie), user:usuario_id(id, email, ultimo_login)')
+            .select('*, numeroCarteira:ra, turma:turma_id(nome, serie), user:usuario_id(id, email, ultimo_login, telefone)')
             .eq('escola_id', schoolId);
 
         if (turmaId) {

@@ -12,6 +12,7 @@ export interface DashboardStats {
 }
 
 export interface TurmaSummary {
+    id: string;
     name: string;
     students: number;
     invested: number;
@@ -360,6 +361,7 @@ export class AdminDashboardService {
                 const spent = alumnos.reduce((acc, a) => acc + (spentMap[a.id] || 0), 0);
 
                 return {
+                    id: t.id,
                     name: t.nome || 'Sem nome',
                     students: t.quantidade_alunos || alumnos.length,
                     invested: investedVolume,

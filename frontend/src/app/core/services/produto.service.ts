@@ -183,7 +183,7 @@ export class ProdutoService {
     async uploadProductImage(file: File): Promise<string> {
         try {
             const fileExt = file.name.split('.').pop() || 'png';
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+            const fileName = `capas/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
             
             const { data, error } = await supabase.storage
                 .from('produtos')

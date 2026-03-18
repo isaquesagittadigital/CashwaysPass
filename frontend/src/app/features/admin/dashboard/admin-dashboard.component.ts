@@ -22,11 +22,16 @@ import {
     ArrowUpDown,
     Eye,
     PieChart,
-    BarChart
+    BarChart,
+    GraduationCap,
+    X,
+    Search,
+    ChevronRight
 } from 'lucide-angular';
 import { AdminDashboardService, DashboardStats, TransactionDay } from '../../../core/services/admin-dashboard.service';
 import { SchoolService } from '../../../core/services/school.service';
 import { ExportService } from '../../../core/services/export.service';
+import { SchoolManagementService } from '../../../core/services/school-management.service';
 
 interface ChartSegment {
     label: string;
@@ -47,11 +52,12 @@ interface ChartSegment {
 export class AdminDashboardComponent implements OnInit, OnDestroy {
     icons = {
         Building2, Users, CreditCard, TrendingUp, ArrowUpRight, ArrowDownRight, CalendarDays, Clock,
-        Share2, Plus, ShoppingBag, Unlock, Tag, Download, ChevronDown, ArrowUpDown, Eye, PieChart, BarChart
+        Share2, Plus, ShoppingBag, Unlock, Tag, Download, ChevronDown, ArrowUpDown, Eye, PieChart, BarChart, GraduationCap, X, Search, ChevronRight
     };
 
     activeFilter = '7 dias';
     filters = ['12 meses', '30 dias', '7 dias', '24 horas'];
+    schoolId?: string;
 
     stats = [
         { label: 'Total investido', value: 'R$ 0,00', points: '0pts', id: 'invested', icon: 'assets/icons/total-investido.svg' },
@@ -78,6 +84,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     maxTransactionValue = 16000;
     scaleValues = [16000, 12800, 8000, 4000, 0];
 
+    // Turma Details Modal
+    showTurmaModal = false;
+    selectedTurma: any = null;
+    turmaStudents: any[] = [];
+    isLoadingTurmaStudents = false;
+    turmaSearchTerm = '';
+
     isExporting = false;
 
     private selectionSub?: Subscription;
@@ -85,11 +98,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     constructor(
         private dashboardService: AdminDashboardService,
         private schoolService: SchoolService,
-        private exportService: ExportService
+        private exportService: ExportService,
+        private schoolManagementService: SchoolManagementService
     ) { }
 
     async ngOnInit() {
         this.selectionSub = this.schoolService.selectedSchool$.subscribe(school => {
+            this.schoolId = school?.id;
             this.loadDashboardData(school?.id);
         });
     }
@@ -107,6 +122,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
             const turmas = await this.dashboardService.getTurmaSummary(schoolId, filter);
             this.turmasSummary = turmas.map(t => ({
+                id: t.id,
                 name: t.name,
                 students: t.students,
                 invested: this.formatCurrency(t.invested),
@@ -239,5 +255,46 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         } finally {
             this.isExporting = false;
         }
+    }
+
+    async openTurmaDetails(turma: any) {
+        this.selectedTurma = turma;
+        this.showTurmaModal = true;
+        this.isLoadingTurmaStudents = true;
+        this.turmaStudents = [];
+        this.turmaSearchTerm = '';
+
+        const currentSchool = this.schoolService.getSelectedSchool();
+        if (!currentSchool) {
+            // Se o admin não selecionou uma escola, não temos como carregar os alunos diretamente pela turma sem saber a escola
+            this.isLoadingTurmaStudents = false;
+            return;
+        }
+
+        this.schoolManagementService.getStudentsBySchool(currentSchool.id, turma.id).subscribe({
+            next: (students) => {
+                this.turmaStudents = students;
+                this.isLoadingTurmaStudents = false;
+            },
+            error: (err) => {
+                console.error('Error loading turma students:', err);
+                this.isLoadingTurmaStudents = false;
+            }
+        });
+    }
+
+    get filteredTurmaStudents() {
+        if (!this.turmaSearchTerm) return this.turmaStudents;
+        const term = this.turmaSearchTerm.toLowerCase();
+        return this.turmaStudents.filter(s => 
+            (s.nome || s.nome_completo || '').toLowerCase().includes(term) ||
+            (s.email || '').toLowerCase().includes(term)
+        );
+    }
+
+    closeTurmaModal() {
+        this.showTurmaModal = false;
+        this.selectedTurma = null;
+        this.turmaStudents = [];
     }
 }
