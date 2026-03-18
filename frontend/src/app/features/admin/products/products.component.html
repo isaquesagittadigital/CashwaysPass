@@ -332,14 +332,18 @@
             </div>
 
             <!-- Info Cards Grid -->
-            <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-3 gap-3 mb-4">
                 <div class="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
-                    <p class="text-sm font-bold text-gray-900 mb-3">Preço</p>
-                    <p class="text-lg font-medium text-gray-600">{{ formatCurrency(selectedDetailsProduct.preco) }}</p>
+                    <p class="text-[11px] font-bold text-gray-400 uppercase tracking-tight mb-2">Preço</p>
+                    <p class="text-base font-bold text-[#005bb5]">{{ formatCurrency(selectedDetailsProduct.preco) }}</p>
                 </div>
                 <div class="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
-                    <p class="text-sm font-bold text-gray-900 mb-3">Limite por aluno</p>
-                    <p class="text-lg font-medium text-gray-600">{{ selectedDetailsProduct.limite_por_aluno }}</p>
+                    <p class="text-[11px] font-bold text-gray-400 uppercase tracking-tight mb-2">Estoque</p>
+                    <p class="text-base font-bold text-gray-700">{{ selectedDetailsProduct.quantidade || 0 }} un.</p>
+                </div>
+                <div class="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
+                    <p class="text-[11px] font-bold text-gray-400 uppercase tracking-tight mb-2">Limite</p>
+                    <p class="text-base font-bold text-gray-700">{{ selectedDetailsProduct.limite_por_aluno }}</p>
                 </div>
             </div>
 
