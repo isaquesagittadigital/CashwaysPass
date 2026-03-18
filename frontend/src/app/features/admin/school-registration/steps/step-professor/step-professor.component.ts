@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { SchoolRegistrationService, ProfessorData } from '../../registration.service';
+import { SchoolRegistrationService, MonitorData } from '../../registration.service';
 import { LucideAngularModule, Plus, Search, Trash2, Edit, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-angular';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import { DeleteConfirmModalComponent } from '../../../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
@@ -14,8 +14,8 @@ import { DeleteConfirmModalComponent } from '../../../../../shared/components/de
     styleUrls: ['./step-professor.component.css']
 })
 export class StepProfessorComponent implements OnInit {
-    professorForm: FormGroup;
-    professors$ = this.registrationService.professors$;
+    monitorForm: FormGroup;
+    monitors$ = this.registrationService.monitors$;
     icons = { Plus, Search, Trash2, Edit, ChevronLeft, ChevronRight, CheckCircle2 };
 
     // Filtering
@@ -23,14 +23,14 @@ export class StepProfessorComponent implements OnInit {
     grauFilter$ = new BehaviorSubject<string>('');
     statusFilter$ = new BehaviorSubject<string>('');
 
-    filteredProfessors$ = combineLatest([
-        this.professors$,
+    filteredMonitores$ = combineLatest([
+        this.monitors$,
         this.searchTerm$,
         this.grauFilter$,
         this.statusFilter$
     ]).pipe(
-        map(([professors, search, grau, status]) => {
-            return professors.filter(p => {
+        map(([monitors, search, grau, status]) => {
+            return monitors.filter(p => {
                 const matchesSearch = !search || p.nome.toLowerCase().includes(search.toLowerCase()) || p.email.toLowerCase().includes(search.toLowerCase());
                 const matchesGrau = !grau || p.escolaridade === grau;
                 const matchesStatus = !status || p.status === status;
@@ -50,7 +50,7 @@ export class StepProfessorComponent implements OnInit {
         private fb: FormBuilder,
         private registrationService: SchoolRegistrationService
     ) {
-        this.professorForm = this.fb.group({
+        this.monitorForm = this.fb.group({
             nome: ['', Validators.required],
             escolaridade: ['', Validators.required],
             email: ['', [Validators.required, Validators.email]]
@@ -63,7 +63,7 @@ export class StepProfessorComponent implements OnInit {
     
     // Auth & Modals State
     showDeleteConfirm = false;
-    professorToDelete: string | null = null;
+    monitorToDelete: string | null = null;
     
     // Toast State
     showSuccessToast = false;
@@ -72,66 +72,66 @@ export class StepProfessorComponent implements OnInit {
 
     ngOnInit(): void { }
 
-    addProfessor() {
-        if (this.professorForm.valid) {
-            const professor: ProfessorData = {
-                ...this.professorForm.value,
+    addMonitor() {
+        if (this.monitorForm.valid) {
+            const monitor: MonitorData = {
+                ...this.monitorForm.value,
                 status: 'active'
             };
 
             if (this.isEditing && this.editingId) {
-                this.registrationService.updateProfessor(this.editingId, professor);
-                this.showToast('Professor atualizado com sucesso!');
+                this.registrationService.updateMonitor(this.editingId, monitor);
+                this.showToast('Monitor atualizado com sucesso!');
                 this.isEditing = false;
                 this.editingId = null;
             } else {
-                this.registrationService.addProfessor(professor);
-                this.showToast('Professor cadastrado com sucesso!');
+                this.registrationService.addMonitor(monitor);
+                this.showToast('Monitor cadastrado com sucesso!');
             }
 
-            this.professorForm.reset({
+            this.monitorForm.reset({
                 escolaridade: ''
             });
         } else {
-            this.professorForm.markAllAsTouched();
+            this.monitorForm.markAllAsTouched();
         }
     }
 
-    editProfessor(professor: ProfessorData) {
+    editMonitor(monitor: MonitorData) {
         this.isEditing = true;
-        this.editingId = professor.id || null;
-        this.professorForm.patchValue({
-            nome: professor.nome,
-            escolaridade: professor.escolaridade,
-            email: professor.email
+        this.editingId = monitor.id || null;
+        this.monitorForm.patchValue({
+            nome: monitor.nome,
+            escolaridade: monitor.escolaridade,
+            email: monitor.email
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    removeProfessor(id: string) {
-        this.professorToDelete = id;
+    removeMonitor(id: string) {
+        this.monitorToDelete = id;
         this.showDeleteConfirm = true;
     }
 
     confirmDelete() {
-        if (this.professorToDelete) {
-            this.registrationService.removeProfessor(this.professorToDelete);
-            this.showToast('Professor removido com sucesso!');
+        if (this.monitorToDelete) {
+            this.registrationService.removeMonitor(this.monitorToDelete);
+            this.showToast('Monitor removido com sucesso!');
             this.showDeleteConfirm = false;
-            this.professorToDelete = null;
+            this.monitorToDelete = null;
 
             // Reset form if deleting the currently editing item
-            if (this.isEditing && this.editingId === this.professorToDelete) {
+            if (this.isEditing && this.editingId === this.monitorToDelete) {
                 this.isEditing = false;
                 this.editingId = null;
-                this.professorForm.reset({ escolaridade: '' });
+                this.monitorForm.reset({ escolaridade: '' });
             }
         }
     }
 
     cancelDelete() {
         this.showDeleteConfirm = false;
-        this.professorToDelete = null;
+        this.monitorToDelete = null;
     }
 
     showToast(message: string) {

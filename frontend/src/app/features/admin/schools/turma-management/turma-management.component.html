@@ -39,7 +39,7 @@
                 <!-- Row 2 -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
                     <div class="form-group">
-                        <label>Professor *</label>
+                        <label>Monitor *</label>
                         <select formControlName="professor_id" class="form-input">
                             <option value="">Selecione...</option>
                             <option *ngFor="let prof of professors" [value]="prof.id">{{ prof.nome_completo }}</option>
@@ -86,7 +86,7 @@
                             class="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">
                             <th class="px-2 py-4">Nome da turma</th>
                             <th class="px-2 py-4">Série / Estágio</th>
-                            <th class="px-2 py-4">Professor</th>
+                            <th class="px-2 py-4">Monitor</th>
                             <th class="px-2 py-4 text-right">Ações</th>
                         </tr>
                     </thead>
@@ -175,9 +175,9 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Professor Responsável</label>
+                        <label>Monitor Responsável</label>
                         <select formControlName="professor_id" class="form-input">
-                            <option value="">Selecione um professor</option>
+                            <option value="">Selecione um monitor</option>
                             <option *ngFor="let prof of professors" [value]="prof.id">{{ prof.nome_completo }}</option>
                         </select>
                     </div>

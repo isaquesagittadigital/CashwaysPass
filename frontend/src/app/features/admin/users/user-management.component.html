@@ -31,7 +31,7 @@
                 <option value="">Todos os tipos</option>
                 <option value="Admin">Administrador</option>
                 <option value="Escola">Escola</option>
-                <option value="Professor">Professor</option>
+                <option value="Professor">Monitor</option>
                 <option value="Responsavel">Responsável</option>
                 <option value="Lojista">Lojista</option>
                 <option value="Aluno">Aluno</option>
@@ -147,7 +147,7 @@
                     <td class="px-6 py-4">
                         <span class="px-3 py-1 rounded-full text-[11px] font-bold"
                             [ngClass]="getBadgeClass(u.tipo_acesso)">
-                            {{ u.tipo_acesso }}
+                            {{ u.tipo_acesso === 'Professor' ? 'Monitor' : u.tipo_acesso }}
                         </span>
                     </td>
                     <td class="px-6 py-4">
@@ -232,7 +232,7 @@
                         class="w-full appearance-none px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5]/20 focus:border-[#005bb5] cursor-pointer">
                         <option value="Admin">Administrador</option>
                         <option value="Escola">Escola</option>
-                        <option value="Professor">Professor</option>
+                        <option value="Professor">Monitor</option>
                         <option value="Responsavel">Responsável</option>
                         <option value="Lojista">Lojista</option>
                         <option value="Aluno">Aluno</option>

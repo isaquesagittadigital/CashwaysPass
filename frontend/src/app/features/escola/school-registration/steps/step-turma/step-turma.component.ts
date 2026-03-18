@@ -15,7 +15,7 @@ import { DeleteConfirmModalComponent } from '../../../../../shared/components/de
 export class StepTurmaComponent implements OnInit {
     turmaForm: FormGroup;
     turmas$ = this.registrationService.turmas$;
-    professors$ = this.registrationService.professors$;
+    monitors$ = this.registrationService.monitors$;
     icons = { Plus, Trash2, Edit, CheckCircle2 };
 
     // Modals & Toast State
@@ -135,9 +135,9 @@ export class StepTurmaComponent implements OnInit {
         if (this.toastTimeout) clearTimeout(this.toastTimeout);
     }
 
-    getProfessorName(id: string, professors: any[] | null): string {
-        if (!professors) return 'Desconhecido';
-        const prof = professors.find(p => (p.id === id || p.usuario_id === id));
+    getMonitorName(id: string, monitors: any[] | null): string {
+        if (!monitors) return 'Desconhecido';
+        const prof = monitors.find(p => (p.id === id || p.usuario_id === id));
         return prof ? prof.nome : 'Desconhecido';
     }
 

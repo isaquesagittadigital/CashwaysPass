@@ -31,10 +31,10 @@
             </div>
 
             <div class="form-group">
-                <label>Professor *</label>
+                <label>Monitor *</label>
                 <select formControlName="professor_id" class="form-input">
-                    <option value="">Selecione o professor</option>
-                    <option *ngFor="let prof of professors$ | async" [value]="prof.id">{{ prof.nome }}</option>
+                    <option value="">Selecione o monitor</option>
+                    <option *ngFor="let prof of monitors$ | async" [value]="prof.id">{{ prof.nome }}</option>
                 </select>
             </div>
 
@@ -68,7 +68,7 @@
                     <tr class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
                         <th class="py-4">Série e turma</th>
                         <th class="py-4 text-center">Estágio</th>
-                        <th class="py-4">Professor</th>
+                        <th class="py-4">Monitor</th>
                         <th class="py-4 text-center">Qtd. alunos</th>
                         <th class="py-4 text-center">Período</th>
                         <th class="py-4">Entrada</th>
@@ -84,7 +84,7 @@
                                 {{ turma.estagio }}
                             </span>
                         </td>
-                        <td class="py-4 text-gray-600">{{ getProfessorName(turma.professor_id, (professors$ | async)) }}
+                        <td class="py-4 text-gray-600">{{ getMonitorName(turma.professor_id, (monitors$ | async)) }}
                         </td>
                         <td class="py-4 text-center text-gray-600">{{ turma.quantidade_alunos }}</td>
                         <td class="py-4 text-center text-gray-600">{{ turma.Periodos }}</td>

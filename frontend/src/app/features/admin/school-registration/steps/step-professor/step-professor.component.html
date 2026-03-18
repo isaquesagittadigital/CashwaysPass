@@ -1,9 +1,9 @@
 <div class="space-y-8">
     <!-- Register New Professor Card -->
     <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-        <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary">Cadastrar novo professor</h3>
+        <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary">Cadastrar novo monitor</h3>
 
-        <form [formGroup]="professorForm" (ngSubmit)="addProfessor()" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+        <form [formGroup]="monitorForm" (ngSubmit)="addMonitor()" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
             <div class="form-group">
                 <label>Nome completo *</label>
                 <input type="text" formControlName="nome" class="form-input" placeholder="Nome completo">
@@ -20,14 +20,14 @@
             </div>
 
             <div class="form-group">
-                <label>Email do professor *</label>
+                <label>Email do monitor *</label>
                 <input type="email" formControlName="email" class="form-input" placeholder="email@exemplo.com">
             </div>
 
             <div class="flex items-center gap-4">
                 <button type="submit" class="btn-secondary h-[46px] w-full flex items-center justify-center gap-2 border-dashed">
                     <lucide-icon [img]="isEditing ? icons.Edit : icons.Plus" class="w-5 h-5"></lucide-icon>
-                    {{ isEditing ? 'Atualizar professor' : 'Cadastrar professor' }}
+                    {{ isEditing ? 'Atualizar monitor' : 'Cadastrar monitor' }}
                 </button>
             </div>
         </form>
@@ -36,7 +36,7 @@
 
     <!-- Professors List Card -->
     <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-        <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary">Professores cadastrados</h3>
+        <h3 class="text-xl font-bold text-gray-900 mb-6 font-primary">Monitores cadastrados</h3>
 
             <!-- Filters Row -->
             <div class="flex items-center gap-4">
@@ -59,7 +59,7 @@
                 <div class="relative w-full max-w-sm">
                     <lucide-icon [img]="icons.Search"
                         class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
-                    <input type="text" (input)="updateSearch($any($event.target).value)" placeholder="Buscar professor"
+                    <input type="text" (input)="updateSearch($any($event.target).value)" placeholder="Buscar monitor"
                         class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-[#00609b] transition-all">
                 </div>
             </div>
@@ -76,7 +76,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
-                        <tr *ngFor="let professor of filteredProfessors$ | async"
+                        <tr *ngFor="let professor of filteredMonitores$ | async"
                             class="hover:bg-gray-50/20 transition-all group">
                             <td class="px-2 py-5 font-bold text-gray-700 text-sm">{{ professor.nome }}</td>
                             <td class="px-2 py-5 text-center">
@@ -87,12 +87,12 @@
                             </td>
                             <td class="px-2 py-5">
                                 <div class="flex items-center justify-end gap-2">
-                                    <button (click)="removeProfessor(professor.id!)"
+                                    <button (click)="removeMonitor(professor.id!)"
                                         class="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                                         title="Excluir">
                                         <lucide-icon [img]="icons.Trash2" class="w-5 h-5"></lucide-icon>
                                     </button>
-                                    <button (click)="editProfessor(professor)"
+                                    <button (click)="editMonitor(professor)"
                                         class="p-2 text-gray-300 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all border border-gray-50"
                                         title="Editar">
                                         <lucide-icon [img]="icons.Edit" class="w-5 h-5"></lucide-icon>
@@ -101,9 +101,9 @@
                             </td>
                         </tr>
                         <!-- Empty state -->
-                        <tr *ngIf="(filteredProfessors$ | async)?.length === 0">
+                        <tr *ngIf="(filteredMonitores$ | async)?.length === 0">
                             <td colspan="3" class="py-12 text-center text-gray-400 text-sm italic">
-                                Nenhum professor encontrado.
+                                Nenhum monitor encontrado.
                             </td>
                         </tr>
                     </tbody>
@@ -130,7 +130,7 @@
 <!-- Modal: Confirmar Exclusão -->
 <app-delete-confirm-modal 
     [isVisible]="showDeleteConfirm"
-    [entityName]="'este professor'"
+    [entityName]="'este monitor'"
     [entityArticle]="'o'"
     (onConfirm)="confirmDelete()"
     (onCancel)="cancelDelete()">

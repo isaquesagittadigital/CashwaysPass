@@ -52,7 +52,7 @@
                             {{turma.nome}}
                         </div>
                         <p class="text-[13px] text-gray-500 ml-8 mb-4">
-                            {{ turma.professor_nome || 'Professor não definido' }} / {{ turma.serie }} / {{ turma.Periodos }}
+                            {{ turma.professor_nome || 'Monitor não definido' }} / {{ turma.serie }} / {{ turma.Periodos }}
                         </p>
                         <div class="flex flex-wrap gap-x-4 gap-y-2 ml-8 text-[13px] font-bold">
                             <button class="flex items-center gap-1.5 text-red-600 hover:text-red-700 transition-colors whitespace-nowrap btn-custom-height"
@@ -122,7 +122,7 @@
                             <button
                                 class="px-6 py-4 font-bold text-sm border-b-[3px] transition-all focus:outline-none whitespace-nowrap"
                                 [ngClass]="currentTab === 'professors' ? 'border-[#00609b] text-[#00609b]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'"
-                                (click)="currentTab = 'professors'">Professores</button>
+                                (click)="currentTab = 'professors'">Monitores</button>
                             <button
                                 class="px-6 py-4 font-bold text-sm border-b-[3px] transition-all focus:outline-none whitespace-nowrap"
                                 [ngClass]="currentTab === 'students' ? 'border-[#00609b] text-[#00609b]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'"
@@ -202,11 +202,11 @@
                                     </div>
                                     <!-- Professor -->
                                     <div>
-                                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Professor Responsável</label>
+                                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Monitor Responsável</label>
                                         <div class="relative">
                                             <select formControlName="professor_id"
                                                 class="w-full border border-gray-200 rounded-lg p-2.5 outline-none focus:border-[#00609b] appearance-none pr-10 text-sm bg-white transition-colors">
-                                                <option value="">Selecione um professor</option>
+                                                <option value="">Selecione um monitor</option>
                                                 <option *ngFor="let prof of professorsInSelectedTurma" [value]="prof.id">{{ prof.nome_completo }}</option>
                                             </select>
                                             <lucide-icon [img]="icons.ChevronDown"

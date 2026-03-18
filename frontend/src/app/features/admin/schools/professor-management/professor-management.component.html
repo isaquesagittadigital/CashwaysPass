@@ -4,21 +4,21 @@
         <div class="relative flex-1 w-full">
             <lucide-icon [img]="icons.Search"
                 class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></lucide-icon>
-            <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Buscar professor"
+            <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Buscar monitor"
                 class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00609b] transition-all">
         </div>
 
         <button (click)="openAddModal()"
             class="w-full sm:w-auto px-6 py-3 bg-[#00609b] text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#004d7c] transition-all shadow-md shadow-blue-900/10 whitespace-nowrap">
             <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
-            Cadastrar professor
+            Cadastrar monitor
         </button>
     </div>
 
     <!-- Grid of Professors -->
     <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-12 gap-4">
         <div class="w-8 h-8 border-4 border-[#00609b]/10 border-t-[#00609b] rounded-full animate-spin"></div>
-        <p class="text-xs text-gray-400 font-medium italic">Buscando professores...</p>
+        <p class="text-xs text-gray-400 font-medium italic">Buscando monitores...</p>
     </div>
 
     <div *ngIf="!isLoading && filteredProfessors.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -54,8 +54,8 @@
             <lucide-icon [img]="icons.Users" class="w-6 h-6 text-gray-300"></lucide-icon>
         </div>
         <div>
-            <h4 class="font-bold text-gray-700">Nenhum professor encontrado</h4>
-            <p class="text-xs text-gray-400">Clique em "Cadastrar professor" para adicionar um novo.</p>
+            <h4 class="font-bold text-gray-700">Nenhum monitor encontrado</h4>
+            <p class="text-xs text-gray-400">Clique em "Cadastrar monitor" para adicionar um novo.</p>
         </div>
     </div>
 
@@ -67,13 +67,13 @@
             <!-- Header -->
             <div class="flex items-center justify-between mb-8">
                 <div class="flex items-center gap-4">
-                    <h3 class="text-xl font-bold text-gray-900">{{ isEditing ? 'Editar' : 'Cadastrar' }} professor</h3>
+                    <h3 class="text-xl font-bold text-gray-900">{{ isEditing ? 'Editar' : 'Cadastrar' }} monitor</h3>
 
                     <!-- Delete link in Edit Mode -->
                     <button *ngIf="isEditing" (click)="onDelete(editingId!); closeModal()"
                         class="flex items-center gap-1.5 text-sm font-bold text-red-500 hover:text-red-600 transition-all ml-4">
                         <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon>
-                        Excluir professor
+                        Excluir monitor
                     </button>
                 </div>
 
@@ -86,7 +86,7 @@
                 <!-- Row 1: Nome and Grau -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-group">
-                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Nome do professor *</label>
+                        <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Nome do monitor *</label>
                         <input type="text" formControlName="nome_completo"
                             class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] transition-colors text-sm"
                             [ngClass]="{'border-red-500': professorForm.get('nome_completo')?.invalid && professorForm.get('nome_completo')?.touched}"
@@ -121,7 +121,7 @@
 
                 <!-- Row 2: Email -->
                 <div class="form-group">
-                    <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Email do professor *</label>
+                    <label class="block text-[13px] font-bold text-gray-700 mb-1.5">Email do monitor *</label>
                     <input type="email" formControlName="email"
                         class="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-[#00609b] transition-colors text-sm"
                         [ngClass]="{'border-red-500': professorForm.get('email')?.invalid && professorForm.get('email')?.touched}"
@@ -169,7 +169,7 @@
     </div>
 
     <!-- Delete Confirm Modal -->
-    <app-delete-confirm-modal entityName="professor" entityArticle="o" [isVisible]="showDeleteModal"
+    <app-delete-confirm-modal entityName="monitor" entityArticle="o" [isVisible]="showDeleteModal"
         [isLoading]="deleteLoading" (onConfirm)="confirmDelete()" (onCancel)="cancelDelete()">
     </app-delete-confirm-modal>
 

@@ -172,8 +172,8 @@ export class ProfessorManagementComponent implements OnInit {
                         this.successModalTitle = 'Alterações salvas!';
                         this.successModalMessage = 'As alterações foram salvas com sucesso.';
                     } else {
-                        this.successModalTitle = 'Professor cadastrado';
-                        this.successModalMessage = 'O professor foi cadastrada com sucesso!'; // Following image typo intentionally if that's what was shown, but normally "cadastrado"
+                        this.successModalTitle = 'Monitor cadastrado';
+                        this.successModalMessage = 'O monitor foi cadastrado com sucesso!';
                     }
                     this.showSuccessModal = true;
                     this.closeModal();
@@ -207,8 +207,8 @@ export class ProfessorManagementComponent implements OnInit {
                 this.loadProfessors();
 
                 // Show success modal for deletion
-                this.successModalTitle = 'Professor excluído!';
-                this.successModalMessage = 'O professor foi excluído com sucesso!';
+                this.successModalTitle = 'Monitor excluído!';
+                this.successModalMessage = 'O monitor foi excluído com sucesso!';
                 this.showSuccessModal = true;
             },
             error: (err) => {

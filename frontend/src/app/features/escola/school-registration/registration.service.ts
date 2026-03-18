@@ -27,7 +27,7 @@ export interface SchoolData {
     valorTransferencia: number;
 }
 
-export interface ProfessorData {
+export interface MonitorData {
     id?: string;
     nome: string;
     escolaridade: string;
@@ -70,8 +70,8 @@ export class SchoolRegistrationService {
     private isSchoolConfirmed = new BehaviorSubject<boolean>(false);
     isSchoolConfirmed$ = this.isSchoolConfirmed.asObservable();
 
-    private professors = new BehaviorSubject<ProfessorData[]>([]);
-    professors$ = this.professors.asObservable();
+    private monitors = new BehaviorSubject<MonitorData[]>([]);
+    monitors$ = this.monitors.asObservable();
 
     private turmas = new BehaviorSubject<TurmaData[]>([]);
     turmas$ = this.turmas.asObservable();
@@ -98,23 +98,23 @@ export class SchoolRegistrationService {
         this.isSchoolConfirmed.next(true);
     }
 
-    addProfessor(professor: ProfessorData) {
-        const current = this.professors.value;
-        this.professors.next([...current, { ...professor, id: crypto.randomUUID() }]);
+    addMonitor(monitor: MonitorData) {
+        const current = this.monitors.value;
+        this.monitors.next([...current, { ...monitor, id: crypto.randomUUID() }]);
     }
 
-    updateProfessor(id: string, professor: ProfessorData) {
-        const current = this.professors.value;
+    updateMonitor(id: string, monitor: MonitorData) {
+        const current = this.monitors.value;
         const index = current.findIndex(p => p.id === id);
         if (index !== -1) {
-            current[index] = { ...professor, id };
-            this.professors.next([...current]);
+            current[index] = { ...monitor, id };
+            this.monitors.next([...current]);
         }
     }
 
-    removeProfessor(id: string) {
-        const current = this.professors.value;
-        this.professors.next(current.filter(p => p.id !== id));
+    removeMonitor(id: string) {
+        const current = this.monitors.value;
+        this.monitors.next(current.filter(p => p.id !== id));
     }
 
     addTurma(turma: TurmaData) {
@@ -165,7 +165,7 @@ export class SchoolRegistrationService {
         this.currentStep.next(1);
         this.schoolData.next(null);
         this.isSchoolConfirmed.next(false);
-        this.professors.next([]);
+        this.monitors.next([]);
         this.turmas.next([]);
         this.students.next([]);
     }
@@ -186,7 +186,7 @@ export class SchoolRegistrationService {
                     valorCarteira: Number(school.valorCarteira),
                     valorTransferencia: Number(school.valorTransferencia)
                 },
-                professors: this.professors.value,
+                monitors: this.monitors.value,
                 turmas: this.turmas.value,
                 students: this.students.value
             };

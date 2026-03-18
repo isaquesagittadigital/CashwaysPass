@@ -172,8 +172,8 @@ export class ProfessorManagementComponent implements OnInit {
                         this.successModalTitle = 'Alterações salvas!';
                         this.successModalMessage = 'As alterações foram salvas com sucesso.';
                     } else {
-                        this.successModalTitle = 'Professor cadastrado';
-                        this.successModalMessage = 'O professor foi cadastrado com sucesso!';
+                        this.successModalTitle = 'Monitor cadastrado';
+                        this.successModalMessage = 'O monitor foi cadastrado com sucesso!';
                     }
                     this.showSuccessModal = true;
                     this.closeModal();
@@ -182,7 +182,7 @@ export class ProfessorManagementComponent implements OnInit {
                 },
                 error: (err) => {
                     this.isSubmitting = false;
-                    alert('Erro ao salvar professor: ' + err.message);
+                    alert('Erro ao salvar monitor: ' + err.message);
                 }
             });
         } else {
@@ -207,8 +207,8 @@ export class ProfessorManagementComponent implements OnInit {
                 this.loadProfessors();
 
                 // Show success modal for deletion
-                this.successModalTitle = 'Professor excluído!';
-                this.successModalMessage = 'O professor foi excluído com sucesso!';
+                this.successModalTitle = 'Monitor excluído!';
+                this.successModalMessage = 'O monitor foi excluído com sucesso!';
                 this.showSuccessModal = true;
             },
             error: (err) => {
