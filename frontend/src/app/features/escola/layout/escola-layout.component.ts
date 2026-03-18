@@ -30,6 +30,7 @@ import {
 } from 'lucide-angular';
 import { LogoComponent } from '../../../components/logo/logo.component';
 import { SchoolService, School } from '../../../core/services/school.service';
+import { ProfileService } from '../../../core/services/profile.service';
 import { supabase } from '../../../core/supabase';
 
 @Component({
@@ -65,7 +66,8 @@ export class EscolaLayoutComponent implements OnInit, OnDestroy {
 
     constructor(
         private router: Router,
-        private schoolService: SchoolService
+        private schoolService: SchoolService,
+        private profileService: ProfileService
     ) {
         // Load user data immediately
         const storedUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
@@ -102,18 +104,9 @@ export class EscolaLayoutComponent implements OnInit, OnDestroy {
         if (window.innerWidth < 768) {
             this.sidebarOpen = false;
         }
-        const storedUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
-        if (storedUser) {
-            try {
-                this.currentUser = JSON.parse(storedUser);
-                if (this.currentUser.sessionExpiration && new Date().getTime() > this.currentUser.sessionExpiration) {
-                    this.logout();
-                    return;
-                }
-            } catch (e) {
-                console.error('Error parsing user data', e);
-            }
-        }
+        this.profileService.currentUser$.subscribe(user => {
+            this.currentUser = user;
+        });
 
         this.schoolService.schools$.subscribe(s => this.schools = s);
         this.schoolService.selectedSchool$.subscribe(s => this.selectedSchool = s);

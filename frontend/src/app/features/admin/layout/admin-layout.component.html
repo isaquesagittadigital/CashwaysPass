@@ -89,8 +89,8 @@
                 <!-- User Profile (Avatar Left) -->
                 <div class="flex items-center gap-3 pl-6 border-l border-gray-100">
                     <div class="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center shadow-lg overflow-hidden border-2 border-slate-800">
-                        <!-- Mimicking the avatar in image -->
-                        <app-logo [onlyMark]="true" className="w-5 text-white" [light]="true"></app-logo>
+                        <img *ngIf="currentUser?.foto_url || currentUser?.foto_perfil" [src]="currentUser.foto_url || currentUser.foto_perfil" class="w-full h-full object-cover">
+                        <app-logo *ngIf="!(currentUser?.foto_url || currentUser?.foto_perfil)" [onlyMark]="true" className="w-5 text-white" [light]="true"></app-logo>
                     </div>
                     <div class="text-left leading-tight">
                         <p class="text-[13px] font-black text-gray-800">{{ currentUser?.nome_completo || currentUser?.nome || 'Admin' }}</p>

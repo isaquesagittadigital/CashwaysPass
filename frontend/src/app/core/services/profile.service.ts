@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../supabase';
-import { User } from '@supabase/supabase-js';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 export interface UserProfile {
     id: string;
@@ -18,6 +18,36 @@ export interface UserProfile {
     providedIn: 'root'
 })
 export class ProfileService {
+    private currentUserSubject = new BehaviorSubject<UserProfile | null>(this.getInitialUser());
+    public currentUser$ = this.currentUserSubject.asObservable();
+
+    constructor() {
+        // Inicializa o estado reativo
+        this.refreshProfile();
+    }
+
+    private getInitialUser(): UserProfile | null {
+        const stored = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+        if (stored) {
+            try {
+                const user = JSON.parse(stored);
+                return {
+                    ...user,
+                    foto_url: user.foto_url || user.foto_perfil
+                };
+            } catch (e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    async refreshProfile(): Promise<void> {
+        const profile = await this.getProfile();
+        if (profile) {
+            this.currentUserSubject.next(profile);
+        }
+    }
     async getProfile(): Promise<UserProfile | null> {
         let profile = null;
 
@@ -78,6 +108,9 @@ export class ProfileService {
             const parsedSession = JSON.parse(storedSession);
             sessionStorage.setItem('currentUser', JSON.stringify({ ...parsedSession, ...updateData }));
         }
+
+        // Emite o novo estado para os componentes assinantes
+        this.currentUserSubject.next(this.getInitialUser());
     }
 
     async updateProfile(data: Partial<UserProfile>): Promise<void> {

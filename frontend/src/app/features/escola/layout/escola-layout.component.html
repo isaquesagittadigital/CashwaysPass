@@ -74,8 +74,8 @@
                 <!-- User profile details -->
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center border border-transparent shadow-sm overflow-hidden text-white">
-                        <!-- Icon representation of the image logo -->
-                        <lucide-icon [img]="icons.Building2" class="w-6 h-6"></lucide-icon>
+                        <img *ngIf="currentUser?.foto_url || currentUser?.foto_perfil" [src]="currentUser.foto_url || currentUser.foto_perfil" class="w-full h-full object-cover">
+                        <lucide-icon *ngIf="!(currentUser?.foto_url || currentUser?.foto_perfil)" [img]="icons.Building2" class="w-6 h-6"></lucide-icon>
                     </div>
                     <div class="text-left hidden sm:block leading-tight pt-0.5">
                         <p class="text-[13px] font-bold text-gray-900">{{ selectedSchool?.name || currentUser?.nome_completo || 'Escola' }}</p>
