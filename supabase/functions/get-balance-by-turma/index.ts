@@ -1,4 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+﻿import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -14,7 +14,7 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      throw new Error("Token de autorização não fornecido.")
+      throw new Error("Token de autorizaÃ§Ã£o nÃ£o fornecido.")
     }
 
     const supabaseClient = createClient(
@@ -23,7 +23,7 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     )
 
-    // Tenta ler o corpo da requisição para pegar admin params
+    // Tenta ler o corpo da requisiÃ§Ã£o para pegar admin params
     let reqBody = {}
     try {
       if (req.method !== 'GET') {
@@ -37,12 +37,12 @@ serve(async (req) => {
 
     let targetEscolaId = escola_id || queryEscolaId
 
-    // Se a escola_id não foi enviada, busca a escola do usuário logado
+    // Se a escola_id nÃ£o foi enviada, busca a escola do usuÃ¡rio logado
     if (!targetEscolaId) {
       const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
 
       if (authError || !user) {
-        return new Response(JSON.stringify({ error: 'Usuário não autenticado e escola_id não fornecido' }), {
+        return new Response(JSON.stringify({ error: 'UsuÃ¡rio nÃ£o autenticado e escola_id nÃ£o fornecido' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 401,
         })
@@ -55,7 +55,7 @@ serve(async (req) => {
         .maybeSingle()
 
       if (usuarioError || !usuarioData || !usuarioData.escola_id) {
-        return new Response(JSON.stringify({ error: 'Escola não encontrada para este usuário' }), {
+        return new Response(JSON.stringify({ error: 'Escola nÃ£o encontrada para este usuÃ¡rio' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 404,
         })
@@ -111,3 +111,4 @@ serve(async (req) => {
     })
   }
 })
+

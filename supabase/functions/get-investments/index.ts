@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+﻿import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
             { global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } } }
         )
 
-        // Tenta ler o corpo da requisição para ver se foi passado um aluno_id explícito (para testes/admin)
+        // Tenta ler o corpo da requisiÃ§Ã£o para ver se foi passado um aluno_id explÃ­cito (para testes/admin)
         let reqBody = {}
         try {
             if (req.method !== 'GET') {
@@ -38,17 +38,17 @@ Deno.serve(async (req) => {
         console.log(`Request Method: ${req.method}, Content-Type: ${req.headers.get('content-type') || 'N/A'}, Target Aluno ID: ${targetAlunoId}`)
 
         if (!targetAlunoId) {
-            // 1. Obter o usuário logado a partir do token JWT caso não tenha sido passado aluno_id
+            // 1. Obter o usuÃ¡rio logado a partir do token JWT caso nÃ£o tenha sido passado aluno_id
             const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
 
             if (authError || !user) {
-                return new Response(JSON.stringify({ error: 'Usuário não autenticado e aluno_id não fornecido' }), {
+                return new Response(JSON.stringify({ error: 'UsuÃ¡rio nÃ£o autenticado e aluno_id nÃ£o fornecido' }), {
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                     status: 401,
                 })
             }
 
-            // 2. Buscar o ID do aluno associado ao usuário
+            // 2. Buscar o ID do aluno associado ao usuÃ¡rio
             const { data: aluno, error: alunoError } = await supabaseClient
                 .from('aluno')
                 .select('id')
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
             }
 
             if (!aluno) {
-                 return new Response(JSON.stringify({ error: 'Aluno não encontrado para este usuário' }), {
+                 return new Response(JSON.stringify({ error: 'Aluno nÃ£o encontrado para este usuÃ¡rio' }), {
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                     status: 404,
                 })
@@ -90,7 +90,8 @@ Deno.serve(async (req) => {
         console.error(error)
         return new Response(JSON.stringify({ error: error.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 400, // Bad Request ou 500 dependendo do erro, mas 400 é seguro
+            status: 400, // Bad Request ou 500 dependendo do erro, mas 400 Ã© seguro
         })
     }
 })
+

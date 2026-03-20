@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -15,31 +15,31 @@ Deno.serve(async (req) => {
         // 2. Captura o Token do Header Authorization
         const authHeader = req.headers.get('Authorization');
         if (!authHeader) {
-            throw new Error("Token de autorização não encontrado no cabeçalho.");
+            throw new Error("Token de autorizaÃ§Ã£o nÃ£o encontrado no cabeÃ§alho.");
         }
 
         const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
         const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
         const supabaseAdminKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
-        // 3. Valida o Token e identifica o usuário dono dele
+        // 3. Valida o Token e identifica o usuÃ¡rio dono dele
         const supabase = createClient(supabaseUrl, supabaseAnonKey);
         const token = authHeader.replace('Bearer ', '');
         const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
         if (userError || !user) {
-            throw new Error(`Token inválido ou expirado: ${userError?.message}`);
+            throw new Error(`Token invÃ¡lido ou expirado: ${userError?.message}`);
         }
 
-        // 4. Captura a nova senha do corpo da requisição (JSON do Bubble)
+        // 4. Captura a nova senha do corpo da requisiÃ§Ã£o (JSON do Bubble)
         const body = await req.json();
         const { new_password } = body;
 
         if (!new_password) {
-            throw new Error("A nova senha não foi enviada no corpo da requisição.");
+            throw new Error("A nova senha nÃ£o foi enviada no corpo da requisiÃ§Ã£o.");
         }
 
-        // 5. Executa o reset administrativo da senha usando o ID do usuário validado
+        // 5. Executa o reset administrativo da senha usando o ID do usuÃ¡rio validado
         const supabaseAdmin = createClient(supabaseUrl, supabaseAdminKey);
 
         const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
@@ -76,3 +76,4 @@ Deno.serve(async (req) => {
         });
     }
 })
+

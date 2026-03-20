@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -16,12 +16,12 @@ Deno.serve(async (req) => {
 
         const { refresh_token } = await req.json()
 
-        if (!refresh_token) throw new Error("Refresh Token não fornecido.")
+        if (!refresh_token) throw new Error("Refresh Token nÃ£o fornecido.")
 
         const { data, error } = await supabaseClient.auth.refreshSession({ refresh_token })
 
         if (error || !data.session) {
-            throw new Error("Não foi possível renovar a sessão: " + error?.message)
+            throw new Error("NÃ£o foi possÃ­vel renovar a sessÃ£o: " + error?.message)
         }
 
         return new Response(JSON.stringify({
@@ -42,3 +42,4 @@ Deno.serve(async (req) => {
         })
     }
 })
+

@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
 
         const url = new URL(req.url);
         
-        // Tenta pegar a ação de 3 lugares: URL, Body ou Header
+        // Tenta pegar a aÃ§Ã£o de 3 lugares: URL, Body ou Header
         let action = url.searchParams.get('action');
         
         let body: any = null;
@@ -27,17 +27,17 @@ Deno.serve(async (req) => {
             const clonedReq = req.clone();
             body = await clonedReq.json();
           } catch (e) {
-            console.log("Não foi possível processar o corpo JSON");
+            console.log("NÃ£o foi possÃ­vel processar o corpo JSON");
           }
         }
 
         action = action || body?.action || req.headers.get('x-action');
 
-        console.log(`Requisição recebida: ${req.method} ${url.pathname}`);
+        console.log(`RequisiÃ§Ã£o recebida: ${req.method} ${url.pathname}`);
         console.log(`Action detectada: ${action}`);
         console.log(`Query Params: ${url.search}`);
 
-        // --- AÇÃO: LISTAR ESCOLAS ATIVAS ---
+        // --- AÃ‡ÃƒO: LISTAR ESCOLAS ATIVAS ---
         if (action === 'list-schools' || action === 'listar-escolas') {
             const { data, error } = await supabase
                 .from('escola')
@@ -53,10 +53,10 @@ Deno.serve(async (req) => {
             });
         }
 
-        // --- AÇÃO: LISTAR TURMAS ---
+        // --- AÃ‡ÃƒO: LISTAR TURMAS ---
         if (action === 'list-turmas') {
             const escola_id = url.searchParams.get('escola_id');
-            if (!escola_id) throw new Error("Parâmetro escola_id é obrigatório.");
+            if (!escola_id) throw new Error("ParÃ¢metro escola_id Ã© obrigatÃ³rio.");
 
             const { data, error } = await supabase
                 .from('turma')
@@ -71,17 +71,17 @@ Deno.serve(async (req) => {
             });
         }
 
-        // --- AÇÃO: LISTAR ALUNOS ---
+        // --- AÃ‡ÃƒO: LISTAR ALUNOS ---
         if (action === 'list-alunos') {
             const turma_id = url.searchParams.get('turma_id');
-            if (!turma_id) throw new Error("Parâmetro turma_id é obrigatório.");
+            if (!turma_id) throw new Error("ParÃ¢metro turma_id Ã© obrigatÃ³rio.");
 
             const { data, error } = await supabase
                 .from('usuarios')
                 .select('id, nome_completo, email, cpf, primeiro_acesso')
                 .eq('turmaID', turma_id)
                 .eq('tipo_acesso', 'Aluno')
-                .eq('primeiro_acesso', false) // Retorna apenas alunos que ainda não acessaram (yes = remove do retorno)
+                .eq('primeiro_acesso', false) // Retorna apenas alunos que ainda nÃ£o acessaram (yes = remove do retorno)
                 .or('excluido.eq.no,excluido.is.null');
 
             if (error) throw error;
@@ -91,13 +91,13 @@ Deno.serve(async (req) => {
             });
         }
 
-        // --- AÇÃO: ATIVAR CONTA (CREATE AUTH + SET PASSWORD) ---
+        // --- AÃ‡ÃƒO: ATIVAR CONTA (CREATE AUTH + SET PASSWORD) ---
         if (action === 'activate-account' || action === 'ativar-conta') {
             const student_id = body?.student_id;
             const password = body?.password;
 
             if (!student_id || !password) {
-                throw new Error("Parâmetros student_id e password são obrigatórios.");
+                throw new Error("ParÃ¢metros student_id e password sÃ£o obrigatÃ³rios.");
             }
 
             // 1. Fetch user data (public.usuarios)
@@ -107,18 +107,18 @@ Deno.serve(async (req) => {
                 .eq('id', student_id)
                 .single();
 
-            if (userError || !usuario) throw new Error("Usuário não encontrado.");
+            if (userError || !usuario) throw new Error("UsuÃ¡rio nÃ£o encontrado.");
             
-            // 2. Verificar se o usuário já existe no Supabase Auth para decidir entre Criar ou Atualizar
+            // 2. Verificar se o usuÃ¡rio jÃ¡ existe no Supabase Auth para decidir entre Criar ou Atualizar
             let finalUserId: string | undefined;
             
-            // Busca o ID do usuário diretamente via RPC (SQL) para evitar erros de banco de dados no Auth
+            // Busca o ID do usuÃ¡rio diretamente via RPC (SQL) para evitar erros de banco de dados no Auth
             const { data: existingUserId, error: rpcError } = await supabase
                 .rpc('get_user_id_by_email', { email_search: usuario.email });
 
             if (rpcError) {
-                console.error("Erro ao buscar usuário via RPC:", rpcError);
-                throw new Error("Erro interno ao validar usuário no sistema de autenticação.");
+                console.error("Erro ao buscar usuÃ¡rio via RPC:", rpcError);
+                throw new Error("Erro interno ao validar usuÃ¡rio no sistema de autenticaÃ§Ã£o.");
             }
 
             if (existingUserId) {
@@ -129,9 +129,9 @@ Deno.serve(async (req) => {
                 );
                 if (updateAuthError) throw updateAuthError;
                 finalUserId = existingUserId;
-                console.log(`Usuário existente atualizado via RPC: ${finalUserId}`);
+                console.log(`UsuÃ¡rio existente atualizado via RPC: ${finalUserId}`);
             } else {
-                // Se não existe, cria novo
+                // Se nÃ£o existe, cria novo
                 const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
                     email: usuario.email,
                     password: password,
@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
                 });
                 if (authError) throw authError;
                 finalUserId = authUser.user.id;
-                console.log(`Novo usuário criado: ${finalUserId}`);
+                console.log(`Novo usuÃ¡rio criado: ${finalUserId}`);
             }
 
             // 3. Atualizar tabela usuarios vinculando o UserID e mudando status
@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
                 .update({ 
                     UserID: finalUserId, 
                     status: 'active',
-                    primeiro_acesso: true, // Coluna é boolean: true significa que já realizou o acesso
+                    primeiro_acesso: true, // Coluna Ã© boolean: true significa que jÃ¡ realizou o acesso
                     senha: password 
                 })
                 .eq('id', student_id);
@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
             });
         }
 
-        throw new Error("Ação inválida ou não especificada.");
+        throw new Error("AÃ§Ã£o invÃ¡lida ou nÃ£o especificada.");
 
     } catch (error: any) {
         return new Response(JSON.stringify({ success: false, error: error.message }), {
@@ -181,3 +181,4 @@ Deno.serve(async (req) => {
         });
     }
 })
+

@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 import { validatePasswordStrength } from "../_shared/validation.ts"
 
 const corsHeaders = {
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
         const { user_id, current_password, new_password, confirm_password } = body;
 
         if (!user_id || !current_password || !new_password) {
-            throw new Error("Parâmetros obrigatórios: user_id, current_password e new_password.");
+            throw new Error("ParÃ¢metros obrigatÃ³rios: user_id, current_password e new_password.");
         }
 
         const passCheck = validatePasswordStrength(new_password);
@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
         }
 
         if (new_password !== confirm_password && confirm_password !== undefined) {
-            throw new Error("A nova senha e a confirmação não conferem.");
+            throw new Error("A nova senha e a confirmaÃ§Ã£o nÃ£o conferem.");
         }
 
         const { data: usuario, error: userError } = await supabaseAdmin
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
             .single();
 
         if (userError || !usuario?.email) {
-            throw new Error("Não foi possível localizar o usuário.");
+            throw new Error("NÃ£o foi possÃ­vel localizar o usuÃ¡rio.");
         }
 
         // Valida senha atual via Login
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
         });
 
         if (signInError) {
-            throw new Error("A senha atual fornecida está incorreta.");
+            throw new Error("A senha atual fornecida estÃ¡ incorreta.");
         }
 
         // Altera para a nova
@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
             throw new Error(`Falha ao atualizar: ${authError.message}`);
         }
 
-        // Sincroniza coluna senha (se você usar para algo)
+        // Sincroniza coluna senha (se vocÃª usar para algo)
         await supabaseAdmin
             .from('usuarios')
             .update({ senha: new_password })
@@ -86,3 +86,4 @@ Deno.serve(async (req) => {
         })
     }
 })
+

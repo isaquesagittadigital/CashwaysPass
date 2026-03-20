@@ -1,4 +1,4 @@
-
+﻿
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
@@ -21,13 +21,13 @@ Deno.serve(async (req) => {
         const body = await req.json()
         const { user_id, valor, origem, destino } = body;
 
-        // Validações Básicas
+        // ValidaÃ§Ãµes BÃ¡sicas
         if (!user_id || !valor || valor <= 0 || !origem || !destino) {
-            throw new Error("Parâmetros inválidos. Necessário: user_id, valor (>0), origem (nome ou 'Saldo'), destino (nome ou 'Saldo').")
+            throw new Error("ParÃ¢metros invÃ¡lidos. NecessÃ¡rio: user_id, valor (>0), origem (nome ou 'Saldo'), destino (nome ou 'Saldo').")
         }
 
         if (origem === destino) {
-            throw new Error("Origem e destino não podem ser iguais.")
+            throw new Error("Origem e destino nÃ£o podem ser iguais.")
         }
 
         // Helper para limpar saldo
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
             return isNaN(parsed) ? 0 : parsed;
         };
 
-        // Converter valor para número float
+        // Converter valor para nÃºmero float
         const valorTransferencia = parseFloat(valor);
 
         console.log(`[TRANSFER] User: ${user_id} | Valor: ${valorTransferencia} | De: ${origem} -> Para: ${destino}`);
@@ -58,11 +58,11 @@ Deno.serve(async (req) => {
                 .eq('UserID', user_id)
                 .single()
 
-            if (userError || !usuario) throw new Error("Usuário não encontrado.")
+            if (userError || !usuario) throw new Error("UsuÃ¡rio nÃ£o encontrado.")
 
             const saldoAtual = Number(usuario.saldo_carteira) || 0;
             if (saldoAtual < valorTransferencia) {
-                throw new Error(`Saldo insuficiente na carteira. Disponível: ${saldoAtual}`);
+                throw new Error(`Saldo insuficiente na carteira. DisponÃ­vel: ${saldoAtual}`);
             }
 
             const { error: updateOrigem } = await supabaseClient
@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
             if (updateOrigem) throw new Error("Erro ao debitar da carteira.")
 
         } else {
-            // Sacar de um Propósito (Busca por NOME + USER_ID)
+            // Sacar de um PropÃ³sito (Busca por NOME + USER_ID)
             const { data: proposito, error: propError } = await supabaseClient
                 .from('propositos')
                 .select('id, saldo, nome')
@@ -81,13 +81,13 @@ Deno.serve(async (req) => {
                 .eq('usuario_id', user_id)
                 .single()
 
-            if (propError || !proposito) throw new Error(`Propósito de origem '${origem}' não encontrado.`)
+            if (propError || !proposito) throw new Error(`PropÃ³sito de origem '${origem}' nÃ£o encontrado.`)
 
             const saldoProp = parseSaldo(proposito.saldo);
             console.log(`[DEBUG] Saldo Origem Atual (${proposito.nome}): ${saldoProp} (Raw: ${proposito.saldo})`);
 
             if (saldoProp < valorTransferencia) {
-                throw new Error(`Saldo insuficiente no propósito '${proposito.nome}'. Disponível: ${saldoProp}`);
+                throw new Error(`Saldo insuficiente no propÃ³sito '${proposito.nome}'. DisponÃ­vel: ${saldoProp}`);
             }
 
             const novoSaldoOrigem = saldoProp - valorTransferencia;
@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
                 .update({ saldo: novoSaldoOrigem.toFixed(2) })
                 .eq('id', proposito.id)
 
-            if (updatePropOrigem) throw new Error("Erro ao debitar do propósito de origem.")
+            if (updatePropOrigem) throw new Error("Erro ao debitar do propÃ³sito de origem.")
         }
 
 
@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
                 .eq('UserID', user_id)
                 .single()
 
-            if (userDestError) throw new Error("Erro ao ler destino (Usuário).")
+            if (userDestError) throw new Error("Erro ao ler destino (UsuÃ¡rio).")
 
             const saldoDestAtual = Number(usuarioDest.saldo_carteira) || 0;
 
@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
             if (updateDest) throw new Error("Erro ao creditar na carteira principal.")
 
         } else {
-            // Depositar num Propósito (Busca por NOME + USER_ID)
+            // Depositar num PropÃ³sito (Busca por NOME + USER_ID)
             const { data: propDest, error: propDestError } = await supabaseClient
                 .from('propositos')
                 .select('id, saldo, nome')
@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
                 .eq('usuario_id', user_id)
                 .single()
 
-            if (propDestError || !propDest) throw new Error(`Propósito de destino '${destino}' não encontrado.`)
+            if (propDestError || !propDest) throw new Error(`PropÃ³sito de destino '${destino}' nÃ£o encontrado.`)
 
             const saldoPropDest = parseSaldo(propDest.saldo);
             const novoSaldoDestino = saldoPropDest + valorTransferencia;
@@ -144,21 +144,29 @@ Deno.serve(async (req) => {
                 .update({ saldo: novoSaldoDestino.toFixed(2) })
                 .eq('id', propDest.id)
 
-            if (updatePropDest) throw new Error("Erro ao creditar no propósito de destino.")
+            if (updatePropDest) throw new Error("Erro ao creditar no propÃ³sito de destino.")
         }
 
-        // --- PASSO 3: LOG DA TRANSAÇÃO ---
-        await supabaseClient.from('transfeera_log').insert({
+        // --- PASSO 3: LOG DA TRANSAÃ‡ÃƒO ---
+        const { data: alunoInfo } = await supabaseClient.from('aluno').select('id, nome').eq('user_id', user_id).maybeSingle();
+        
+        await supabaseClient.from('movimentacao_financeira').insert({
+            aluno_id: alunoInfo?.id || null,
             tipo_operacao: 'TRANSFERENCIA_INTERNA',
-            status: 'SUCESSO',
+            status: 'CONCLUIDO',
             request_payload: { user_id, valor, origem, destino },
-            response_payload: { message: `Transferência de ${valor} realizada de ${origem} para ${destino}` },
+            response_payload: { 
+                mensagem: `Transferido de ${origem} para ${destino}`,
+                valor_total: valorTransferencia,
+                item: "TransferÃªncia",
+                aluno_nome: alunoInfo?.nome || "UsuÃ¡rio Interno"
+            },
             http_status: 200
         })
 
         return new Response(JSON.stringify({
             success: true,
-            message: "Transferência realizada com sucesso."
+            message: "TransferÃªncia realizada com sucesso."
         }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,
@@ -171,7 +179,8 @@ Deno.serve(async (req) => {
             error: error.message
         }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 400, // Bad Request para erros de validação/saldo
+            status: 400, // Bad Request para erros de validaÃ§Ã£o/saldo
         })
     }
 })
+

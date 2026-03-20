@@ -1,11 +1,11 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Função auxiliar para normalizar strings (remover acentos e lowercase)
+// FunÃ§Ã£o auxiliar para normalizar strings (remover acentos e lowercase)
 function normalizeString(str: string) {
     if (!str) return "";
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
@@ -30,26 +30,26 @@ Deno.serve(async (req) => {
         try {
             body = JSON.parse(rawBody);
         } catch (e: any) {
-            // Tentativa 2: Corrigir "Vício Brasileiro" (ex: "valor": 10,50 -> a virgula quebra o JSON)
+            // Tentativa 2: Corrigir "VÃ­cio Brasileiro" (ex: "valor": 10,50 -> a virgula quebra o JSON)
             const fixedBody = rawBody.replace(/:\s*(\d+),(\d+)/g, ': $1.$2');
             try {
                 body = JSON.parse(fixedBody);
-                console.warn("[WARN] JSON recuperado via sanitização de vírgulas.");
+                console.warn("[WARN] JSON recuperado via sanitizaÃ§Ã£o de vÃ­rgulas.");
             } catch (e2: any) {
                 console.error("Erro Parse JSON Final:", e2);
-                throw new Error(`O JSON enviado está inválido. Se estiver enviando números decimais, use ponto (0.50) ou aspas ("0,50"). Erro: ${e.message}`);
+                throw new Error(`O JSON enviado estÃ¡ invÃ¡lido. Se estiver enviando nÃºmeros decimais, use ponto (0.50) ou aspas ("0,50"). Erro: ${e.message}`);
             }
         }
         const { aluno_id, lojista_id, valor_debito, proposito_nome } = body;
 
-        // Validações
+        // ValidaÃ§Ãµes
         if (!aluno_id || !lojista_id || !proposito_nome || valor_debito === undefined) {
-            throw new Error("Parâmetros inválidos. Necessário: aluno_id, lojista_id, proposito_nome e valor_debito.")
+            throw new Error("ParÃ¢metros invÃ¡lidos. NecessÃ¡rio: aluno_id, lojista_id, proposito_nome e valor_debito.")
         }
         
         const valorDebitoNum = parseFloat(String(valor_debito).replace(',', '.')); // Aceita 2,50 ou 2.50
 
-        console.log(`[DEBUG] Iniciando Transação. Aluno: ${aluno_id}, Valor: ${valorDebitoNum}, Propósito Alvo: ${proposito_nome}`);
+        console.log(`[DEBUG] Iniciando TransaÃ§Ã£o. Aluno: ${aluno_id}, Valor: ${valorDebitoNum}, PropÃ³sito Alvo: ${proposito_nome}`);
 
         // --- PASSO 1: Obter Dados do Lojista (Apenas Nome e Total Vendas) ---
         const { data: lojista, error: lojistaError } = await supabaseClient
@@ -60,57 +60,57 @@ Deno.serve(async (req) => {
 
         if (lojistaError || !lojista) {
             console.error("Erro ao buscar lojista:", lojistaError);
-            throw new Error(`Lojista não encontrado (ID: ${lojista_id}). Verifique se o ID está correto.`);
+            throw new Error(`Lojista nÃ£o encontrado (ID: ${lojista_id}). Verifique se o ID estÃ¡ correto.`);
         }
         const totalVendasAtual = Number(lojista.total_vendas || 0);
 
-        // --- PASSO 2: Obter TODOS os propósitos do aluno (Estratégia 'Pega Tudo') ---
+        // --- PASSO 2: Obter TODOS os propÃ³sitos do aluno (EstratÃ©gia 'Pega Tudo') ---
         const { data: todosPropositos, error: propError } = await supabaseClient
             .from('propositos')
             .select('id, saldo, nome')
             .eq('usuario_id', aluno_id)
 
         if (propError) {
-             console.error("Erro ao buscar propósitos:", propError);
+             console.error("Erro ao buscar propÃ³sitos:", propError);
              throw new Error("Erro de banco ao buscar saldos.");
         }
 
-        // --- LOG CRIITICO PRA DIAGNÓSTICO DO USUÁRIO ---
-        // Vê o que de fato veio do banco
-        console.log(`[DEBUG] Total Propósitos: ${todosPropositos?.length || 0}. Lista:`, 
+        // --- LOG CRIITICO PRA DIAGNÃ“STICO DO USUÃRIO ---
+        // VÃª o que de fato veio do banco
+        console.log(`[DEBUG] Total PropÃ³sitos: ${todosPropositos?.length || 0}. Lista:`, 
             JSON.stringify(todosPropositos?.map(p => ({ nome: p.nome, saldoRaw: p.saldo }))));
 
-        // Filtrar no Código - LÓGICA RIGOROSA (Identica ao Preview)
+        // Filtrar no CÃ³digo - LÃ“GICA RIGOROSA (Identica ao Preview)
         const targetNameNormalized = normalizeString(proposito_nome);
         
-        // Tentativa 1: Busca Exata (Prioridade Máxima)
+        // Tentativa 1: Busca Exata (Prioridade MÃ¡xima)
         const propositoAluno = todosPropositos?.find(p => {
             const dbNameNormalized = normalizeString(p.nome || '');
             return dbNameNormalized === targetNameNormalized;
         });
 
         if (!propositoAluno) {
-             // Lista o que temos de disponível para ajudar a debugar
+             // Lista o que temos de disponÃ­vel para ajudar a debugar
              const nomesDisponiveis = todosPropositos?.map(p => `${p.nome} (Saldo: ${p.saldo})`).join(', ');
              
-             throw new Error(`Propósito '${proposito_nome}' não encontrado na conta do aluno. Seus propósitos são: ${nomesDisponiveis || 'Nenhum'}`);
+             throw new Error(`PropÃ³sito '${proposito_nome}' nÃ£o encontrado na conta do aluno. Seus propÃ³sitos sÃ£o: ${nomesDisponiveis || 'Nenhum'}`);
         }
 
         // --- Tratar Saldo ---
-        // Garante que 1.50 não vire 150 nem 0
+        // Garante que 1.50 nÃ£o vire 150 nem 0
         const saldoRaw = String(propositoAluno.saldo || '0').trim(); 
         const saldoNormalizado = saldoRaw.replace(',', '.'); 
         const saldoAtual = parseFloat(saldoNormalizado);
 
-        console.log(`[DEBUG] MATCH SUCESSO! Propósito: ${propositoAluno.nome} (ID: ${propositoAluno.id}) | Saldo Banco: '${saldoRaw}' -> Parse: ${saldoAtual}`);
+        console.log(`[DEBUG] MATCH SUCESSO! PropÃ³sito: ${propositoAluno.nome} (ID: ${propositoAluno.id}) | Saldo Banco: '${saldoRaw}' -> Parse: ${saldoAtual}`);
 
         // --- PASSO 3: Verificar Saldo ---
         if (saldoAtual < valorDebitoNum) {
             // Log especial para entender por que falhou
-            throw new Error(`Saldo insuficiente no propósito '${propositoAluno.nome}'. Você tem R$ ${saldoAtual.toFixed(2)} e tentou gastar R$ ${valorDebitoNum.toFixed(2)}.`);
+            throw new Error(`Saldo insuficiente no propÃ³sito '${propositoAluno.nome}'. VocÃª tem R$ ${saldoAtual.toFixed(2)} e tentou gastar R$ ${valorDebitoNum.toFixed(2)}.`);
         }
 
-        // --- PASSO 4: Executar Transação ---
+        // --- PASSO 4: Executar TransaÃ§Ã£o ---
         const novoSaldoAluno = saldoAtual - valorDebitoNum;
 
         // Atualiza Aluno
@@ -131,21 +131,27 @@ Deno.serve(async (req) => {
             .eq('UserID', lojista_id)
 
         // Log Transfeera
-        await supabaseClient.from('transfeera_log').insert({
+        const { data: alunoInfoLog } = await supabaseClient.from('aluno').select('id, nome').eq('user_id', aluno_id).maybeSingle();
+
+        await supabaseClient.from('movimentacao_financeira').insert({
+            aluno_id: alunoInfoLog?.id || null,
             tipo_operacao: 'COMPRA_LOJA',
-            status: 'SUCESSO',
+            status: 'CONCLUIDO',
             request_payload: { aluno_id, lojista_id, valor: valorDebitoNum, proposito_nome },
             response_payload: { 
-                mensagem: `Compra realizada em ${lojista.nome} (${propositoAluno.nome})`,
+                mensagem: `Compra no balcÃ£o: ${lojista.nome}`,
+                item: "Pagamento Manual Gestor",
+                valor_total: valorDebitoNum,
+                aluno_nome: alunoInfoLog?.nome || "Aluno",
                 novo_saldo_aluno: novoSaldoAluno,
                 novo_total_vendas_lojista: novoTotalVendas
             },
             http_status: 200
         })
 
-         // --- PASSO 5: Registrar Histórico Detalhado do Lojista ---
+         // --- PASSO 5: Registrar HistÃ³rico Detalhado do Lojista ---
         try {
-            // 5.1. Buscar dados do aluno para o histórico
+            // 5.1. Buscar dados do aluno para o histÃ³rico
             const { data: alunoInfo } = await supabaseClient
                 .from('usuarios')
                 .select('nome, turmaID')
@@ -165,7 +171,7 @@ Deno.serve(async (req) => {
             const nomeAluno = alunoInfo?.nome || "Aluno Desconhecido";
             const descricaoHistorico = `Venda - ${nomeAluno} - ${nomeTurma}`;
 
-            // 5.2. Inserir no Histórico
+            // 5.2. Inserir no HistÃ³rico
             const { error: histError } = await supabaseClient
                 .from('lojista_historico')
                 .insert({
@@ -179,10 +185,10 @@ Deno.serve(async (req) => {
                     descricao: descricaoHistorico
                 });
 
-            if (histError) console.error("Erro ao gravar histórico detalhado:", histError);
+            if (histError) console.error("Erro ao gravar histÃ³rico detalhado:", histError);
 
         } catch(e) {
-            console.error("Erro não-bloqueante ao gerar histórico:", e);
+            console.error("Erro nÃ£o-bloqueante ao gerar histÃ³rico:", e);
         }
 
         return new Response(JSON.stringify({ 

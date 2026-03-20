@@ -1,4 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+﻿import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -14,7 +14,7 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      throw new Error("Token de autorização não fornecido. Envie o header 'Authorization: Bearer SEU_TOKEN'")
+      throw new Error("Token de autorizaÃ§Ã£o nÃ£o fornecido. Envie o header 'Authorization: Bearer SEU_TOKEN'")
     }
 
     const supabaseClient = createClient(
@@ -23,7 +23,7 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     )
 
-    // Tenta ler o corpo da requisição para pegar admin params
+    // Tenta ler o corpo da requisiÃ§Ã£o para pegar admin params
     let reqBody = {}
     try {
       if (req.method !== 'GET') {
@@ -39,18 +39,18 @@ serve(async (req) => {
 
     let targetEscolaId = escola_id || queryEscolaId
 
-    // Se a escola_id não foi enviada explicitamente, busca a escola do usuário logado
+    // Se a escola_id nÃ£o foi enviada explicitamente, busca a escola do usuÃ¡rio logado
     if (!targetEscolaId) {
       const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
 
       if (authError || !user) {
-        return new Response(JSON.stringify({ error: 'Usuário não autenticado e escola_id não fornecido' }), {
+        return new Response(JSON.stringify({ error: 'UsuÃ¡rio nÃ£o autenticado e escola_id nÃ£o fornecido' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 401,
         })
       }
 
-      // Buscar o ID da escola associado ao usuário na tabela de usuarios ou aluno (dependendo do perfil)
+      // Buscar o ID da escola associado ao usuÃ¡rio na tabela de usuarios ou aluno (dependendo do perfil)
       const { data: usuarioData, error: usuarioError } = await supabaseClient
         .from('usuarios')
         .select('escola_id')
@@ -58,7 +58,7 @@ serve(async (req) => {
         .maybeSingle()
 
       if (usuarioError || !usuarioData || !usuarioData.escola_id) {
-        return new Response(JSON.stringify({ error: 'Escola não encontrada para este usuário' }), {
+        return new Response(JSON.stringify({ error: 'Escola nÃ£o encontrada para este usuÃ¡rio' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 404,
         })
@@ -93,12 +93,12 @@ serve(async (req) => {
     // Somar aportes pendentes
     const precessamento = investimentos.reduce((acc, curr) => acc + Number(curr.valor_investido || 0), 0)
 
-    // Formatar para o gráfico: 3 séries
+    // Formatar para o grÃ¡fico: 3 sÃ©ries
     const responseData = {
-      labels: ["Saldo Disponível", "Total Investido", "Em Processamento"],
+      labels: ["Saldo DisponÃ­vel", "Total Investido", "Em Processamento"],
       series: [saldoCarteira, saldoInvestido, precessamento],
       chartData: [
-        { label: "Saldo Disponível", value: saldoCarteira, color: "#4ECDC4" },   // Teal/Verde
+        { label: "Saldo DisponÃ­vel", value: saldoCarteira, color: "#4ECDC4" },   // Teal/Verde
         { label: "Total Investido", value: saldoInvestido, color: "#FF6B6B" },    // Vermelho/Rosa
         { label: "Em Processamento", value: precessamento, color: "#FECCA2" }     // Amarelo/Laranja
       ]

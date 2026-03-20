@@ -1,4 +1,4 @@
-
+﻿
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
@@ -26,7 +26,7 @@ serve(async (req) => {
         // 3. Try to Get User (Optional if escola_id is provided)
         const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authHeader ?? undefined)
         
-        // Tenta ler o corpo da requisição
+        // Tenta ler o corpo da requisiÃ§Ã£o
         let body: any = {};
         try {
             body = await req.json();
@@ -36,11 +36,11 @@ serve(async (req) => {
 
         let escolaId = body.escola_id;
 
-        // Se NÃO foi passado ID da escola, aí sim EXIGIMOS o usuário logado para descobrir a escola dele
+        // Se NÃƒO foi passado ID da escola, aÃ­ sim EXIGIMOS o usuÃ¡rio logado para descobrir a escola dele
         if (!escolaId) {
             if (userError || !user) {
-                // Se não temos escola no body E não temos usuário, aí é erro.
-                throw new Error("Você deve enviar o 'escola_id' OU estar autenticado.");
+                // Se nÃ£o temos escola no body E nÃ£o temos usuÃ¡rio, aÃ­ Ã© erro.
+                throw new Error("VocÃª deve enviar o 'escola_id' OU estar autenticado.");
             }
 
             const { data: usuarioLogado, error: usuarioLogError } = await supabaseClient
@@ -50,13 +50,13 @@ serve(async (req) => {
                 .single();
 
             if (usuarioLogError || !usuarioLogado) {
-                throw new Error("Perfil de usuário não encontrado.");
+                throw new Error("Perfil de usuÃ¡rio nÃ£o encontrado.");
             }
             escolaId = usuarioLogado.escola_id;
         }
 
         if (!escolaId) {
-             throw new Error("ID da escola não identificado.");
+             throw new Error("ID da escola nÃ£o identificado.");
         }
 
         // 4. Fetch Turmas (Classes) from this School
@@ -73,7 +73,7 @@ serve(async (req) => {
             .from('usuarios')
             .select('UserID, turmaID, saldo_carteira, saldo_investido')
             .eq('escola_id', escolaId)
-            .eq('tipo_acesso', 'Aluno'); // Garante que é aluno
+            .eq('tipo_acesso', 'Aluno'); // Garante que Ã© aluno
 
         if (alunosError) throw new Error("Erro ao buscar alunos: " + alunosError.message);
 
@@ -89,27 +89,27 @@ serve(async (req) => {
                 .select('usuario_id, saldo, nome')
                 .in('usuario_id', alunosIds);
             
-            if (propError) throw new Error("Erro ao buscar propósitos: " + propError.message);
+            if (propError) throw new Error("Erro ao buscar propÃ³sitos: " + propError.message);
             propositos = propData || [];
         }
 
         // 7. Data Aggregation
-        // Processar saldos de propósitos por aluno
+        // Processar saldos de propÃ³sitos por aluno
         const propositosPorAluno: Record<string, number> = {};
         propositos.forEach(p => {
             const uid = p.usuario_id;
-            // O saldo no banco é texto, precisamos converter com cuidado
+            // O saldo no banco Ã© texto, precisamos converter com cuidado
             let val = 0;
             if (p.saldo) {
-                 // Remove tudo que não for número, ponto, vírgula ou sinal de menos
+                 // Remove tudo que nÃ£o for nÃºmero, ponto, vÃ­rgula ou sinal de menos
                  let clean = String(p.saldo).replace(/[^0-9.,-]/g, "");
 
-                 // Lógica para detectar formato BR (1.000,00) vs US (1,000.00)
-                 // Se tiver vírgula, assumimos que é decimal se for o último separador ou único
+                 // LÃ³gica para detectar formato BR (1.000,00) vs US (1,000.00)
+                 // Se tiver vÃ­rgula, assumimos que Ã© decimal se for o Ãºltimo separador ou Ãºnico
                  if (clean.includes(',')) {
                      // Remove pontos de milhar (ex: 1.200,50 -> 1200,50)
                      clean = clean.replace(/\./g, '');
-                     // Troca vírgula por ponto (1200,50 -> 1200.50)
+                     // Troca vÃ­rgula por ponto (1200,50 -> 1200.50)
                      clean = clean.replace(',', '.');
                  }
                  
@@ -137,7 +137,7 @@ serve(async (req) => {
                 const carteira = Number(aluno.saldo_carteira) || 0;
                 const investido = Number(aluno.saldo_investido) || 0;
                 
-                // Soma saldo em propósitos
+                // Soma saldo em propÃ³sitos
                 const totalPropositos = propositosPorAluno[aluno.UserID] || 0;
 
                 // Total do aluno
@@ -170,3 +170,4 @@ serve(async (req) => {
         })
     }
 })
+

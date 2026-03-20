@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
             lojista_id,
             filter_month,  // 'JAN', 'FEV', ... 'NOV', 'DEZ'
             filter_period, // 'Hoje', 'Ontem', 'Todos os dias'
-            filter_type,   // 'Vendas', 'Devolução', 'Todas'
+            filter_type,   // 'Vendas', 'DevoluÃ§Ã£o', 'Todas'
             search,        // Nome ou RA
             page = 1,
             limit = 10,
@@ -30,13 +30,13 @@ Deno.serve(async (req) => {
         } = body;
 
         if (!lojista_id) {
-            throw new Error("lojista_id é obrigatório.")
+            throw new Error("lojista_id Ã© obrigatÃ³rio.")
         }
 
-        // --- 1. LÓGICA DE DATAS (O "Cérebro" da Função) ---
+        // --- 1. LÃ“GICA DE DATAS (O "CÃ©rebro" da FunÃ§Ã£o) ---
 
         const now = new Date();
-        // Ajuste fuso Brasil (UTC-3) "na mão" para garantir o dia correto
+        // Ajuste fuso Brasil (UTC-3) "na mÃ£o" para garantir o dia correto
         const brazilOffset = 3 * 60 * 60 * 1000; // 3 horas em ms
         const nowBrazil = new Date(now.getTime() - brazilOffset);
 
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
         const periodNormalized = filter_period ? filter_period.toLowerCase() : "";
 
         if (periodNormalized === 'hoje') {
-            // Início do dia (00:00) e Fim do dia (23:59) HOJE
+            // InÃ­cio do dia (00:00) e Fim do dia (23:59) HOJE
             startDateStr = new Date(nowBrazil.getFullYear(), nowBrazil.getMonth(), nowBrazil.getDate(), 0, 0, 0).toISOString();
             endDateStr = new Date(nowBrazil.getFullYear(), nowBrazil.getMonth(), nowBrazil.getDate(), 23, 59, 59).toISOString();
 
@@ -67,18 +67,18 @@ Deno.serve(async (req) => {
             endDateStr = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59).toISOString();
 
         } else {
-            // "Todos os dias" OU Default -> Respeita o Mês da Aba (filter_month)
-            // Se filter_month for passado ("NOV"), usa ele. Se não, usa mês atual.
+            // "Todos os dias" OU Default -> Respeita o MÃªs da Aba (filter_month)
+            // Se filter_month for passado ("NOV"), usa ele. Se nÃ£o, usa mÃªs atual.
             let targetMonth = nowBrazil.getMonth();
 
             if (filter_month && monthMap[filter_month.toUpperCase()] !== undefined) {
                 targetMonth = monthMap[filter_month.toUpperCase()];
             }
 
-            // Dia 1 do mês alvo
+            // Dia 1 do mÃªs alvo
             const start = new Date(currentYear, targetMonth, 1, 0, 0, 0);
             // Subtrai o offset pra garantir que begin-of-month em UTC bata com Brasil?
-            // Na verdade, ISO String é UTC. Se queremos 00:00 Brasil, temos que adicionar 3h ao UTC.
+            // Na verdade, ISO String Ã© UTC. Se queremos 00:00 Brasil, temos que adicionar 3h ao UTC.
             // Mas para simplificar, vamos criar a data local e converter.
             // Melhor abordagem simples: Criar data string YYYY-MM-DD e buscar gte/lte
 
@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
             endDateStr = endMonth.toISOString();
         }
 
-        // --- 2. LÓGICA DE TIPO ---
+        // --- 2. LÃ“GICA DE TIPO ---
         let dbType = "";
         const typeNormalized = filter_type ? filter_type.toLowerCase() : "";
 
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
         else if (typeNormalized.includes('devolu')) dbType = 'DEVOLUCAO';
         // Se for 'Todas' ou vazio, dbType continua vazio e traz tudo.
 
-        // --- 3. CONSTRUÇÃO DA QUERY ---
+        // --- 3. CONSTRUÃ‡ÃƒO DA QUERY ---
         let query = supabaseClient
             .from('lojista_historico')
             .select('*', { count: 'exact' })
@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
             query = query.or(`aluno_nome.ilike.%${search}%,descricao.ilike.%${search}%`)
         }
 
-        // Ordenação e Paginação
+        // OrdenaÃ§Ã£o e PaginaÃ§Ã£o
         query = query.order('data_hora', { ascending: false })
 
         const p = Number(page) || 1;
@@ -128,15 +128,15 @@ Deno.serve(async (req) => {
         const to = from + l - 1
         query = query.range(from, to)
 
-        // --- EXECUÇÃO ---
+        // --- EXECUÃ‡ÃƒO ---
         const { data, error, count } = await query
 
         if (error) {
             console.error("Erro SQL:", error)
-            throw new Error("Erro ao consultar histórico.")
+            throw new Error("Erro ao consultar histÃ³rico.")
         }
 
-        // Retornamos também os filtros aplicados para debug do front se precisar
+        // Retornamos tambÃ©m os filtros aplicados para debug do front se precisar
         return new Response(JSON.stringify({
             success: true,
             data: data,

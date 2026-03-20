@@ -1,4 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+﻿import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -14,7 +14,7 @@ serve(async (req) => {
     try {
         const authHeader = req.headers.get('Authorization')
         if (!authHeader) {
-            throw new Error("Token de autorização não fornecido.")
+            throw new Error("Token de autorizaÃ§Ã£o nÃ£o fornecido.")
         }
 
         const supabaseClient = createClient(
@@ -23,7 +23,7 @@ serve(async (req) => {
             { global: { headers: { Authorization: authHeader } } }
         )
 
-        // Tenta ler o corpo da requisição para pegar params
+        // Tenta ler o corpo da requisiÃ§Ã£o para pegar params
         let reqBody: any = {}
         try {
             if (req.method !== 'GET') {
@@ -35,15 +35,15 @@ serve(async (req) => {
         const queryUserId = url.searchParams.get('user_id')
         const { user_id } = reqBody
 
-        // 1. Determinar o ID do usuário alvo (prioridade para o filtro passado)
+        // 1. Determinar o ID do usuÃ¡rio alvo (prioridade para o filtro passado)
         let targetUserId = user_id || queryUserId
 
         if (!targetUserId) {
-            // Se não houver filtro, busca o usuário do token
+            // Se nÃ£o houver filtro, busca o usuÃ¡rio do token
             const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
 
             if (authError || !user) {
-                return new Response(JSON.stringify({ error: 'Usuário não autenticado e nenhum user_id fornecido como filtro.' }), {
+                return new Response(JSON.stringify({ error: 'UsuÃ¡rio nÃ£o autenticado e nenhum user_id fornecido como filtro.' }), {
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                     status: 401,
                 })
@@ -51,7 +51,7 @@ serve(async (req) => {
             targetUserId = user.id
         }
 
-        // 2. Buscar o ID da escola associado ao usuário alvo
+        // 2. Buscar o ID da escola associado ao usuÃ¡rio alvo
         let { data: usuarioData, error: usuarioError } = await supabaseClient
             .from('usuarios')
             .select('escola_id')
@@ -60,7 +60,7 @@ serve(async (req) => {
 
         let targetEscolaId = usuarioData?.escola_id
 
-        // Se não encontrar em usuarios, tenta na tabela 'aluno'
+        // Se nÃ£o encontrar em usuarios, tenta na tabela 'aluno'
         if (!targetEscolaId) {
             const { data: alunoData } = await supabaseClient
                 .from('aluno')
@@ -72,7 +72,7 @@ serve(async (req) => {
         }
 
         if (!targetEscolaId) {
-            return new Response(JSON.stringify({ error: 'Escola não encontrada para este usuário' }), {
+            return new Response(JSON.stringify({ error: 'Escola nÃ£o encontrada para este usuÃ¡rio' }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 status: 404,
             })
@@ -86,7 +86,7 @@ serve(async (req) => {
             .single()
 
         if (escolaError || !escolaData) {
-            throw new Error("Erro ao carregar detalhes da escola: " + (escolaError?.message || "Não encontrada"))
+            throw new Error("Erro ao carregar detalhes da escola: " + (escolaError?.message || "NÃ£o encontrada"))
         }
 
         return new Response(JSON.stringify(escolaData), {
@@ -101,3 +101,4 @@ serve(async (req) => {
         })
     }
 })
+

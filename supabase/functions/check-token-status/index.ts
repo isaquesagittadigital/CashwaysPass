@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -16,14 +16,14 @@ Deno.serve(async (req) => {
 
         const { token } = await req.json()
 
-        if (!token) throw new Error("Token não fornecido.")
+        if (!token) throw new Error("Token nÃ£o fornecido.")
 
         const { data: { user }, error } = await supabaseClient.auth.getUser(token)
 
         if (error || !user) {
             return new Response(JSON.stringify({
                 expired: true,
-                message: "Token inválido ou expirado.",
+                message: "Token invÃ¡lido ou expirado.",
                 error: error?.message
             }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
             expired: false,
             user_id: user.id,
             email: user.email,
-            message: "Sessão ativa."
+            message: "SessÃ£o ativa."
         }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200
@@ -48,3 +48,4 @@ Deno.serve(async (req) => {
         })
     }
 })
+

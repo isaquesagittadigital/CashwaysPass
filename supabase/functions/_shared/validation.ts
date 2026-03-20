@@ -1,5 +1,5 @@
-/**
- * Utilitários de validação e sanitização para Supabase Edge Functions
+﻿/**
+ * UtilitÃ¡rios de validaÃ§Ã£o e sanitizaÃ§Ã£o para Supabase Edge Functions
  */
 
 export function sanitizeEmail(email: string): string {
@@ -72,3 +72,4 @@ export function validatePasswordStrength(password: string): { valid: boolean, me
     if (password.length < 6) return { valid: false, message: 'A senha deve ter pelo menos 6 caracteres.' };
     return { valid: true };
 }
+

@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 import { sanitizeEmail, isValidEmail } from "../_shared/validation.ts"
 
 const corsHeaders = {
@@ -6,10 +6,10 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Função auxiliar para converter DD/MM/YYYY para YYYY-MM-DD
+// FunÃ§Ã£o auxiliar para converter DD/MM/YYYY para YYYY-MM-DD
 function formatToDBDate(dateStr: string) {
     if (!dateStr) return null;
-    if (dateStr.includes('-')) return dateStr; // Já está no formato YYYY-MM-DD
+    if (dateStr.includes('-')) return dateStr; // JÃ¡ estÃ¡ no formato YYYY-MM-DD
 
     const parts = dateStr.split('/');
     if (parts.length === 3) {
@@ -42,14 +42,14 @@ Deno.serve(async (req) => {
             try {
                 body = JSON.parse(fixedBody);
             } catch (e2: any) {
-                throw new Error(`JSON inválido: ${e.message}`);
+                throw new Error(`JSON invÃ¡lido: ${e.message}`);
             }
         }
 
         const { user_id, email, nome_completo, data_nascimento } = body;
 
         if (!user_id) {
-            throw new Error("user_id é obrigatório.");
+            throw new Error("user_id Ã© obrigatÃ³rio.");
         }
 
         const updateData: any = {};
@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
         if (email !== undefined) {
             const cleanEmail = sanitizeEmail(email);
             if (!isValidEmail(cleanEmail)) {
-                throw new Error("Email fornecido é inválido.");
+                throw new Error("Email fornecido Ã© invÃ¡lido.");
             }
             updateData.email = cleanEmail;
             body.email = cleanEmail; // update body.email for the auth variable below
@@ -95,3 +95,4 @@ Deno.serve(async (req) => {
         })
     }
 })
+

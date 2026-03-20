@@ -1,0 +1,26 @@
+Relatório de Ações Realizadas - Hoje (18/03/2026)
+====================================================
+
+Aqui está o resumo das implementações e correções realizadas hoje:
+
+1. Refatoração de Nomenclatura:
+   - Alteração do termo "Professor" para "Monitor" nos módulos de administrador e de escola (refactor).
+
+2. Gestão de Alunos e Turmas:
+   - Correção na seleção de turma dentro do modal de edição de alunos (fix).
+   - Filtro no dropdown de professores e sincronização correta da lista de professores da turma (fix).
+   - Restauração da exibição do nome do professor na lista da escola, incluindo suporte para múltiplas turmas para o mesmo professor (fix).
+   - Melhoria na relação Turma-Professor, permitindo o suporte de múltiplas turmas por professor (feat).
+   - Ocultação/remoção da seta lateral (chevron) na visualização de alunos no modal da turma (ui).
+
+3. Criação de Contas e Notificações:
+   - Inclusão do campo de email do responsável no cadastro de alunos. O sistema agora envia notificações automáticas e processa a criação de contas de forma integrada (feat).
+
+4. Gestão de Produtos (Lojistas/Escola/Admin):
+   - Habilitação do campo de quantidade nos fluxos de produto para a escola e o administrador (feat).
+   - Correção no bucket de perfil no Supabase, além do aprimoramento da lógica de salvamento e upload de imagens de produtos (fix).
+
+5. Melhorias Gerais de Interface e Build:
+   - Ajuste responsável pela atualização reativa das imagens de perfil pelo layout quando alteradas (fix).
+   - Correção de erros de compilação adicionando o FormsModule nos componentes de Dashboard (fix).
+   - Ajustes nos resumos de dados de turmas e validações de dados de estudantes na home (feat/fix).

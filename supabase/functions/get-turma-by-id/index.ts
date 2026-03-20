@@ -1,4 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+﻿import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -15,7 +15,7 @@ serve(async (req) => {
     try {
         const authHeader = req.headers.get('Authorization')
         if (!authHeader) {
-            throw new Error("Token de autorização não fornecido.")
+            throw new Error("Token de autorizaÃ§Ã£o nÃ£o fornecido.")
         }
 
         // Initialize Supabase client
@@ -41,7 +41,7 @@ serve(async (req) => {
         }
 
         if (!id) {
-            return new Response(JSON.stringify({ error: 'ID da turma não fornecido' }), {
+            return new Response(JSON.stringify({ error: 'ID da turma nÃ£o fornecido' }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 status: 400,
             })
@@ -59,7 +59,7 @@ serve(async (req) => {
         }
 
         if (!data) {
-            return new Response(JSON.stringify({ error: 'Turma não encontrada' }), {
+            return new Response(JSON.stringify({ error: 'Turma nÃ£o encontrada' }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 status: 404,
             })
@@ -78,3 +78,4 @@ serve(async (req) => {
         })
     }
 })
+

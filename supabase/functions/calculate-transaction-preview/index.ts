@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -22,33 +22,33 @@ Deno.serve(async (req) => {
         let body;
         
         try {
-            // Tentativa 1: Padrão
+            // Tentativa 1: PadrÃ£o
             body = JSON.parse(rawBody);
         } catch (e: any) {
-            // Tentativa 2: Corrigir "Vício Brasileiro" (ex: "valor": 10,50 -> a virgula quebra o JSON)
-            // Regex: Busca por ": " seguido de dígitos, vírgula, dígitos (sem aspas em volta)
+            // Tentativa 2: Corrigir "VÃ­cio Brasileiro" (ex: "valor": 10,50 -> a virgula quebra o JSON)
+            // Regex: Busca por ": " seguido de dÃ­gitos, vÃ­rgula, dÃ­gitos (sem aspas em volta)
             // Ex: "valor": 10,50 -> "valor": 10.50
             const fixedBody = rawBody.replace(/:\s*(\d+),(\d+)/g, ': $1.$2');
             
             try {
                 body = JSON.parse(fixedBody);
-                console.warn("[WARN] JSON recuperado via sanitização de vírgulas.");
+                console.warn("[WARN] JSON recuperado via sanitizaÃ§Ã£o de vÃ­rgulas.");
             } catch (e2: any) {
                 console.error("Erro Parse JSON Final:", e2);
-                throw new Error(`O JSON enviado está inválido. Se estiver enviando números decimais, use ponto (0.50) ou aspas ("0,50"). Erro Original: ${e.message}`);
+                throw new Error(`O JSON enviado estÃ¡ invÃ¡lido. Se estiver enviando nÃºmeros decimais, use ponto (0.50) ou aspas ("0,50"). Erro Original: ${e.message}`);
             }
         }
         
         const { aluno_id, lojista_id, valor_debito } = body;
 
-        // Validações Básicas
+        // ValidaÃ§Ãµes BÃ¡sicas
         if (!aluno_id || !lojista_id || valor_debito === undefined) {
-            throw new Error("Parâmetros inválidos. Necessário: aluno_id, lojista_id e valor_debito.")
+            throw new Error("ParÃ¢metros invÃ¡lidos. NecessÃ¡rio: aluno_id, lojista_id e valor_debito.")
         }
         
         const valorDebitoNum = parseFloat(String(valor_debito).replace(',', '.')); // Aceita 2,50 ou 2.50
 
-        // --- PASSO 1: Descobrir o Propósito do Lojista ---
+        // --- PASSO 1: Descobrir o PropÃ³sito do Lojista ---
         const { data: lojista, error: lojistaError } = await supabaseClient
             .from('usuarios')
             .select('Proposito_Lojista, nome')
@@ -57,27 +57,27 @@ Deno.serve(async (req) => {
 
         if (lojistaError || !lojista) {
             console.error("Erro ao buscar lojista:", lojistaError);
-            throw new Error(`Lojista não encontrado (ID: ${lojista_id}). Erro: ${lojistaError?.message}`);
+            throw new Error(`Lojista nÃ£o encontrado (ID: ${lojista_id}). Erro: ${lojistaError?.message}`);
         }
 
-        const nomeProposito = lojista.Proposito_Lojista; // Ex: 'Alimentação'
+        const nomeProposito = lojista.Proposito_Lojista; // Ex: 'AlimentaÃ§Ã£o'
 
         if (!nomeProposito) {
-             throw new Error("Este lojista não possui um propósito configurado (Proposito_Lojista).");
+             throw new Error("Este lojista nÃ£o possui um propÃ³sito configurado (Proposito_Lojista).");
         }
 
-        // --- PASSO 2: Buscar Saldo do Aluno NESTE Propósito ---
+        // --- PASSO 2: Buscar Saldo do Aluno NESTE PropÃ³sito ---
         const { data: todosPropositos, error: propError } = await supabaseClient
             .from('propositos')
             .select('saldo, nome')
             .eq('usuario_id', aluno_id)
 
         if (propError) {
-             console.error("Erro ao buscar propósitos do aluno:", propError);
+             console.error("Erro ao buscar propÃ³sitos do aluno:", propError);
              throw new Error("Erro ao consultar saldo do aluno.");
         }
 
-        // Normalizar string para comparação (remove acentos, lowercase)
+        // Normalizar string para comparaÃ§Ã£o (remove acentos, lowercase)
         const normalize = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         const targetName = normalize(nomeProposito);
         
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
             const saldoRaw = String(propositoAluno.saldo || '0').trim(); 
             saldoAtual = parseFloat(saldoRaw.replace(',', '.'));    
         } else {
-            console.warn(`Aluno ${aluno_id} não possui o propósito '${nomeProposito}' (Lojista). Assumindo saldo 0.`);
+            console.warn(`Aluno ${aluno_id} nÃ£o possui o propÃ³sito '${nomeProposito}' (Lojista). Assumindo saldo 0.`);
         }
 
         // --- PASSO 3: Calcular Preview ---

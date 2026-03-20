@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -27,16 +27,16 @@ Deno.serve(async (req) => {
         const { user_ids } = body; // Espera array de UUIDs: ["uuid1", "uuid2"]
 
         if (!user_ids || !Array.isArray(user_ids) || user_ids.length === 0) {
-            throw new Error("O campo 'user_ids' deve ser um array de UUIDs não vazio.")
+            throw new Error("O campo 'user_ids' deve ser um array de UUIDs nÃ£o vazio.")
         }
 
-        console.log(`[ADMIN SOFT-DELETE] Iniciando inativação de ${user_ids.length} usuários...`);
+        console.log(`[ADMIN SOFT-DELETE] Iniciando inativaÃ§Ã£o de ${user_ids.length} usuÃ¡rios...`);
 
         const results = [];
 
         for (const userId of user_ids) {
             try {
-                // ESTÁGIO 1: Marcar como deletado na tabela pública (Soft Delete)
+                // ESTÃGIO 1: Marcar como deletado na tabela pÃºblica (Soft Delete)
                 const { error: dbError } = await supabaseAdmin
                     .from('usuarios')
                     .update({ deleted: true })
@@ -44,17 +44,17 @@ Deno.serve(async (req) => {
 
                 if (dbError) throw new Error(`Erro ao atualizar tabela usuarios: ${dbError.message}`)
 
-                // ESTÁGIO 2: Banir o usuário no Auth (Impede login)
+                // ESTÃGIO 2: Banir o usuÃ¡rio no Auth (Impede login)
                 const { error: banError } = await supabaseAdmin.auth.admin.updateUserById(
                     userId,
                     { ban_duration: '876000h' } // ~100 anos de banimento
                 )
 
                 if (banError) {
-                    console.warn(`Aviso: Falha ao banir usuário ${userId} no Auth (mas foi marcado como deleted no DB):`, banError);
+                    console.warn(`Aviso: Falha ao banir usuÃ¡rio ${userId} no Auth (mas foi marcado como deleted no DB):`, banError);
                 }
 
-                results.push({ id: userId, status: 'SOFT_DELETED', message: 'Usuário marcado como deletado e banido.' });
+                results.push({ id: userId, status: 'SOFT_DELETED', message: 'UsuÃ¡rio marcado como deletado e banido.' });
 
             } catch (err: any) {
                 console.error(`Falha ao processar ${userId}:`, err);
@@ -82,3 +82,4 @@ Deno.serve(async (req) => {
         })
     }
 })
+

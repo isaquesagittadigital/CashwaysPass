@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+﻿import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const corsHeaders = {
@@ -23,16 +23,16 @@ serve(async (req) => {
         console.log("Payload recebido:", JSON.stringify(body))
 
         const { record } = body
-        const usuarioId = record?.id // O ID do usuário (UUID vindo da tabela auth.users)
+        const usuarioId = record?.id // O ID do usuÃ¡rio (UUID vindo da tabela auth.users)
 
         if (!usuarioId) {
-            throw new Error("usuario_id não encontrado no payload")
+            throw new Error("usuario_id nÃ£o encontrado no payload")
         }
 
-        console.log(`Criando propósitos para o usuário: ${usuarioId}`)
+        console.log(`Criando propÃ³sitos para o usuÃ¡rio: ${usuarioId}`)
 
         const propositos = [
-            { usuario_id: usuarioId, nome: 'Alimentação', saldo: 0 },
+            { usuario_id: usuarioId, nome: 'AlimentaÃ§Ã£o', saldo: 0 },
             { usuario_id: usuarioId, nome: 'Mercado', saldo: 0 },
             { usuario_id: usuarioId, nome: 'Entretenimento', saldo: 0 },
             { usuario_id: usuarioId, nome: 'Minha Reserva', saldo: 0 }
@@ -43,11 +43,11 @@ serve(async (req) => {
             .insert(propositos)
 
         if (error) {
-            console.error("Erro ao inserir propósitos:", error)
+            console.error("Erro ao inserir propÃ³sitos:", error)
             throw error
         }
 
-        return new Response(JSON.stringify({ success: true, message: "Propósitos criados com sucesso" }), {
+        return new Response(JSON.stringify({ success: true, message: "PropÃ³sitos criados com sucesso" }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,
         })
@@ -60,3 +60,4 @@ serve(async (req) => {
         })
     }
 })
+

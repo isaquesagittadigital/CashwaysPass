@@ -1,4 +1,4 @@
-
+﻿
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
@@ -29,7 +29,7 @@ serve(async (req) => {
         if (user) {
             userId = user.id;
         } else {
-            // Se não tem token, tenta ler do body (para testes ou chamadas admin)
+            // Se nÃ£o tem token, tenta ler do body (para testes ou chamadas admin)
             try {
                 const body = await req.json();
                 userId = body.user_id;
@@ -39,27 +39,27 @@ serve(async (req) => {
         }
 
         if (!userId) {
-            throw new Error("Usuário não identificado (Envie Token ou user_id no body).");
+            throw new Error("UsuÃ¡rio nÃ£o identificado (Envie Token ou user_id no body).");
         }
 
         console.log(`Calculando total para UserID: ${userId}`);
 
-        // 2. [REMOVIDO] Buscar Saldos Principais (não necessário mais)
+        // 2. [REMOVIDO] Buscar Saldos Principais (nÃ£o necessÃ¡rio mais)
 
-        // 3. Buscar e Somar Propósitos
+        // 3. Buscar e Somar PropÃ³sitos
         const { data: propositosData, error: propError } = await supabaseClient
             .from('propositos')
             .select('saldo, nome')
             .eq('usuario_id', userId);
 
-        if (propError) throw new Error("Erro ao buscar propósitos.");
+        if (propError) throw new Error("Erro ao buscar propÃ³sitos.");
 
-        // Helper de conversão
+        // Helper de conversÃ£o
         const parseSaldo = (valor: any): number => {
             if (!valor) return 0;
             let clean = String(valor).replace(/[^0-9.,-]/g, "");
             
-            // Lógica para detectar e limpar formato BR (1.000,00) vs US
+            // LÃ³gica para detectar e limpar formato BR (1.000,00) vs US
             if (clean.includes(',')) {
                 clean = clean.replace(/\./g, '');
                 clean = clean.replace(',', '.');
@@ -82,7 +82,7 @@ serve(async (req) => {
             user_id: userId,
             total_propositos: totalPropositos, // Foco principal
             detalhes: {
-                // carteira: saldoCarteira, // Comentado pois o foco é propósitos
+                // carteira: saldoCarteira, // Comentado pois o foco Ã© propÃ³sitos
                 // investido: saldoInvestido,
                 lista_propositos: propositosDetalhados
             }
@@ -98,3 +98,4 @@ serve(async (req) => {
         })
     }
 })
+

@@ -1,11 +1,11 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Configurações via Variáveis de Ambiente (Supabase Secrets)
+// ConfiguraÃ§Ãµes via VariÃ¡veis de Ambiente (Supabase Secrets)
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
 const SENDER_EMAIL = Deno.env.get('BREVO_SENDER_EMAIL') || "cashways.br@outlook.com";
 const SENDER_NAME = "Cashways Pass";
@@ -17,14 +17,14 @@ Deno.serve(async (req) => {
 
     try {
         if (!BREVO_API_KEY) {
-            throw new Error("BREVO_API_KEY não configurada nos Secrets da Supabase.");
+            throw new Error("BREVO_API_KEY nÃ£o configurada nos Secrets da Supabase.");
         }
 
         const body = await req.json()
         const { email, temp_password, nome } = body;
 
         if (!email || !temp_password) {
-            throw new Error("Email e Senha Temporária são obrigatórios.");
+            throw new Error("Email e Senha TemporÃ¡ria sÃ£o obrigatÃ³rios.");
         }
         
         const brevoPayload = {
@@ -35,23 +35,23 @@ Deno.serve(async (req) => {
             to: [
                 {
                     email: email,
-                    name: nome || "Novo Usuário"
+                    name: nome || "Novo UsuÃ¡rio"
                 }
             ],
-            subject: "Seu Acesso Temporário - Cashways Pass",
+            subject: "Seu Acesso TemporÃ¡rio - Cashways Pass",
             htmlContent: `
                 <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
                     <div style="background: linear-gradient(135deg, #003d7a 0%, #1a73e8 100%); padding: 30px; text-align: center;">
                         <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Bem-vindo ao Cashways Pass!</h1>
                     </div>
                     <div style="padding: 30px; background-color: #ffffff;">
-                        <p style="font-size: 16px; line-height: 1.6;">Olá, <strong>${nome || 'Usuário'}</strong>!</p>
-                        <p style="font-size: 16px; line-height: 1.6;">Sua conta foi criada com sucesso. Abaixo estão suas credenciais de acesso temporário para a plataforma:</p>
+                        <p style="font-size: 16px; line-height: 1.6;">OlÃ¡, <strong>${nome || 'UsuÃ¡rio'}</strong>!</p>
+                        <p style="font-size: 16px; line-height: 1.6;">Sua conta foi criada com sucesso. Abaixo estÃ£o suas credenciais de acesso temporÃ¡rio para a plataforma:</p>
                         
                         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #1a73e8; margin: 25px 0;">
                             <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">E-mail de acesso:</p>
                             <p style="margin: 0 0 20px 0; font-size: 18px; font-weight: bold; color: #333;">${email}</p>
-                            <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">Senha temporária:</p>
+                            <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">Senha temporÃ¡ria:</p>
                             <p style="margin: 0; font-size: 20px; font-weight: bold; color: #1a73e8; letter-spacing: 1px;">${temp_password}</p>
                         </div>
                         
@@ -60,11 +60,11 @@ Deno.serve(async (req) => {
                         </div>
                         
                         <p style="color: #ed6c02; font-size: 14px; background-color: #fff4e5; padding: 12px; border-radius: 6px; text-align: center;">
-                            <strong>Atenção:</strong> Por segurança, altere sua senha após o primeiro acesso.
+                            <strong>AtenÃ§Ã£o:</strong> Por seguranÃ§a, altere sua senha apÃ³s o primeiro acesso.
                         </p>
                     </div>
                     <div style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                        <p style="margin: 0; font-size: 12px; color: #999;">© 2024 Cashways Pass. Todos os direitos reservados.</p>
+                        <p style="margin: 0; font-size: 12px; color: #999;">Â© 2024 Cashways Pass. Todos os direitos reservados.</p>
                     </div>
                 </div>
             `

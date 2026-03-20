@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
         const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
         const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-        // 1. Gerar o link de recuperação
+        // 1. Gerar o link de recuperaÃ§Ã£o
         const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
             type: 'recovery',
             email: email,
@@ -28,9 +28,9 @@ Deno.serve(async (req) => {
 
         if (linkError) throw new Error(linkError.message);
 
-        // 2. Buscar nome do usuário
+        // 2. Buscar nome do usuÃ¡rio
         const { data: usuario } = await supabaseAdmin.from('usuarios').select('nome_completo').eq('email', email).single();
-        const nome = usuario?.nome_completo || "Usuário";
+        const nome = usuario?.nome_completo || "UsuÃ¡rio";
 
         // 3. Enviar e-mail com Template Premium
         await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -39,14 +39,14 @@ Deno.serve(async (req) => {
             body: JSON.stringify({
                 sender: { name: SENDER_NAME, email: SENDER_EMAIL },
                 to: [{ email, name: nome }],
-                subject: "🔐 Recuperação de Senha",
+                subject: "ðŸ” RecuperaÃ§Ã£o de Senha",
                 htmlContent: `
                     <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
                         <div style="background: linear-gradient(135deg, #6366f1, #a855f7); padding: 40px; text-align: center; color: white;">
                             <h1>Redefinir Senha</h1>
                         </div>
                         <div style="padding: 40px; text-align: center;">
-                            <p>Olá <strong>${nome}</strong>, clique no botão abaixo para escolher uma nova senha:</p>
+                            <p>OlÃ¡ <strong>${nome}</strong>, clique no botÃ£o abaixo para escolher uma nova senha:</p>
                             <a href="${linkData.properties.action_link}" style="background: #6366f1; color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; margin: 20px 0;">Definir Nova Senha</a>
                         </div>
                     </div>`
@@ -58,3 +58,4 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 })
+
