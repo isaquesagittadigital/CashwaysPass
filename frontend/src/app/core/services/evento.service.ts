@@ -107,6 +107,20 @@ export class EventoService {
                 }
             }
 
+            if (evento.lojistas_convidados && evento.lojistas_convidados.length > 0) {
+                try {
+                    await supabase.functions.invoke('process-event-invitations', {
+                        body: {
+                            eventId: data.id,
+                            escolaId: evento.escola_id,
+                            lojistasEmails: evento.lojistas_convidados
+                        }
+                    });
+                } catch (fnError) {
+                    console.error('Erro ao invocar process-event-invitations:', fnError);
+                }
+            }
+
             return { success: true, data };
         } catch (error) {
             console.error('Error creating event:', error);
@@ -116,12 +130,28 @@ export class EventoService {
 
     async updateEvento(id: string, updates: Partial<Evento>): Promise<{ success: boolean; error?: any }> {
         try {
-            const { error } = await supabase
+            const { data, error } = await supabase
                 .from(this.TABLE)
                 .update(updates)
-                .eq('id', id);
+                .eq('id', id)
+                .select()
+                .single();
 
             if (error) throw error;
+
+            if (updates.lojistas_convidados && updates.lojistas_convidados.length > 0) {
+                try {
+                    await supabase.functions.invoke('process-event-invitations', {
+                        body: {
+                            eventId: id,
+                            escolaId: updates.escola_id || data?.escola_id,
+                            lojistasEmails: updates.lojistas_convidados
+                        }
+                    });
+                } catch (fnErr) {
+                    console.error('Erro ao invocar process-event-invitations update:', fnErr);
+                }
+            }
             return { success: true };
         } catch (error) {
             console.error('Error updating event:', error);
