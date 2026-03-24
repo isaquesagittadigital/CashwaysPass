@@ -1,4 +1,4 @@
-﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -8,7 +8,7 @@ const corsHeaders = {
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
 const SENDER_EMAIL = Deno.env.get('SENDER_EMAIL');
 const SENDER_NAME = Deno.env.get('SENDER_NAME') || 'Sua Plataforma';
-const BUBBLE_RESET_URL = Deno.env.get('BUBBLE_RESET_URL') || 'https://cashways-pass.bubbleapps.io/version-test/reset_pw';
+const BUBBLE_RESET_URL = Deno.env.get('BUBBLE_RESET_URL') || 'https://cashways-pass.bubbleapps.io/reset_pw';
 
 Deno.serve(async (req) => {
     if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
