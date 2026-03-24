@@ -13,7 +13,6 @@ import { supabase } from '../../../core/supabase';
   templateUrl: './login.component.html',
 })
 export class LoginComponent implements OnInit {
-  role: 'school' | 'admin' = 'school';
   email = '';
   password = '';
   rememberMe = false;
@@ -58,10 +57,7 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  setRole(newRole: 'school' | 'admin') {
-    this.role = newRole;
-    this.errorMessage = '';
-  }
+  // Método setRole removido
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
@@ -108,19 +104,15 @@ export class LoginComponent implements OnInit {
 
       const userType = data.tipo_acesso?.toLowerCase();
 
-      // Validation logic per role
-      if (this.role === 'admin') {
-        if (userType !== 'admin' && userType !== 'administrador') {
-          this.errorMessage = 'Acesso negado. Este usuário não possui privilégios de Administrador.';
-          this.isLoading = false;
-          return;
-        }
-      } else if (this.role === 'school') {
-        if (userType !== 'escola' && userType !== 'admin' && userType !== 'administrador') {
-          this.errorMessage = 'Acesso negado. Este usuário não possui privilégios de Escola.';
-          this.isLoading = false;
-          return;
-        }
+      let redirectPath = '';
+      if (userType === 'admin' || userType === 'administrador') {
+        redirectPath = '/admin';
+      } else if (userType === 'escola') {
+        redirectPath = '/escola';
+      } else {
+        this.errorMessage = 'Acesso negado. Este usuário não possui privilégios para acessar o painel web.';
+        this.isLoading = false;
+        return;
       }
 
       const userData = { ...data };
@@ -133,7 +125,6 @@ export class LoginComponent implements OnInit {
         localStorage.removeItem('currentUser');
       }
       
-      const redirectPath = this.role === 'admin' ? '/admin' : '/escola';
       this.router.navigate([redirectPath]);
     } catch (err) {
       console.error('Login error:', err);
