@@ -117,10 +117,10 @@ export class UsuarioService {
 
     async createUsuario(usuario: Partial<Usuario>): Promise<{ success: boolean; data?: Usuario; error?: any }> {
         try {
-            const tempPass = Math.random().toString(36).slice(-8);
+            const accessPass = Math.random().toString(36).slice(-8);
             const { data, error } = await supabase
                 .from(this.TABLE)
-                .insert([{ ...usuario, temp_pass: tempPass, senha: tempPass, excluido: 'no' }])
+                .insert([{ ...usuario, temp_pass: accessPass, senha: accessPass, excluido: 'no' }])
                 .select()
                 .single();
 
@@ -133,7 +133,7 @@ export class UsuarioService {
 
             // Trigger Access Email
             if (data && data.email) {
-                this.emailService.sendAccessEmail(data.email, tempPass, data.nome_completo || data.nome || '').subscribe({
+                this.emailService.sendAccessEmail(data.email, accessPass, data.nome_completo || data.nome || '').subscribe({
                     next: (res) => console.log('Access email sent for user:', data.email),
                     error: (err) => console.error('Error sending user email:', err)
                 });

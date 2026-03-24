@@ -9,16 +9,16 @@ export class EmailService {
     constructor() { }
 
     /**
-     * Sends an access email with temporary password via Supabase Edge Function
+     * Sends an access email with password via Supabase Edge Function
      */
-    sendAccessEmail(email: string, tempPassword: string, name: string): Observable<any> {
-        if (!email || !tempPassword) return of({ error: 'Email or password missing' });
+    sendAccessEmail(email: string, accessPassword: string, name: string): Observable<any> {
+        if (!email || !accessPassword) return of({ error: 'Email or password missing' });
 
         return from(
             supabase.functions.invoke('send-access-email', {
                 body: {
                     email,
-                    temp_password: tempPassword,
+                    temp_password: accessPassword,
                     nome: name || 'Usuário'
                 }
             })

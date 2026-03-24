@@ -278,7 +278,7 @@ export class SchoolManagementService {
                 .eq('email', email)
                 .single();
 
-            const tempPass = Math.random().toString(36).slice(-8);
+            const accessPass = Math.random().toString(36).slice(-8);
             const userPayload = {
                 nome_completo: data.nome,
                 nome: data.nome,
@@ -289,8 +289,8 @@ export class SchoolManagementService {
                 turmaID: tId,
                 nome_mae: data.responsavel || data.nome_mae,
                 ra: ra,
-                temp_pass: tempPass,
-                senha: tempPass,
+                temp_pass: accessPass,
+                senha: accessPass,
                 primeiro_acesso: false
             };
 
@@ -355,7 +355,7 @@ export class SchoolManagementService {
                     .single();
 
                 if (!existingGuardian) {
-                    const guardianPass = Math.random().toString(36).slice(-8);
+                    const guardianAccessPass = Math.random().toString(36).slice(-8);
                     const guardianPayload = {
                         nome_completo: (data.responsavel || data.nome_mae || 'Responsável'),
                         nome: (data.responsavel || data.nome_mae || 'Responsável'),
@@ -363,8 +363,8 @@ export class SchoolManagementService {
                         tipo_acesso: 'Responsavel',
                         status: 'active',
                         escola_id: data.escola_id,
-                        temp_pass: guardianPass,
-                        senha: guardianPass,
+                        temp_pass: guardianAccessPass,
+                        senha: guardianAccessPass,
                         primeiro_acesso: false
                     };
                     
@@ -373,7 +373,7 @@ export class SchoolManagementService {
                         .insert(guardianPayload);
                     
                     if (!guardianError) {
-                        this.emailService.sendAccessEmail(guardianEmail, guardianPass, guardianPayload.nome).subscribe();
+                        this.emailService.sendAccessEmail(guardianEmail, guardianAccessPass, guardianPayload.nome).subscribe();
                     }
                 }
             }
@@ -406,7 +406,7 @@ export class SchoolManagementService {
             }
 
             // 4. Send Access Email (The DB trigger should also catch this, but direct service call ensures delivery)
-            this.emailService.sendAccessEmail(email, tempPass, data.nome).subscribe({
+            this.emailService.sendAccessEmail(email, accessPass, data.nome).subscribe({
                 next: (result) => console.log('Welcome email sent successfully:', result),
                 error: (err) => console.error('Failed to send welcome email:', err)
             });
@@ -489,7 +489,7 @@ export class SchoolManagementService {
                     .single();
 
                 if (!existingGuardian) {
-                    const guardianPass = Math.random().toString(36).slice(-8);
+                    const guardianAccessPass = Math.random().toString(36).slice(-8);
                     const guardianPayload = {
                         nome_completo: (data.responsavel || data.nome_mae || 'Responsável'),
                         nome: (data.responsavel || data.nome_mae || 'Responsável'),
@@ -497,8 +497,8 @@ export class SchoolManagementService {
                         tipo_acesso: 'Responsavel',
                         status: 'active',
                         escola_id: data.escola_id,
-                        temp_pass: guardianPass,
-                        senha: guardianPass,
+                        temp_pass: guardianAccessPass,
+                        senha: guardianAccessPass,
                         primeiro_acesso: false
                     };
                     
@@ -507,7 +507,7 @@ export class SchoolManagementService {
                         .insert(guardianPayload);
                     
                     if (!guardianError) {
-                        this.emailService.sendAccessEmail(guardianEmail, guardianPass, guardianPayload.nome).subscribe();
+                        this.emailService.sendAccessEmail(guardianEmail, guardianAccessPass, guardianPayload.nome).subscribe();
                     }
                 }
             }

@@ -18,10 +18,10 @@ Deno.serve(async (req) => {
 
     try {
         const body = await req.json()
-        const { email, temp_password, nome } = body;
+        const { email, temp_password: access_password, nome } = body;
 
-        if (!email || !temp_password) {
-            throw new Error("Email e Senha Temporária são obrigatórios.");
+        if (!email || !access_password) {
+            throw new Error("Email e Senha de Acesso são obrigatórios.");
         }
 
         console.log(`[ACCESS_EMAIL] Enviando para: ${email}. Destino: ${BUBBLE_URL}`);
@@ -52,16 +52,16 @@ Deno.serve(async (req) => {
                             <p style="margin: 0 0 20px 0; font-size: 16px; font-weight: bold; color: #1a73e8;">${BUBBLE_URL}</p>
                             <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">E-mail:</p>
                             <p style="margin: 0 0 20px 0; font-size: 18px; font-weight: bold; color: #333;">${email}</p>
-                            <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">Senha temporária:</p>
-                            <p style="margin: 0; font-size: 20px; font-weight: bold; color: #1a73e8; letter-spacing: 1px;">${temp_password}</p>
+                            <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">Senha de acesso:</p>
+                            <p style="margin: 0; font-size: 20px; font-weight: bold; color: #1a73e8; letter-spacing: 1px;">${access_password}</p>
                         </div>
                         
                         <div style="text-align: center; margin: 35px 0; text-decoration: none;">
                             <a href="${BUBBLE_URL}" style="background-color: #1a73e8; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">Ir para o Sistema</a>
                         </div>
                         
-                        <p style="color: #ed6c02; font-size: 14px; background-color: #fff4e5; padding: 12px; border-radius: 6px; text-align: center;">
-                            <strong>Atenção:</strong> Por segurança, altere sua senha no primeiro acesso.
+                        <p style="color: #1a73e8; font-size: 14px; background-color: #e8f0fe; padding: 12px; border-radius: 6px; text-align: center;">
+                            Guarde sua senha em um local seguro. Você pode alterá-la no painel de perfil a qualquer momento.
                         </p>
                     </div>
                     <div style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
