@@ -27,13 +27,13 @@ Deno.serve(async (req) => {
         try {
             body = JSON.parse(rawBody);
         } catch (e: any) {
-            throw new Error(`O JSON enviado estÃ¡ invÃ¡lido. Erro: ${e.message}`);
+            throw new Error(`O JSON enviado está inválido. Erro: ${e.message}`);
         }
         
         const { aluno_id } = body;
 
         if (!aluno_id) {
-            throw new Error("ParÃ¢metro 'aluno_id' Ã© obrigatÃ³rio.")
+            throw new Error("Parâmetro 'aluno_id' é obrigatório.")
         }
 
         // --- PASSO 1: Identificar Aluno ---
@@ -47,18 +47,18 @@ Deno.serve(async (req) => {
         const { data: alunoData, error: alunoError } = await queryAluno.maybeSingle();
 
         if (alunoError || !alunoData) {
-            throw new Error(`Aluno nÃ£o encontrado no sistema.`);
+            throw new Error(`Aluno não encontrado no sistema.`);
         }
 
         const realAlunoId = alunoData.id;
 
         // --- PASSO 2: Consultar logs financeiros do aluno ---
+        // Adicionado: 'valor' na seleção e removido o filtro restritivo de categoria
         const { data: fetchLogs, error: logError } = await supabaseClient
             .from('movimentacao_financeira')
-            .select('id, created_date, tipo_operacao, status, response_payload, categoria, nome_operacao, mes_operacao')
+            .select('id, created_date, tipo_operacao, status, response_payload, categoria, nome_operacao, mes_operacao, valor')
             .eq('aluno_id', realAlunoId)
-            .in('categoria', ['Alimentação', 'Crédito', 'Entretenimento', 'Mercado', 'Minha Reserva'])
-            .neq('categoria', 'Log')
+            .neq('categoria', 'Log') 
             .order('created_date', { ascending: false });
 
         if (logError) {
@@ -85,4 +85,3 @@ Deno.serve(async (req) => {
         })
     }
 })
-

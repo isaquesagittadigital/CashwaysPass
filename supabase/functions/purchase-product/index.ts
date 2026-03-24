@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
         }
 
         // --- PASSO 2.5: Identificar Aluno e Validar Limite de Compras ---
-        let queryAluno = supabaseClient.from('aluno').select('id, nome, turma_id');
+        let queryAluno = supabaseClient.from('aluno').select('id, nome, turma_id, user_id, usuario_id');
         if (isUUID(aluno_id)) {
             queryAluno = queryAluno.or(`id.eq.${aluno_id},user_id.eq.${aluno_id}`);
         } else {
@@ -103,8 +103,9 @@ Deno.serve(async (req) => {
         }
 
         const realAlunoId = alunoData.id;
+        const authUserId = alunoData.user_id; // Este é o Auth UUID (usuario_id na tabela propositos)
 
-        // Sempre busca a quantidade que o aluno jÃ¡ comprou deste produto
+        // Sempre busca a quantidade que o aluno já comprou deste produto
         const { data: pastPurchases, error: pastError } = await supabaseClient
             .from('produtos_aluno')
             .select('id, quantidade')
@@ -122,7 +123,7 @@ Deno.serve(async (req) => {
         const maxLimit = dbProd.limete_por_aluno;
         if (maxLimit !== null && maxLimit !== undefined && typeof maxLimit === 'number') {
             if ((qtdJaComprada + qtd) > maxLimit) {
-                throw new Error(`Limite de compra excedido. O limite para este produto Ã© de ${maxLimit} itens. VocÃª jÃ¡ garantiu ${qtdJaComprada} e tentou comprar mais ${qtd}.`);
+                throw new Error(`Limite de compra excedido. O limite para este produto é de ${maxLimit} itens. Você já garantiu ${qtdJaComprada} e tentou comprar mais ${qtd}.`);
             }
         }
 
@@ -130,10 +131,10 @@ Deno.serve(async (req) => {
         const { data: todosPropositos, error: propError } = await supabaseClient
             .from('propositos')
             .select('id, saldo, nome')
-            .eq('usuario_id', aluno_id)
+            .eq('usuario_id', authUserId) // Mudança: Agora usa o Auth UUID correto
 
-        if (propError) {
-            throw new Error("Erro de banco ao buscar saldos do aluno.");
+        if (propError || !todosPropositos || todosPropositos.length === 0) {
+            throw new Error(`VocÃª nÃ£o possui o propÃ³sito 'Mercado' ou ele nÃ£o foi encontrado na sua conta. (User: ${authUserId})`);
         }
 
         const targetNameNormalized = normalizeString('Mercado');
@@ -223,11 +224,13 @@ Deno.serve(async (req) => {
             "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         const currentMonth = monthNames[new Date().getMonth()];
 
+        // 7a. Log in 'movimentacao_financeira'
         await supabaseClient.from('movimentacao_financeira').insert({
-            aluno_id: realAlunoId, // Adicionando para garantir visibilidade no extrato
+            aluno_id: realAlunoId, 
             tipo_operacao: 'COMPRA_PRODUTO_INDIVIDUAL',
             categoria: 'Mercado',
             nome_operacao: `Compra de produto: ${dbProd.nome}`,
+            valor: valorTotalNum, // Novidade: Salvando valor diretamente na coluna
             mes_operacao: currentMonth,
             status: 'SUCESSO',
             request_payload: { aluno_id, lojista_id, produto_id, quantidade: qtd, valor: valorTotalNum, proposito: 'Mercado' },
@@ -237,7 +240,18 @@ Deno.serve(async (req) => {
                 novo_total_vendas_lojista: novoTotalVendas
             },
             http_status: 200
-        })
+        });
+
+        // 7b. Log in 'investimento_aluno' (Visual Extrato do Aluno)
+        await supabaseClient.from('investimento_aluno').insert({
+            aluno_id: realAlunoId,
+            titulo: 'COMPRA_PRODUTO',
+            descricao: `Compra de produto: ${dbProd.nome}`,
+            valor: valorTotalNum,
+            status_investimento: 'PAGO',
+            created_date: new Date().toISOString(),
+            data_inicio: new Date().toISOString().split('T')[0]
+        });
 
         // HistÃ³rico Lojista (apenas se lojista_id existir)
         if (lojista_id) {
