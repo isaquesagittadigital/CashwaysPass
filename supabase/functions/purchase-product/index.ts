@@ -1,4 +1,4 @@
-﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -29,13 +29,13 @@ Deno.serve(async (req) => {
 
         const rawBody = await req.text();
         let body;
-        
+
         try {
             body = JSON.parse(rawBody);
         } catch (e: any) {
             throw new Error(`O JSON enviado estÃ¡ invÃ¡lido. Erro: ${e.message}`);
         }
-        
+
         // lojista_id agora Ã© opcional
         const { aluno_id, lojista_id, produto_id, quantidade } = body;
 
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
         // --- PASSO 1: Obter Dados do Lojista (se fornecido) ---
         let lojistaNome = "Sistema";
         let totalVendasAtual = 0;
-        
+
         if (lojista_id) {
             const { data: lojista, error: lojistaError } = await supabaseClient
                 .from('usuarios')
@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
         console.log(`[DEBUG] Valor total calculado: ${valorTotalNum} (${qtd}x ${precoUnitario})`);
 
         if (valorTotalNum <= 0) {
-             throw new Error("O valor da compra deve ser maior que zero.");
+            throw new Error("O valor da compra deve ser maior que zero.");
         }
 
         // --- PASSO 2.5: Identificar Aluno e Validar Limite de Compras ---
@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
             .eq('usuario_id', aluno_id)
 
         if (propError) {
-             throw new Error("Erro de banco ao buscar saldos do aluno.");
+            throw new Error("Erro de banco ao buscar saldos do aluno.");
         }
 
         const targetNameNormalized = normalizeString('Mercado');
@@ -143,11 +143,11 @@ Deno.serve(async (req) => {
         });
 
         if (!propositoAluno) {
-             throw new Error(`VocÃª nÃ£o possui o propÃ³sito 'Mercado' ou ele nÃ£o foi encontrado na sua conta.`);
+            throw new Error(`VocÃª nÃ£o possui o propÃ³sito 'Mercado' ou ele nÃ£o foi encontrado na sua conta.`);
         }
 
-        const saldoRaw = String(propositoAluno.saldo || '0').trim(); 
-        const saldoNormalizado = saldoRaw.replace(',', '.'); 
+        const saldoRaw = String(propositoAluno.saldo || '0').trim();
+        const saldoNormalizado = saldoRaw.replace(',', '.');
         const saldoAtual = parseFloat(saldoNormalizado);
 
         console.log(`[DEBUG] Saldo do propÃ³sito "Mercado": R$ ${saldoAtual}`);
@@ -188,29 +188,8 @@ Deno.serve(async (req) => {
                     data_acao: new Date().toISOString()
                 });
             upsertError = insertError;
-         // --- PASSO 6: Salvar Log em movimentacao_financeira ---
-        const { error: logError } = await supabaseClient
-            .from('movimentacao_financeira')
-            .insert({
-                aluno_id: realAlunoId,
-                tipo_operacao: 'Compra de Produto',
-                status: 'CONCLUIDO',
-                request_payload: body,
-                response_payload: {
-                    mensagem: "Compra aprovada localmente, sem API externa",
-                    aluno_nome: alunoData.nome,
-                    item: dbProd.nome,
-                    valor_unitario: precoUnitario,
-                    quantidade: qtd,
-                    valor_total: valorTotalNum, // Changed from valorTotal to valorTotalNum
-                    saldo_restante_mercado: Number(saldoAtual) - valorTotalNum // Changed from saldoMercado to saldoAtual and valorTotal to valorTotalNum
-                }
-            });
-
-        if (logError) {
-            console.error("Erro salvando log na movimentacao_financeira:", logError);
-        }    throw new Error(`Falha ao registrar o produto no histÃ³rico do aluno. A compra nÃ£o pÃ´de ser completada.`);
         }
+
 
         if (upsertError) {
             console.error("Erro ao salvar em produtos_aluno:", upsertError);
@@ -222,11 +201,11 @@ Deno.serve(async (req) => {
 
         const { error: updateAlunoError } = await supabaseClient
             .from('propositos')
-            .update({ saldo: novoSaldoAluno.toString() }) 
+            .update({ saldo: novoSaldoAluno.toString() })
             .eq('id', propositoAluno.id)
 
         if (updateAlunoError) {
-             throw new Error("Erro ao atualizar saldo do Mercado: " + updateAlunoError.message);
+            throw new Error("Erro ao atualizar saldo do Mercado: " + updateAlunoError.message);
         }
 
         // --- PASSO 6: Atualizar Lojista (se fornecido) ---
@@ -240,11 +219,19 @@ Deno.serve(async (req) => {
         }
 
         // --- PASSO 7: Historico e Log ---
+        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const currentMonth = monthNames[new Date().getMonth()];
+
         await supabaseClient.from('movimentacao_financeira').insert({
+            aluno_id: realAlunoId, // Adicionando para garantir visibilidade no extrato
             tipo_operacao: 'COMPRA_PRODUTO_INDIVIDUAL',
+            categoria: 'Mercado',
+            nome_operacao: `Compra de produto: ${dbProd.nome}`,
+            mes_operacao: currentMonth,
             status: 'SUCESSO',
             request_payload: { aluno_id, lojista_id, produto_id, quantidade: qtd, valor: valorTotalNum, proposito: 'Mercado' },
-            response_payload: { 
+            response_payload: {
                 mensagem: `Compra de ${dbProd.nome} realizada em ${lojistaNome} (Mercado)`,
                 novo_saldo_aluno: novoSaldoAluno,
                 novo_total_vendas_lojista: novoTotalVendas
@@ -280,13 +267,13 @@ Deno.serve(async (req) => {
                         saldo_vendas_pos: novoTotalVendas,
                         descricao: descricaoHistorico
                     });
-            } catch(e) {
+            } catch (e) {
                 console.error("Erro nÃ£o-bloqueante ao gerar histÃ³rico:", e);
             }
         }
 
-        return new Response(JSON.stringify({ 
-            success: true, 
+        return new Response(JSON.stringify({
+            success: true,
             message: "Compra realizada com sucesso!",
             data: {
                 proposito_nome: "Mercado",
@@ -306,9 +293,9 @@ Deno.serve(async (req) => {
 
     } catch (error: any) {
         console.error("Erro Purchase Product:", error);
-        return new Response(JSON.stringify({ 
-            success: false, 
-            error: error.message 
+        return new Response(JSON.stringify({
+            success: false,
+            error: error.message
         }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400,

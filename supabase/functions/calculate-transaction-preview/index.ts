@@ -1,4 +1,4 @@
-﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -41,45 +41,72 @@ Deno.serve(async (req) => {
         
         const { aluno_id, lojista_id, valor_debito } = body;
 
-        // ValidaÃ§Ãµes BÃ¡sicas
+        // Validações Básicas
         if (!aluno_id || !lojista_id || valor_debito === undefined) {
-            throw new Error("ParÃ¢metros invÃ¡lidos. NecessÃ¡rio: aluno_id, lojista_id e valor_debito.")
+            throw new Error("Parâmetros inválidos. Necessário: aluno_id, lojista_id e valor_debito.")
         }
+
+        const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
         
         const valorDebitoNum = parseFloat(String(valor_debito).replace(',', '.')); // Aceita 2,50 ou 2.50
 
-        // --- PASSO 1: Descobrir o PropÃ³sito do Lojista ---
-        const { data: lojista, error: lojistaError } = await supabaseClient
-            .from('usuarios')
-            .select('Proposito_Lojista, nome')
-            .eq('UserID', lojista_id) 
-            .single()
+        // --- PASSO 1: Descobrir o Propósito do Lojista ---
+        // Lojista ID pode vir como UUID (UserID) ou ID (bigint)
+        let queryLojista = supabaseClient.from('usuarios').select('Proposito_Lojista, nome, UserID');
+        if (isUUID(lojista_id)) {
+            queryLojista = queryLojista.eq('UserID', lojista_id);
+        } else {
+            queryLojista = queryLojista.eq('id', lojista_id);
+        }
+
+        const { data: lojista, error: lojistaError } = await queryLojista.single();
 
         if (lojistaError || !lojista) {
             console.error("Erro ao buscar lojista:", lojistaError);
-            throw new Error(`Lojista nÃ£o encontrado (ID: ${lojista_id}). Erro: ${lojistaError?.message}`);
+            throw new Error(`Lojista não encontrado (ID: ${lojista_id}). Erro: ${lojistaError?.message}`);
         }
 
-        const nomeProposito = lojista.Proposito_Lojista; // Ex: 'AlimentaÃ§Ã£o'
-
+        const nomeProposito = lojista.Proposito_Lojista;
         if (!nomeProposito) {
-             throw new Error("Este lojista nÃ£o possui um propÃ³sito configurado (Proposito_Lojista).");
+             throw new Error("Este lojista não possui um propósito configurado.");
         }
 
-        // --- PASSO 2: Buscar Saldo do Aluno NESTE PropÃ³sito ---
+        // --- PASSO 1.5: Resolver Aluno ID (Bigint para UUID se necessário) ---
+        let finalAlunoUserId = aluno_id;
+        if (!isUUID(aluno_id)) {
+            const { data: userRecord } = await supabaseClient
+                .from('usuarios')
+                .select('UserID')
+                .eq('id', aluno_id)
+                .single();
+            
+            if (userRecord?.UserID) {
+                finalAlunoUserId = userRecord.UserID;
+            } else {
+                // Tenta buscar na tabela aluno se UserID estiver null no usuarios
+                const { data: alunoRecord } = await supabaseClient
+                    .from('aluno')
+                    .select('user_id')
+                    .eq('usuario_id', aluno_id)
+                    .single();
+                if (alunoRecord?.user_id) finalAlunoUserId = alunoRecord.user_id;
+            }
+        }
+
+        // --- PASSO 2: Buscar Saldo do Aluno NESTE Propósito ---
         const { data: todosPropositos, error: propError } = await supabaseClient
             .from('propositos')
             .select('saldo, nome')
-            .eq('usuario_id', aluno_id)
+            .eq('usuario_id', finalAlunoUserId)
 
         if (propError) {
-             console.error("Erro ao buscar propÃ³sitos do aluno:", propError);
+             console.error("Erro ao buscar propósitos do aluno:", propError);
              throw new Error("Erro ao consultar saldo do aluno.");
         }
 
-        // Normalizar string para comparaÃ§Ã£o (remove acentos, lowercase)
+        // Normalizar string para comparação (remove acentos, lowercase)
         const normalize = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-        const targetName = normalize(nomeProposito);
+        const targetName = normalize(nomeProposito || '');
         
         const propositoAluno = todosPropositos?.find(p => normalize(p.nome || '') === targetName || normalize(p.nome || '').includes(targetName));
 
@@ -87,11 +114,8 @@ Deno.serve(async (req) => {
         let temSaldo = false;
 
         if (propositoAluno) {
-            // Converter saldo
             const saldoRaw = String(propositoAluno.saldo || '0').trim(); 
             saldoAtual = parseFloat(saldoRaw.replace(',', '.'));    
-        } else {
-            console.warn(`Aluno ${aluno_id} nÃ£o possui o propÃ³sito '${nomeProposito}' (Lojista). Assumindo saldo 0.`);
         }
 
         // --- PASSO 3: Calcular Preview ---

@@ -1,0 +1,32 @@
+RELATÓRIO DE ATIVIDADES - ÚLTIMOS 2 DIAS (MARÇO 2026)
+------------------------------------------------------------
+
+1. MANUTENÇÃO E CORREÇÃO DE LOG (VENDAS E REEMBOLSOS)
+   - Atualização das Edge Functions 'confirm-transaction' e 'refund-transaction'.
+   - Implementação de suporte híbrido para IDs (BigInt e UUID), garantindo compatibilidade entre as tabelas do banco e o Supabase Auth.
+   - Refatoração da lógica de débito/crédito por 'Propósitos' (Alimentação, Mercado, etc).
+   - Padronização dos logs nas tabelas 'movimentacao_financeira' e 'lojista_historico'.
+
+2. SINCRONIZAÇÃO DE USUÁRIOS E AUTENTICAÇÃO
+   - Criação da Edge Function temporária 'fix-loja-auth-temp'.
+   - Correção do acesso da 'Loja de Doces' (atualização de e-mail/senha e sincronismo de IDs entre a tabela 'usuarios' e o Auth do Supabase).
+   - Verificação e ajuste de Proposito_Lojista para permitir estornos corretos (ex: ajuste de 'Loja de Doces' para 'Mercado').
+
+3. SISTEMA DE DISPOSITIVOS E QR CODES (NEW FEATURE)
+   - Criação da tabela de banco de dados 'dispositivos_carteira'.
+   - Implementação da Edge Function 'associate-device': permite vincular múltiplos QR Codes à carteira de um aluno.
+   - Implementação da Edge Function 'process-payment-qr': processa vendas instantâneas através da leitura de um QR Code associado.
+   - Implementação da Edge Function 'check-qr-status': verifica se um QR Code já está em uso e identifica o proprietário.
+
+4. GESTÃO DE PRODUTOS E LIMITES (NEW FEATURE)
+   - Implementação da Edge Function 'verify-product-limit': permite que o Bubble verifique se um aluno atingiu o limite de compra de um produto específico antes de iniciar a transação.
+   - Implementação da Edge Function 'use-student-product': endpoint dinâmico para reduzir a quantidade de itens no 'inventário' do aluno (produtos_aluno) e alterar o status para 'Usado'.
+
+5. SUPORTE À INTEGRAÇÃO COM BUBBLE.IO
+   - Fornecimento de payloads JSON reais e estruturados para todos os novos endpoints.
+   - Análise de dados da usuária de teste (Maria Eduarda) para validação de fluxos.
+
+------------------------------------------------------------
+Status Geral: Concluído e Implantado no Supabase.
+Equipe: Antigravity AI
+------------------------------------------------------------

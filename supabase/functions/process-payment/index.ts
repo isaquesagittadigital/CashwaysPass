@@ -1,4 +1,4 @@
-﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -77,11 +77,11 @@ Deno.serve(async (req) => {
             .from('movimentacao_financeira')
             .insert({
                 aluno_id: alunoInfo?.id || null,
-                tipo_operacao: 'SOLICITACAO_SALDO',
+                tipo_operacao: 'SOLICITACAO_SALDO', // Titulo simplificado
                 request_payload: { ...body, user_id: targetUserId },
                 response_payload: { 
                     mensagem: 'QR Code Gerado - Aguardando Pagamento',
-                    item: 'AdiÃ§Ã£o de Saldo (PIX)',
+                    item: 'Adição de Saldo (PIX)',
                     valor_total: body.valor,
                     aluno_nome: alunoInfo?.nome || "Aluno",
                     status: 'PENDING_MANUAL_CONFIRMATION', 
@@ -92,10 +92,10 @@ Deno.serve(async (req) => {
             });
 
         if (logError) {
-            console.error("Erro ao criar movimentacao_financeira (SolicitaÃ§Ã£o):", logError);
+            console.error("Erro ao criar movimentacao_financeira (Solicitação):", logError);
         }
 
-        // --- NOVO LOG: REGISTRO DE GERAÃ‡ÃƒO DE QR CODE ---
+        // --- NOVO LOG: REGISTRO DE GERAÇÃO DE QR CODE ---
         const { error: qrLogError } = await supabaseClient
             .from('movimentacao_financeira')
             .insert({
@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
                 request_payload: { ...body, user_id: targetUserId, context: 'QR Code display' },
                 response_payload: {
                     mensagem: `O aluno ${targetUserId} gerou um QR code.`,
-                    item: 'CÃ³digo PIX Gerado',
+                    item: 'Código PIX Gerado',
                     valor_total: body.valor,
                     aluno_nome: alunoInfo?.nome || "Aluno",
                     investimento_id: investimentoData.id
@@ -116,6 +116,7 @@ Deno.serve(async (req) => {
         if (qrLogError) {
             console.error("Erro ao criar movimentacao_financeira (QR Code):", qrLogError);
         }
+
 
         // 6. Return Success Response
         return new Response(JSON.stringify({

@@ -1,4 +1,4 @@
-﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -154,20 +154,26 @@ Deno.serve(async (req) => {
                 console.log(`Saldo atualizado para usuÃ¡rio ${userId}. Novo saldo: ${novoSaldo}`);
 
                 // 4.4 Logs Solicitados
-                
                 const { data: alunoInfoLog } = await supabaseClient.from('aluno').select('id, nome').eq('user_id', userId).maybeSingle();
                 const realAlunoId = alunoInfoLog?.id || null;
                 const nomeAlunoLog = alunoInfoLog?.nome || nomeAluno;
+
+                const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+                const currentMonth = monthNames[new Date().getMonth()];
 
                 // Log 1: QRCode Pago
                 await supabaseClient.from('movimentacao_financeira').insert({
                     aluno_id: realAlunoId,
                     tipo_operacao: 'PAGAMENTO_PIX_CONFIRMADO',
+                    categoria: 'Crédito',
+                    nome_operacao: 'Crédito adicionado via Pix',
+                    mes_operacao: currentMonth,
                     status: 'CONCLUIDO',
                     request_payload: { id_pix, userId, status_transfeera: status },
                     response_payload: { 
                         mensagem: 'O QRCode foi pago com sucesso na Transfeera.',
-                        item: "ConfirmaÃ§Ã£o de PIX",
+                        item: "Confirmação de PIX",
                         valor_total: valorPago,
                         aluno_nome: nomeAlunoLog
                     },
@@ -178,16 +184,21 @@ Deno.serve(async (req) => {
                 await supabaseClient.from('movimentacao_financeira').insert({
                     aluno_id: realAlunoId,
                     tipo_operacao: 'CREDITO_CONTA',
+                    categoria: 'Crédito',
+                    nome_operacao: 'Crédito adicionado via Pix',
+                    mes_operacao: currentMonth,
                     status: 'CONCLUIDO',
                     request_payload: { userId, valor_pago: valorPago, saldo_anterior: saldoAtual, saldo_novo: novoSaldo },
                     response_payload: { 
-                        mensagem: `CrÃ©dito PIX aprovado e adicionado Ã  conta.`,
+                        mensagem: `Crédito PIX aprovado e adicionado à conta.`,
                         item: "Recarga PIX",
                         valor_total: valorPago,
                         aluno_nome: nomeAlunoLog
                     },
                     http_status: 200
                 })
+
+
 
             } catch (processError: any) {
                 console.error("Erro no processamento pÃ³s-confirmaÃ§Ã£o (Saldo/Logs):", processError);

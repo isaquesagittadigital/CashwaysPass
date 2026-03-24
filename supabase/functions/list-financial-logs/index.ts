@@ -1,4 +1,4 @@
-﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -55,8 +55,10 @@ Deno.serve(async (req) => {
         // --- PASSO 2: Consultar logs financeiros do aluno ---
         const { data: fetchLogs, error: logError } = await supabaseClient
             .from('movimentacao_financeira')
-            .select('id, created_date, tipo_operacao, status, response_payload')
+            .select('id, created_date, tipo_operacao, status, response_payload, categoria, nome_operacao, mes_operacao')
             .eq('aluno_id', realAlunoId)
+            .in('categoria', ['Alimentação', 'Crédito', 'Entretenimento', 'Mercado', 'Minha Reserva'])
+            .neq('categoria', 'Log')
             .order('created_date', { ascending: false });
 
         if (logError) {

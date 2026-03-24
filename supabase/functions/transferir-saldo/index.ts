@@ -1,4 +1,4 @@
-﻿
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
@@ -150,9 +150,16 @@ Deno.serve(async (req) => {
         // --- PASSO 3: LOG DA TRANSAÃ‡ÃƒO ---
         const { data: alunoInfo } = await supabaseClient.from('aluno').select('id, nome').eq('user_id', user_id).maybeSingle();
         
+        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const currentMonth = monthNames[new Date().getMonth()];
+
         await supabaseClient.from('movimentacao_financeira').insert({
             aluno_id: alunoInfo?.id || null,
             tipo_operacao: 'TRANSFERENCIA_INTERNA',
+            categoria: destino,
+            nome_operacao: `Movimentação entre ${origem} para ${destino}`,
+            mes_operacao: currentMonth,
             status: 'CONCLUIDO',
             request_payload: { user_id, valor, origem, destino },
             response_payload: { 
