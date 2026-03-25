@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
         console.log(`[DEBUG] Iniciando Devolução. Aluno: ${aluno_id}, Lojista: ${lojista_id}, Valor: ${valorDevolucaoNum}`);
 
         // --- PASSO 1: Obter Dados do Lojista (Propósito e Total Vendas) ---
-        let queryLojista = supabaseClient.from('usuarios').select('Proposito_Lojista, nome, total_vendas, total_devolucao, UserID');
+        let queryLojista = supabaseClient.from('usuarios').select('id, Proposito_Lojista, nome, total_vendas, total_devolucao, UserID');
         if (isUUID(lojista_id)) {
             queryLojista = queryLojista.eq('UserID', lojista_id);
         } else {
@@ -173,10 +173,11 @@ Deno.serve(async (req) => {
         await supabaseClient.from('movimentacao_financeira').insert({
             aluno_id: alunoInfoLog?.id || null,
             tipo_operacao: 'DEVOLUCAO_LOJA',
-            categoria: nomeProposito,
+            categoria: 'Devolução',
             nome_operacao: `Estorno de compra: ${lojista.nome}`,
             mes_operacao: currentMonth,
             status: 'CONCLUIDO',
+            valor: valorDevolucaoNum,
             request_payload: { aluno_id: finalAlunoUserId, lojista_id: finalLojistaUserId, valor: valorDevolucaoNum, proposito: nomeProposito },
             response_payload: { 
                 mensagem: `Devolução de loja: ${lojista.nome}`,

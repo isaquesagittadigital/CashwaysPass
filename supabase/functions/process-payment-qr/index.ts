@@ -118,10 +118,11 @@ Deno.serve(async (req) => {
         await supabaseClient.from('movimentacao_financeira').insert({
             aluno_id: alunoInfoLog?.id || null,
             tipo_operacao: 'COMPRA_QRCODE',
-            categoria: nomeProposito,
+            categoria: 'Venda',
             nome_operacao: `Compra QR Code: ${lojista.nome}`,
             mes_operacao: currentMonth,
             status: 'CONCLUIDO',
+            valor: valorDebitoNum,
             request_payload: { qr_code, lojista_id, valor: valorDebitoNum },
             response_payload: { aluno_nome: alunoInfoLog?.nome || "Aluno", novo_saldo: novoSaldoAluno },
             http_status: 200

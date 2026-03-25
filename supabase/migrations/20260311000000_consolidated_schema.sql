@@ -635,7 +635,7 @@ CREATE OR REPLACE FUNCTION public.handle_new_usuario_propositos()
 AS $function$
 BEGIN
   PERFORM extensions.http_post(
-    url := 'https://xlupnknqblvvlcfprghr.supabase.co/functions/v1/create-user-propositos',
+    url := 'https://syirkevmpukshbgditwz.supabase.co/functions/v1/create-user-propositos',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key', true)
@@ -646,6 +646,26 @@ BEGIN
 END;
 $function$;
 
+CREATE OR REPLACE FUNCTION public.handle_new_lojista_init()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ AS $function$
+ BEGIN
+   IF NEW.tipo_acesso = 'Lojista' THEN
+     IF NEW.total_vendas IS NULL THEN
+       NEW.total_vendas := 0;
+     END IF;
+     IF NEW.total_devolucao IS NULL THEN
+       NEW.total_devolucao := 0;
+     END IF;
+     IF NEW."Proposito_Lojista" IS NULL THEN
+       NEW."Proposito_Lojista" := 'Alimentação'::public."Propositos";
+     END IF;
+   END IF;
+   RETURN NEW;
+ END;
+ $function$;
+
 -- 5. Triggers
 CREATE TRIGGER trg_auto_create_aluno_wallet
 AFTER INSERT ON public.usuarios
@@ -654,6 +674,10 @@ FOR EACH ROW EXECUTE FUNCTION public.handle_new_aluno_wallet();
 CREATE TRIGGER on_usuario_created
 AFTER INSERT ON public.usuarios
 FOR EACH ROW EXECUTE FUNCTION public.handle_new_usuario_propositos();
+
+CREATE TRIGGER trg_init_lojista
+BEFORE INSERT ON public.usuarios
+FOR EACH ROW EXECUTE FUNCTION public.handle_new_lojista_init();
 
 CREATE TRIGGER trg_check_carteira_details
 BEFORE INSERT ON public."Carteira"

@@ -5,7 +5,7 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// FunÃ§Ã£o de normalizaÃ§Ã£o para busca exata (importante!)
+// Função de normalização para busca exata de propósito
 function normalizeString(str: string) {
     if (!str) return "";
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
@@ -23,36 +23,37 @@ Deno.serve(async (req) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        // --- MAGIC BODY PARSER (Robustez para JSON mal formatado) ---
+        // --- BODY PARSER ---
         const rawBody = await req.text();
         let body;
         
         try {
             body = JSON.parse(rawBody);
         } catch (e: any) {
-            // Tentativa 2: Corrigir "VÃ­cio Brasileiro" (ex: "valor": 10,50 -> a virgula quebra o JSON)
             const fixedBody = rawBody.replace(/:\s*(\d+),(\d+)/g, ': $1.$2');
             try {
                 body = JSON.parse(fixedBody);
-                console.warn("[WARN] JSON recuperado via sanitizaÃ§Ã£o de vÃ­rgulas.");
             } catch (e2: any) {
-                console.error("Erro Parse JSON Final:", e2);
-                throw new Error(`O JSON enviado estÃ¡ invÃ¡lido. Se estiver enviando nÃºmeros decimais, use ponto (0.50) ou aspas ("0,50"). Erro: ${e.message}`);
+                throw new Error(`O JSON enviado está inválido. Erro: ${e.message}`);
             }
         }
-        const { aluno_id, lojista_id, valor_devolucao } = body; // Aceita 'valor_devolucao'
 
-        // Validações
-        if (!aluno_id || !lojista_id || valor_devolucao === undefined) {
-            throw new Error("Parâmetros inválidos. Necessário: aluno_id, lojista_id, valor_devolucao.")
+        // Parâmetros: aluno_id, lojista_id, valor, tipo ('VENDA' ou 'DEVOLUCAO')
+        const { aluno_id, lojista_id, valor, valor_devolucao, valor_debito, tipo = 'DEVOLUCAO' } = body;
+        
+        // Valor Final (suporte a múltiplas nomenclaturas para compatibilidade)
+        const valorFinal = valor || valor_devolucao || valor_debito;
+        const tipoFinal = String(tipo).toUpperCase();
+
+        if (!aluno_id || !lojista_id || valorFinal === undefined) {
+            throw new Error("Parâmetros inválidos. Necessário: aluno_id, lojista_id, valor e tipo.");
         }
 
-        const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+        const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(str));
+        const valorNum = parseFloat(String(valorFinal).replace(',', '.'));
 
-        const valorDevolucaoNum = parseFloat(String(valor_devolucao).replace(',', '.')); // Aceita 2,50 ou 2.50
-
-        // --- PASSO 1: Descobrir o Propósito do Lojista ---
-        let queryLojista = supabaseClient.from('usuarios').select('Proposito_Lojista, nome, UserID');
+        // --- PASSO 1: Obter Dados do Lojista ---
+        let queryLojista = supabaseClient.from('usuarios').select('id, Proposito_Lojista, nome, total_vendas, total_devolucao, UserID');
         if (isUUID(lojista_id)) {
             queryLojista = queryLojista.eq('UserID', lojista_id);
         } else {
@@ -62,73 +63,85 @@ Deno.serve(async (req) => {
         const { data: lojista, error: lojistaError } = await queryLojista.single();
 
         if (lojistaError || !lojista) {
-            console.error("Erro ao buscar lojista:", lojistaError);
-            throw new Error(`Lojista não encontrado (ID: ${lojista_id}). Erro: ${lojistaError?.message}`);
+            throw new Error(`Lojista não encontrado.`);
         }
 
         const nomeProposito = lojista.Proposito_Lojista;
+        const vendasLojista = Number(lojista.total_vendas || 0);
+        const devolucoesLojista = Number(lojista.total_devolucao || 0);
+        const saldoAtualLojista = vendasLojista - devolucoesLojista;
+
         if (!nomeProposito) {
             throw new Error("Este lojista não possui um propósito configurado.");
         }
 
-        // --- PASSO 1.5: Resolver Aluno ID (Bigint para UUID se necessário) ---
+        // --- PASSO 2: Resolver Aluno ID e Nome ---
         let finalAlunoUserId = aluno_id;
-        if (!isUUID(aluno_id)) {
-            const { data: userRecord } = await supabaseClient
-                .from('usuarios')
-                .select('UserID')
-                .eq('id', aluno_id)
-                .single();
-            
-            if (userRecord?.UserID) {
-                finalAlunoUserId = userRecord.UserID;
-            } else {
-                const { data: alunoRecord } = await supabaseClient
-                    .from('aluno')
-                    .select('user_id')
-                    .eq('usuario_id', aluno_id)
-                    .single();
-                if (alunoRecord?.user_id) finalAlunoUserId = alunoRecord.user_id;
+        let nomeAluno = "Aluno";
+        
+        const { data: userRecord } = await supabaseClient.from('usuarios').select('UserID, nome').or(`UserID.eq.${isUUID(aluno_id) ? aluno_id : '00000000-0000-0000-0000-000000000000'},id.eq.${!isNaN(Number(aluno_id)) ? aluno_id : -1}`).single();
+        
+        if (userRecord) {
+            finalAlunoUserId = userRecord.UserID;
+            nomeAluno = userRecord.nome || "Aluno";
+        } else {
+            const { data: alunoRecord } = await supabaseClient.from('aluno').select('user_id, nome').or(`user_id.eq.${isUUID(aluno_id) ? aluno_id : '00000000-0000-0000-0000-000000000000'},usuario_id.eq.${!isNaN(Number(aluno_id)) ? aluno_id : -1}`).single();
+            if (alunoRecord) {
+                finalAlunoUserId = alunoRecord.user_id;
+                nomeAluno = alunoRecord.nome || "Aluno";
             }
         }
 
-        // --- PASSO 2: Buscar TODOS os Saldos do Aluno (Estratégia Robusta) ---
-        const { data: todosPropositos, error: propError } = await supabaseClient
+        // --- PASSO 3: Buscar Saldo do Aluno no Propósito correto ---
+        const { data: todosPropositos } = await supabaseClient
             .from('propositos')
             .select('saldo, nome')
-            .eq('usuario_id', finalAlunoUserId)
+            .eq('usuario_id', finalAlunoUserId);
 
-        if (propError) {
-            console.error("Erro ao buscar propósitos do aluno:", propError);
-            throw new Error("Erro ao consultar saldo do aluno.");
-        }
+        const targetNameNormalized = normalizeString(nomeProposito);
+        const propositoAluno = todosPropositos?.find(p => normalizeString(p.nome || '') === targetNameNormalized);
 
-        // Lógica de Busca Exata (Normalizada)
-        const targetNameNormalized = normalizeString(nomeProposito || '');
-
-        const propositoAluno = todosPropositos?.find(p => {
-            const dbNameNormalized = normalizeString(p.nome || '');
-            return dbNameNormalized === targetNameNormalized;
-        });
-
-        let saldoAtual = 0;
-
+        let saldoAtualAluno = 0;
         if (propositoAluno) {
-            const saldoRaw = String(propositoAluno.saldo || '0').trim();
-            saldoAtual = parseFloat(saldoRaw.replace(',', '.'));
+            saldoAtualAluno = parseFloat(String(propositoAluno.saldo || '0').replace(',', '.'));
         }
 
-        // --- PASSO 3: Calcular Preview (SOMA) ---
-        const novoSaldo = saldoAtual + valorDevolucaoNum;
+        // --- PASSO 4: Calcular Previews ---
+        let novoSaldoAluno = saldoAtualAluno;
+        let novoSaldoLojista = saldoAtualLojista;
+        let novoTotalVendasLojista = vendasLojista;
+
+        if (tipoFinal === 'VENDA') {
+            novoSaldoAluno = saldoAtualAluno - valorNum;
+            novoTotalVendasLojista = vendasLojista + valorNum;
+            novoSaldoLojista = novoTotalVendasLojista - devolucoesLojista;
+        } else if (tipoFinal === 'DEVOLUCAO') {
+            novoSaldoAluno = saldoAtualAluno + valorNum;
+            novoTotalVendasLojista = vendasLojista - valorNum;
+            novoSaldoLojista = novoTotalVendasLojista - devolucoesLojista;
+        } else {
+            throw new Error("Tipo de transação inválido. Use 'VENDA' ou 'DEVOLUCAO'.");
+        }
 
         return new Response(JSON.stringify({
             success: true,
+            tipo: tipoFinal,
             data: {
-                proposito_nome: nomeProposito,
-                lojista_nome: lojista.nome,
-                saldo_atual: saldoAtual,
-                valor_a_creditar: valorDevolucaoNum, // Valor que será devolvido
-                novo_saldo: novoSaldo // Saldo final previsto
+                detalhes_lojista: {
+                    nome: lojista.nome,
+                    proposito: nomeProposito,
+                    saldo_atual_liquido: saldoAtualLojista,
+                    total_vendas_atual: vendasLojista,
+                    novo_total_vendas_confirmado: novoTotalVendasLojista,
+                    novo_saldo_liquido_previsão: novoSaldoLojista
+                },
+                detalhes_aluno: {
+                    nome: nomeAluno,
+                    saldo_atual: saldoAtualAluno,
+                    novo_saldo_previsao: novoSaldoAluno,
+                    saldo_suficiente: (tipoFinal === 'VENDA' ? novoSaldoAluno >= 0 : true)
+                },
+                valor_transacao: valorNum
             }
         }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -136,11 +149,7 @@ Deno.serve(async (req) => {
         })
 
     } catch (error: any) {
-        console.error("Erro Refund Preview:", error);
-        return new Response(JSON.stringify({
-            success: false,
-            error: error.message
-        }), {
+        return new Response(JSON.stringify({ success: false, error: error.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400,
         })

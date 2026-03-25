@@ -1,4 +1,4 @@
-﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -136,10 +136,27 @@ Deno.serve(async (req) => {
             throw new Error("Erro ao consultar histÃ³rico.")
         }
 
-        // Retornamos tambÃ©m os filtros aplicados para debug do front se precisar
+        // --- 4. TRANSFORMAÇÃO: Adicionar Categoria no Retorno ---
+        const dataWithCategories = (data || []).map((item: any) => {
+            let categoria = 'Outros';
+            const tipo = item.tipo_operacao || '';
+            
+            if (tipo.includes('VENDA')) {
+                categoria = 'Venda';
+            } else if (tipo.includes('DEVOLUCAO')) {
+                categoria = 'Devolução';
+            }
+            
+            return {
+                ...item,
+                categoria: categoria
+            };
+        });
+
+        // Retornamos também os filtros aplicados para debug do front se precisar
         return new Response(JSON.stringify({
             success: true,
-            data: data,
+            data: dataWithCategories,
             meta: {
                 page: p,
                 limit: l,

@@ -319,7 +319,7 @@ export class CarteiraService {
 
             const { data, error, count } = await supabase
                 .from('lojista_historico')
-                .select('id, descricao, data_hora', { count: 'exact' })
+                .select('id, descricao, data_hora, status', { count: 'exact' })
                 .eq('aluno_id', alunoId)
                 .eq('tipo_operacao', 'VENDA')
                 .order('data_hora', { ascending: false })
@@ -332,7 +332,7 @@ export class CarteiraService {
                 produto: i.descricao || 'Produto',
                 quantidade: 1, // lojista_historico doesn't have quantity, defaulting to 1
                 data: i.data_hora ? new Date(i.data_hora).toLocaleDateString('pt-BR') : '',
-                status: 'entregue' // lojista_historico doesn't have status, defaulting
+                status: i.status || 'pendente'
             }));
 
             return { items, total: count || 0 };
@@ -488,7 +488,7 @@ export class CarteiraService {
                 );
             }
 
-            // Add history record
+            // Add history record in investimento_aluno
             const historyData = {
                 aluno_id: targetUuid,
                 escola_id: targetEscolaId,
@@ -499,7 +499,26 @@ export class CarteiraService {
                 created_date: new Date().toISOString(),
                 data_inicio: new Date().toISOString().split('T')[0]
             };
-            updatePromises.push(supabase.from('investimento_aluno').insert(historyData).then(res => res));
+            updatePromises.push(supabase.from('investimento_aluno').insert(historyData));
+
+            // Add log in movimentacao_financeira (Solicitado pelo usuário)
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const currentMonth = monthNames[new Date().getMonth()];
+
+            const movimentacaoData = {
+                aluno_id: targetUuid,
+                tipo_operacao: 'ADICAO_MANUAL',
+                categoria: 'Entrada',
+                nome_operacao: 'Entrada Adição manual de saldo',
+                mes_operacao: currentMonth,
+                valor: amount,
+                status: 'CONCLUIDO',
+                request_payload: { aluno_id: targetUuid, amount, type: 'MANUAL_ADMIN' },
+                response_payload: { mensagem: 'Crédito manual realizado via painel administrativo' },
+                http_status: 200
+            };
+            updatePromises.push(supabase.from('movimentacao_financeira').insert(movimentacaoData));
 
             // Wait for all operations to complete
             const results = await Promise.all(updatePromises);

@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
         console.log(`[DEBUG] Iniciando Transação MANUAL. Aluno: ${aluno_id}, Lojista: ${lojista_id}, Valor: ${valorDebitoNum}`);
 
         // --- PASSO 1: Obter Dados do Lojista (Propósito e Total Vendas) ---
-        let queryLojista = supabaseClient.from('usuarios').select('Proposito_Lojista, nome, total_vendas, UserID');
+        let queryLojista = supabaseClient.from('usuarios').select('id, Proposito_Lojista, nome, total_vendas, UserID');
         if (isUUID(lojista_id)) {
             queryLojista = queryLojista.eq('UserID', lojista_id);
         } else {
@@ -171,10 +171,11 @@ Deno.serve(async (req) => {
         await supabaseClient.from('movimentacao_financeira').insert({
             aluno_id: alunoInfoLog?.id || null,
             tipo_operacao: 'COMPRA_LOJA',
-            categoria: nomeProposito,
+            categoria: 'Venda',
             nome_operacao: `Compra no balcão: ${lojista.nome}`,
             mes_operacao: currentMonth,
             status: 'CONCLUIDO',
+            valor: valorDebitoNum,
             request_payload: { aluno_id: finalAlunoUserId, lojista_id: finalLojistaUserId, valor: valorDebitoNum, proposito: nomeProposito },
             response_payload: { 
                 mensagem: `Compra no balcão: ${lojista.nome}`,
