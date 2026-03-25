@@ -288,33 +288,37 @@
                 <!-- Inventory -->
                 <div class="mb-6">
                     <h3 class="text-sm font-bold text-gray-900 mb-4">Inventário</h3>
-                    <table class="w-full" *ngIf="inventory.length > 0">
+                    <table class="w-full table-auto" *ngIf="inventory.length > 0">
                         <thead>
                             <tr class="border-b border-gray-100">
-                                <th class="text-left text-[11px] font-semibold text-gray-400 uppercase pb-3">Produto
-                                </th>
-                                <th class="text-left text-[11px] font-semibold text-gray-400 uppercase pb-3">Quantidade
-                                </th>
-                                <th class="text-left text-[11px] font-semibold text-gray-400 uppercase pb-3">Data</th>
-                                <th class="text-right text-[11px] font-semibold text-gray-400 uppercase pb-3">
-                                    Ações
-                                    <lucide-icon [img]="icons.ChevronDown"
-                                        class="w-3 h-3 inline-block ml-1 text-gray-300"></lucide-icon>
-                                </th>
+                                <th class="text-left text-[10px] font-bold text-gray-400 uppercase pb-3 pr-2">Produto</th>
+                                <th class="text-center text-[10px] font-bold text-gray-400 uppercase pb-3 px-2 whitespace-nowrap">Qtd</th>
+                                <th class="text-left text-[10px] font-bold text-gray-400 uppercase pb-3 px-2 whitespace-nowrap">Data</th>
+                                <th class="text-right text-[10px] font-bold text-gray-400 uppercase pb-3 pl-2">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let item of inventory" class="border-b border-gray-50">
-                                <td class="py-3 text-sm text-gray-700">{{ item.produto }}</td>
-                                <td class="py-3 text-sm text-gray-500">{{ item.quantidade }}</td>
-                                <td class="py-3 text-sm text-gray-500">{{ item.data }}</td>
-                                <td class="py-3 text-right">
+                            <tr *ngFor="let item of inventory" class="border-b border-gray-50 last:border-0">
+                                <td class="py-3 pr-2">
+                                    <div class="text-[12px] font-medium text-gray-700 leading-tight line-clamp-2">
+                                        {{ item.produto }}
+                                    </div>
+                                </td>
+                                <td class="py-3 px-2 text-center text-xs text-gray-500 font-bold whitespace-nowrap">
+                                    {{ item.quantidade }}
+                                </td>
+                                <td class="py-3 px-2 text-[11px] text-gray-400 whitespace-nowrap">
+                                    {{ item.data }}
+                                </td>
+                                <td class="py-3 pl-2 text-right whitespace-nowrap">
                                     <button *ngIf="item.status !== 'resgatado'" (click)="openRedeemModal(item.id)"
-                                        class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                                        class="text-[11px] font-bold text-blue-600 hover:text-blue-800 transition-colors uppercase tracking-tight">
                                         Resgatar
                                     </button>
                                     <span *ngIf="item.status === 'resgatado'"
-                                        class="text-sm text-gray-400">Resgatado</span>
+                                        class="text-[11px] font-bold text-gray-300 uppercase tracking-tight">
+                                        Resgatado
+                                    </span>
                                 </td>
                             </tr>
                         </tbody>
