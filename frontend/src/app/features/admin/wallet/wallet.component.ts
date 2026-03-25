@@ -14,9 +14,7 @@ import {
     RefreshCw,
     CreditCard,
     Filter,
-    Plus,
-    CheckCircle,
-    Check
+    Plus
 } from 'lucide-angular';
 import { CarteiraService, WalletStudent, Purpose, InventoryItem, Transaction, StudentFinancialProfile } from '../../../core/services/carteira.service';
 import { SchoolService, School } from '../../../core/services/school.service';
@@ -32,7 +30,7 @@ import { ActionSuccessModalComponent } from '../../../shared/components/success-
     templateUrl: './wallet.component.html',
 })
 export class WalletComponent implements OnInit, OnDestroy {
-    public icons: any = { ArrowLeft, Search, Download, Eye, ChevronDown, X: XIcon, RefreshCw, CreditCard, Filter, Plus, CheckCircle, Check };
+    public icons: any = { ArrowLeft, Search, Download, Eye, ChevronDown, X: XIcon, RefreshCw, CreditCard, Filter, Plus };
 
     // Student list
     students: WalletStudent[] = [];
@@ -87,10 +85,10 @@ export class WalletComponent implements OnInit, OnDestroy {
 
     // Purpose colors
     purposeColors: { [key: string]: string } = {
-        'Alimentação': 'bg-gradient-to-br from-[#1a3a5c] to-[#2c5282]',
-        'Entretenimento': 'bg-gradient-to-br from-[#1a3a5c] to-[#4c51bf]',
-        'Mercado': 'border-2 border-[#ADD136]/50 bg-gradient-to-br from-[#1a3a5c] to-[#556B2F]',
-        'Minha reserva': 'bg-gradient-to-br from-[#1a3a5c] to-[#2d3748]',
+        'Alimentação': 'bg-[#1a3a5c]',
+        'Entretenimento': 'bg-[#1a3a5c]',
+        'Mercado': 'border-2 border-[#8BC34A] bg-[#1a3a5c]',
+        'Minha reserva': 'bg-[#1a3a5c]',
     };
 
     constructor(
@@ -240,8 +238,8 @@ export class WalletComponent implements OnInit, OnDestroy {
 
     getStatusClass(status: string): string {
         return status === 'active'
-            ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm shadow-emerald-500/10'
-            : 'bg-gray-50 text-gray-400 border border-gray-100';
+            ? 'bg-green-100 text-green-700'
+            : 'bg-gray-100 text-gray-500';
     }
 
     getStatusLabel(status: string): string {
