@@ -13,6 +13,8 @@ export interface Usuario {
     nome?: string;
     email: string;
     cpf: string;
+    cnpj?: string;
+    Proposito_Lojista?: string;
     telefone?: string;
     escola_id: string;
     turmaID?: string;

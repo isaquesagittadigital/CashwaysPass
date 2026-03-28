@@ -1,88 +1,83 @@
-﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
-// Helper funcs
 function isUUID(str: string) {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 }
 
 Deno.serve(async (req) => {
-    // 1. CORS Preflight
     if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders })
+        return new Response('ok', { headers: corsHeaders });
     }
 
     try {
         const supabaseClient = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        )
+            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+            { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+        );
 
-        const rawBody = await req.text();
-        let body;
-        
-        try {
-            body = JSON.parse(rawBody);
-        } catch (e: any) {
-            throw new Error(`O JSON enviado estÃ¡ invÃ¡lido. Erro: ${e.message}`);
-        }
-        
-        const { aluno_id } = body;
+        const body = await req.json();
+        const aluno_id = body.aluno_id;
 
         if (!aluno_id) {
-            throw new Error("ParÃ¢metro 'aluno_id' Ã© obrigatÃ³rio.")
+            throw new Error('aluno_id is required in JSON body');
         }
 
-        // Busca aluno real (caso tenha sido passado o user_id da auth ou usuario_id numÃ©rico)
-        let query = supabaseClient.from('aluno').select('id, nome');
-        if (isUUID(aluno_id)) {
-            query = query.or(`id.eq.${aluno_id},user_id.eq.${aluno_id}`);
+        // 1. Resolver o Aluno
+        let queryAluno = supabaseClient.from('aluno').select('id, user_id, usuario_id');
+        
+        if (isUUID(String(aluno_id))) {
+            queryAluno = queryAluno.or(`id.eq.${aluno_id},user_id.eq.${aluno_id}`);
         } else {
-            query = query.eq('usuario_id', aluno_id);
+            // Se for número (ex: "162"), busca por usuario_id
+            queryAluno = queryAluno.eq('usuario_id', aluno_id);
         }
 
-        const { data: alunoData, error: alunoError } = await query.maybeSingle();
+        const { data: alunoData, error: errAluno } = await queryAluno.maybeSingle();
 
-        if (alunoError || !alunoData) {
-            throw new Error(`Aluno nÃ£o encontrado no sistema.`);
+        if (errAluno) throw errAluno;
+        if (!alunoData) {
+            return new Response(JSON.stringify([]), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 200,
+            });
         }
 
-        const realAlunoId = alunoData.id;
-
-        // Busca produtos comprados
-        const { data: produtosComprados, error: prodError } = await supabaseClient
+        // 2. Buscar Produtos na tabela produtos_aluno
+        const { data: produtos, error: errProd } = await supabaseClient
             .from('produtos_aluno')
-            .select('id, produto_id, nome_item, descricao, imagem_url, valor_compra, quantidade, data_compra, status_item, data_acao')
-            .eq('aluno_id', realAlunoId)
-            .eq('status_item', 'Comprado')
+            .select('*')
+            .eq('aluno_id', alunoData.id)
             .order('data_compra', { ascending: false });
 
-        if (prodError) {
-            throw new Error(`Erro ao buscar produtos: ${prodError.message}`);
-        }
+        if (errProd) throw errProd;
 
-        return new Response(JSON.stringify({ 
-            success: true, 
-            message: "Produtos resgatados com sucesso.",
-            data: produtosComprados
-        }), {
+        // 3. Padronizar o retorno para facilitar no FlutterFlow
+        const formattedData = produtos.map(p => ({
+            nome: p.nome_item,
+            descricao: p.descricao,
+            valor: p.valor_compra,
+            imagem: p.imagem_url,
+            quantidade: p.quantidade,
+            status: p.status_item,
+            data_compra: p.data_compra || p.data_acao
+        }));
+
+        return new Response(JSON.stringify(formattedData), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,
-        })
+        });
 
     } catch (error: any) {
-        console.error("Erro List Purchased Products:", error);
-        return new Response(JSON.stringify({ 
-            success: false, 
-            error: error.message 
-        }), {
+        return new Response(JSON.stringify({ error: error.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400,
-        })
+        });
     }
-})
-
+});

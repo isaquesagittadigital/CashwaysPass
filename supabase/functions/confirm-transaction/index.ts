@@ -161,8 +161,12 @@ Deno.serve(async (req) => {
              console.error("CRÍTICO: Aluno debitado mas falha ao atualizar vendas do lojista.", updateLojistaError);
         }
 
-        // 4.3. Registrar Log da Transação
-        const { data: alunoInfoLog } = await supabaseClient.from('aluno').select('id, nome').eq('user_id', finalAlunoUserId).maybeSingle();
+        // 4.3. Registrar Log da Transação (Busca robusta do Aluno)
+        const { data: alunoInfoLog } = await supabaseClient
+            .from('aluno')
+            .select('id, nome')
+            .or(`user_id.eq.${finalAlunoUserId},usuario_id.eq.${finalAlunoUserId},id.eq.${aluno_id}`)
+            .maybeSingle();
 
         const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
             "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];

@@ -71,12 +71,20 @@ Deno.serve(async (req) => {
         // --- PASSO 2: Validar Produto e Calcular Valor Total ---
         const { data: dbProd, error: prodError } = await supabaseClient
             .from('produto')
-            .select('id, nome, preco, url_imagem, descricao, limete_por_aluno')
+            .select('id, nome, preco, url_imagem, descricao, limete_por_aluno, quantidade')
             .eq('id', produto_id)
             .single();
 
         if (prodError || !dbProd) {
             throw new Error(`Produto nÃ£o encontrado (ID: ${produto_id}).`);
+        }
+
+        // --- PASSO 2.1: Validar Quantidade em Estoque ---
+        const estoqueAtual = dbProd.quantidade;
+        if (estoqueAtual !== null && estoqueAtual !== undefined) {
+             if (qtd > estoqueAtual) {
+                 throw new Error(`Estoque insuficiente. Este produto possui apenas ${estoqueAtual} unidades disponíveis.`);
+             }
         }
 
         const precoUnitario = Number(dbProd.preco || 0);
@@ -131,10 +139,10 @@ Deno.serve(async (req) => {
         const { data: todosPropositos, error: propError } = await supabaseClient
             .from('propositos')
             .select('id, saldo, nome')
-            .eq('usuario_id', authUserId) // Mudança: Agora usa o Auth UUID correto
+            .eq('usuario_id', authUserId) 
 
         if (propError || !todosPropositos || todosPropositos.length === 0) {
-            throw new Error(`VocÃª nÃ£o possui o propÃ³sito 'Mercado' ou ele nÃ£o foi encontrado na sua conta. (User: ${authUserId})`);
+            throw new Error(`Você não possui o propósito 'Mercado' ou ele não foi encontrado na sua conta. (User: ${authUserId})`);
         }
 
         const targetNameNormalized = normalizeString('Mercado');
@@ -144,57 +152,52 @@ Deno.serve(async (req) => {
         });
 
         if (!propositoAluno) {
-            throw new Error(`VocÃª nÃ£o possui o propÃ³sito 'Mercado' ou ele nÃ£o foi encontrado na sua conta.`);
+            throw new Error(`Você não possui o propósito 'Mercado' ou ele não foi encontrado na sua conta.`);
         }
 
         const saldoRaw = String(propositoAluno.saldo || '0').trim();
         const saldoNormalizado = saldoRaw.replace(',', '.');
         const saldoAtual = parseFloat(saldoNormalizado);
 
-        console.log(`[DEBUG] Saldo do propÃ³sito "Mercado": R$ ${saldoAtual}`);
+        console.log(`[DEBUG] Saldo do propósito "Mercado": R$ ${saldoAtual}`);
 
         if (saldoAtual < valorTotalNum) {
-            throw new Error(`Saldo insuficiente no Mercado. VocÃª tem R$ ${saldoAtual.toFixed(2)} e tentou gastar R$ ${valorTotalNum.toFixed(2)}.`);
+            throw new Error(`Saldo insuficiente no Mercado. Você tem R$ ${saldoAtual.toFixed(2)} e tentou gastar R$ ${valorTotalNum.toFixed(2)}.`);
         }
 
-        // --- PASSO 4: Criar ou Atualizar na tabela "produtos_aluno" ---
-        let upsertError = null;
+        // --- PASSO 4: Criar Registro individual na tabela "produtos_aluno" ---
+        const { error: insertError } = await supabaseClient
+            .from('produtos_aluno')
+            .insert({
+                aluno_id: realAlunoId,
+                produto_id: dbProd.id,
+                nome_item: dbProd.nome,
+                descricao: dbProd.descricao,
+                imagem_url: dbProd.url_imagem,
+                valor_compra: precoUnitario,
+                quantidade: qtd, // Mantém a quantidade enviada na compra individual
+                lojista_id: lojista_id || null,
+                status_item: 'Comprado',
+                data_acao: new Date().toISOString(),
+                data_compra: new Date().toISOString()
+            });
 
-        if (existingRecordId) {
-            // Atualiza registro existente somando a quantidade e modificando valor_compra para o atual
-            const novaQtd = qtdJaComprada + qtd;
-            const { error: updateError } = await supabaseClient
-                .from('produtos_aluno')
-                .update({
-                    quantidade: novaQtd,
-                    valor_compra: precoUnitario,
-                    data_acao: new Date().toISOString()
-                })
-                .eq('id', existingRecordId);
-            upsertError = updateError;
-        } else {
-            // Cria novo registro
-            const { error: insertError } = await supabaseClient
-                .from('produtos_aluno')
-                .insert({
-                    aluno_id: realAlunoId,
-                    produto_id: dbProd.id,
-                    nome_item: dbProd.nome,
-                    descricao: dbProd.descricao,
-                    imagem_url: dbProd.url_imagem,
-                    valor_compra: precoUnitario,
-                    quantidade: qtd,
-                    lojista_id: lojista_id || null, // Nulo se nÃ£o fornecido
-                    status_item: 'Comprado',
-                    data_acao: new Date().toISOString()
-                });
-            upsertError = insertError;
+        if (insertError) {
+            console.error("Erro ao salvar em produtos_aluno:", insertError);
+            throw new Error(`Falha ao registrar o produto no histórico do aluno. A compra não pôde ser completada.`);
         }
 
-
-        if (upsertError) {
-            console.error("Erro ao salvar em produtos_aluno:", upsertError);
-            throw new Error(`Falha ao registrar o produto no histÃ³rico do aluno. A compra nÃ£o pÃ´de ser completada.`);
+        // --- PASSO 4.1: Atualizar Estoque do Produto ---
+        if (dbProd.quantidade !== null && dbProd.quantidade !== undefined) {
+            const { error: stockUpdateError } = await supabaseClient
+                .from('produto')
+                .update({ quantidade: dbProd.quantidade - qtd })
+                .eq('id', produto_id);
+            
+            if (stockUpdateError) {
+                console.error("Erro ao atualizar estoque:", stockUpdateError);
+                // Não bloqueamos a compra se o estoque falhar ao atualizar, mas logamos
+            }
         }
 
         // --- PASSO 5: Executar DeduÃ§Ã£o do Saldo ---
@@ -206,7 +209,7 @@ Deno.serve(async (req) => {
             .eq('id', propositoAluno.id)
 
         if (updateAlunoError) {
-            throw new Error("Erro ao atualizar saldo do Mercado: " + updateAlunoError.message);
+            throw new Error("Erro ao atualizar saldo de Mercado: " + updateAlunoError.message);
         }
 
         // --- PASSO 6: Atualizar Lojista (se fornecido) ---
@@ -229,13 +232,13 @@ Deno.serve(async (req) => {
             aluno_id: realAlunoId, 
             tipo_operacao: 'COMPRA_PRODUTO_INDIVIDUAL',
             categoria: 'Mercado',
-            nome_operacao: `Compra de produto: ${dbProd.nome}`,
-            valor: valorTotalNum, // Novidade: Salvando valor diretamente na coluna
+            nome_operacao: `Compra Mercado: ${dbProd.nome}`,
+            valor: valorTotalNum,
             mes_operacao: currentMonth,
             status: 'SUCESSO',
             request_payload: { aluno_id, lojista_id, produto_id, quantidade: qtd, valor: valorTotalNum, proposito: 'Mercado' },
             response_payload: {
-                mensagem: `Compra de ${dbProd.nome} realizada em ${lojistaNome} (Mercado)`,
+                mensagem: `Compra Mercado: ${dbProd.nome} realizada em ${lojistaNome}`,
                 novo_saldo_aluno: novoSaldoAluno,
                 novo_total_vendas_lojista: novoTotalVendas
             },
@@ -249,6 +252,7 @@ Deno.serve(async (req) => {
             descricao: `Compra de produto: ${dbProd.nome}`,
             valor: valorTotalNum,
             status_investimento: 'PAGO',
+            url_imagem: dbProd.url_imagem,
             created_date: new Date().toISOString(),
             data_inicio: new Date().toISOString().split('T')[0]
         });
@@ -288,7 +292,7 @@ Deno.serve(async (req) => {
 
         return new Response(JSON.stringify({
             success: true,
-            message: "Compra realizada com sucesso!",
+            message: "Compra adquirida com sucesso!",
             data: {
                 proposito_nome: "Mercado",
                 lojista_nome: lojistaNome,
@@ -297,8 +301,7 @@ Deno.serve(async (req) => {
                 produto: dbProd.nome,
                 quantidade: qtd,
                 valor_unitario_momento: precoUnitario,
-                limite_por_aluno: dbProd.limete_por_aluno,
-                quantidade_acumulada_aluno: qtdJaComprada + qtd
+                limite_por_aluno: dbProd.limete_por_aluno
             }
         }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },

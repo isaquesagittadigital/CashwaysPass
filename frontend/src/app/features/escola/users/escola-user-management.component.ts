@@ -99,12 +99,20 @@ export class EscolaUserManagementComponent implements OnInit, OnDestroy {
         tipo_acesso: 'Responsavel',
         nome_completo: '',
         cpf: '',
+        cnpj: '',
+        Proposito_Lojista: '',
         telefone: '',
         turmaID: '',
         email: '',
         escola_id: '',
         status: 'active'
     };
+
+    propositosLojista = [
+        { value: 'Alimentação', label: 'Alimentação' },
+        { value: 'Entretenimento', label: 'Entretenimento' },
+        { value: 'Mercado', label: 'Mercado' }
+    ];
 
     selectedUser: Usuario | null = null;
     resetLoading = false;
@@ -196,7 +204,7 @@ export class EscolaUserManagementComponent implements OnInit, OnDestroy {
     }
 
     shouldDisablePeriod(): boolean {
-        return this.form.tipo_acesso === 'Responsavel' || this.form.tipo_acesso === 'Lojista' || this.form.tipo_acesso === 'Escola' || this.form.tipo_acesso === 'Admin';
+        return this.form.tipo_acesso === 'Responsavel' || this.form.tipo_acesso === 'Lojista' || this.form.tipo_acesso === 'Escola' || this.form.tipo_acesso === 'Admin' || this.form.tipo_acesso === 'Convidado';
     }
 
     async loadTurmas() {
@@ -378,11 +386,17 @@ export class EscolaUserManagementComponent implements OnInit, OnDestroy {
             tipo_acesso: 'Responsavel',
             nome_completo: '',
             cpf: '',
+            cnpj: '',
+            Proposito_Lojista: '',
             turmaID: '',
             email: '',
             escola_id: this.selectedSchoolId || '',
             status: 'active'
         };
+    }
+
+    isLojista(): boolean {
+        return this.form.tipo_acesso === 'Lojista';
     }
 
     async submitForm() {
@@ -507,6 +521,7 @@ export class EscolaUserManagementComponent implements OnInit, OnDestroy {
             case 'Administrador': return 'bg-blue-100 text-blue-700';
             case 'Escola': return 'bg-purple-100 text-purple-700';
             case 'Lojista': return 'bg-cyan-100 text-cyan-700';
+            case 'Convidado': return 'bg-amber-100 text-amber-700';
             default: return 'bg-gray-100 text-gray-700';
         }
     }

@@ -108,8 +108,12 @@ Deno.serve(async (req) => {
             .update({ total_vendas: novoTotalVendas })
             .eq('id', lojista.id);
 
-        // 4.3. Logs
-        const { data: alunoInfoLog } = await supabaseClient.from('aluno').select('id, nome').eq('usuario_id', finalAlunoUserId).maybeSingle();
+        // 4.3. Logs (Busca robusta do Aluno p/ Log)
+        const { data: alunoInfoLog } = await supabaseClient
+            .from('aluno')
+            .select('id, nome')
+            .or(`usuario_id.eq.${finalAlunoUserId},user_id.eq.${finalAlunoUserId}`)
+            .maybeSingle();
 
         const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
             "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];

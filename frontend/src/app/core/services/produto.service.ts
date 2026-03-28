@@ -15,6 +15,7 @@ export interface Produto {
     status: boolean;
     turma_ids: string[];
     quantidade: number;
+    proposito: string;
 }
 
 export interface ProdutoForm {
@@ -29,6 +30,7 @@ export interface ProdutoForm {
     status: boolean;
     turma_ids: string[];
     quantidade: number;
+    proposito: string;
 }
 
 @Injectable({
@@ -71,6 +73,7 @@ export class ProdutoService {
                 status: p['Status'] ?? true,
                 turma_ids: p.turma_ids || [],
                 quantidade: Number(p.quantidade) || 0,
+                proposito: p.proposito || '',
             }));
         } catch (error) {
             console.error('Error fetching products:', error);
@@ -102,6 +105,7 @@ export class ProdutoService {
                 status: data['Status'] ?? true,
                 turma_ids: data.turma_ids || [],
                 quantidade: Number(data.quantidade) || 0,
+                proposito: data.proposito || '',
             };
         } catch (error) {
             console.error('Error fetching product:', error);
@@ -125,7 +129,8 @@ export class ProdutoService {
                     'Status': product.status,
                     turma_ids: product.turma_ids && product.turma_ids.length > 0 ? product.turma_ids : [],
                     quantidade: product.quantidade,
-                    categoria: product.categoria
+                    categoria: product.categoria,
+                    proposito: product.proposito || null
                 })
                 .select()
                 .single();
@@ -153,7 +158,8 @@ export class ProdutoService {
                     'Status': product.status,
                     turma_ids: product.turma_ids && product.turma_ids.length > 0 ? product.turma_ids : [],
                     quantidade: product.quantidade,
-                    categoria: product.categoria
+                    categoria: product.categoria,
+                    proposito: product.proposito || null
                 })
                 .eq('id', id);
 

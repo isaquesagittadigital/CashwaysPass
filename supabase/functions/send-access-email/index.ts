@@ -80,18 +80,53 @@ Deno.serve(async (req) => {
 
         // 2. Vincular o UserID na tabela public.usuarios
         console.log(`[DB] Vinculando UserID ${finalUserId} ao email ${email}`);
-        const { error: dbError } = await supabaseAdmin
+        
+        const { data: existingUserCheck } = await supabaseAdmin
             .from('usuarios')
-            .update({ 
+            .select('id')
+            .eq('email', email)
+            .maybeSingle();
+
+        let dbError = null;
+
+        if (existingUserCheck && existingUserCheck.id) {
+            const { error: updateError } = await supabaseAdmin
+                .from('usuarios')
+                .update({ 
+                    UserID: finalUserId,
+                    senha: access_password,
+                    primeiro_acesso: false 
+                })
+                .eq('email', email);
+            dbError = updateError;
+        } else {
+            console.log(`[DB] Usuário NÃO encontrado na tabela public.usuarios. Criando registro (fallback)...`);
+            const tipoAcesso = body.tipo_acesso || body.tipo_user || 'Lojista'; // Default to Lojista if not informed
+            
+            const insertPayload: any = {
+                email: email,
+                nome_completo: nome || 'Usuário',
+                nome: nome || 'Usuário',
                 UserID: finalUserId,
                 senha: access_password,
-                primeiro_acesso: false // Marcar como ainda não ativado/pendente se necessário, ou false para indicar fluxo de acesso
-            })
-            .eq('email', email);
+                primeiro_acesso: false,
+                tipo_acesso: tipoAcesso
+            };
+            
+            // Repassando campos adicionais que possam ter vindo do frontend
+            if (body.escola_id) insertPayload.escola_id = body.escola_id;
+            if (body.telefone) insertPayload.telefone = body.telefone;
+            if (body.cpf) insertPayload.cpf = body.cpf;
+
+            const { error: insertError } = await supabaseAdmin
+                .from('usuarios')
+                .insert(insertPayload);
+                
+            dbError = insertError;
+        }
 
         if (dbError) {
-            console.warn(`[DB_WARNING] Falha ao atualizar tabela Usuarios: ${dbError.message}`);
-            // Não bloqueamos o e-mail se a tabela pública falhar (pode ser que o registro ainda não exista lá)
+            console.warn(`[DB_WARNING] Falha ao atualizar/inserir tabela Usuarios: ${dbError.message}`);
         }
 
         // 3. Enviar E-mail via Brevo

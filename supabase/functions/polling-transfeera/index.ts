@@ -153,8 +153,13 @@ Deno.serve(async (req) => {
 
                 console.log(`Saldo atualizado para usuÃ¡rio ${userId}. Novo saldo: ${novoSaldo}`);
 
-                // 4.4 Logs Solicitados
-                const { data: alunoInfoLog } = await supabaseClient.from('aluno').select('id, nome').eq('user_id', userId).maybeSingle();
+                // 4.4 Busca robusta do Aluno para o Log (Tenta por UUID e por BigInt)
+                const { data: alunoInfoLog } = await supabaseClient
+                    .from('aluno')
+                    .select('id, nome')
+                    .or(`user_id.eq.${userId},usuario_id.eq.${userId}`)
+                    .maybeSingle();
+
                 const realAlunoId = alunoInfoLog?.id || null;
                 const nomeAlunoLog = alunoInfoLog?.nome || nomeAluno;
 
@@ -162,38 +167,24 @@ Deno.serve(async (req) => {
                     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
                 const currentMonth = monthNames[new Date().getMonth()];
 
-                // Log 1: QRCode Pago
+                // Log Único: Confirmação de Pix e Crédito
                 await supabaseClient.from('movimentacao_financeira').insert({
                     aluno_id: realAlunoId,
-                    tipo_operacao: 'PAGAMENTO_PIX_CONFIRMADO',
+                    tipo_operacao: 'RECARGA_PIX',
                     categoria: 'Crédito',
-                    nome_operacao: 'Crédito adicionado via Pix',
+                    nome_operacao: 'Entrada via Pix',
                     mes_operacao: currentMonth,
                     status: 'CONCLUIDO',
+                    valor: valorPago,
                     request_payload: { id_pix, userId, status_transfeera: status },
                     response_payload: { 
-                        mensagem: 'O QRCode foi pago com sucesso na Transfeera.',
-                        item: "Confirmação de PIX",
-                        valor_total: valorPago,
-                        aluno_nome: nomeAlunoLog
-                    },
-                    http_status: 200
-                })
-
-                // Log 2: Valor Inserido
-                await supabaseClient.from('movimentacao_financeira').insert({
-                    aluno_id: realAlunoId,
-                    tipo_operacao: 'CREDITO_CONTA',
-                    categoria: 'Crédito',
-                    nome_operacao: 'Crédito adicionado via Pix',
-                    mes_operacao: currentMonth,
-                    status: 'CONCLUIDO',
-                    request_payload: { userId, valor_pago: valorPago, saldo_anterior: saldoAtual, saldo_novo: novoSaldo },
-                    response_payload: { 
-                        mensagem: `Crédito PIX aprovado e adicionado à conta.`,
+                        mensagem: 'Recarga via Pix confirmada e adicionada à conta.',
                         item: "Recarga PIX",
+                        pago_sim: "sim",
                         valor_total: valorPago,
-                        aluno_nome: nomeAlunoLog
+                        aluno_nome: nomeAlunoLog,
+                        saldo_anterior: saldoAtual,
+                        saldo_novo: novoSaldo
                     },
                     http_status: 200
                 })

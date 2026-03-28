@@ -53,13 +53,14 @@ Deno.serve(async (req) => {
         const realAlunoId = alunoData.id;
 
         // --- PASSO 2: Consultar logs financeiros do aluno ---
-        // Adicionado: 'valor' na seleção e removido o filtro restritivo de categoria
+        // Ajustado para garantir que tragamos Movimentações REAIS (Mercado, Pix, Transferência, etc)
         const { data: fetchLogs, error: logError } = await supabaseClient
             .from('movimentacao_financeira')
             .select('id, created_date, tipo_operacao, status, response_payload, categoria, nome_operacao, mes_operacao, valor')
             .eq('aluno_id', realAlunoId)
-            .neq('categoria', 'Log') 
-            .order('created_date', { ascending: false });
+            .in('categoria', ['Mercado', 'Alimentação', 'Entretenimento', 'Saldo', 'Saúde', 'Extra', 'Pix', 'Transferência', 'Reposição', 'Educação', 'Crédito', 'Devolução', 'Venda', 'Minha Reserva'])
+            .order('created_date', { ascending: false })
+            .limit(200); // Limitamos aos 200 mais recentes para performance
 
         if (logError) {
             throw new Error(`Erro ao buscar logs financeiros: ${logError.message}`);

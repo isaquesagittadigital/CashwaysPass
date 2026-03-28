@@ -20,7 +20,7 @@ import {
     ChevronDown,
     PlusCircle
 } from 'lucide-angular';
-import { EventoService, Evento } from '../../../core/services/evento.service';
+import { EventoService, Evento, LojistaConvidado } from '../../../core/services/evento.service';
 import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
 import { ImageCompressionService } from '../../../core/services/image-compression.service';
 import { SchoolService, School } from '../../../core/services/school.service';
@@ -64,9 +64,11 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
         todas_turmas: false, // New field for all turmas
         ativo: true,
         capa_url: '',
-        lojistas_convidados: [] as string[]
+        lojistas_convidados: [] as string[],
+        lojistas_data: [] as LojistaConvidado[]
     };
     newLojistaEmail = '';
+    newLojistaProposito = '';
     selectedTurmaId = ''; // Helper for select dropdown
 
     // Delete Modal
@@ -156,6 +158,16 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
         return turma ? turma.nome : 'Nenhuma turma';
     }
 
+    getLojistasDisplay(event: Evento): LojistaConvidado[] {
+        if (event.lojistas_data && event.lojistas_data.length > 0) {
+            return event.lojistas_data;
+        }
+        if (event.lojistas_convidados && event.lojistas_convidados.length > 0) {
+            return event.lojistas_convidados.map(email => ({ email, proposito: '' }));
+        }
+        return [];
+    }
+
     // --- Form Actions ---
     openCreateModal() {
         this.isEditing = false;
@@ -177,15 +189,24 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
     async openEditModal(event: Evento) {
         this.isEditing = true;
         this.editingEventId = event.id;
+        // Prepare lojistas_data if missing (legacy support)
+        const lojistasEmails = event.lojistas_convidados || [];
+        const existingData = event.lojistas_data || [];
+        const populatedData = lojistasEmails.map(email => {
+            const current = existingData.find(d => d.email === email);
+            return current ? { ...current } : { email, proposito: 'Alimentação' };
+        });
+
         this.form = {
             nome: event.nome,
             descricao_curta: event.descricao_curta || '',
             data_evento: event.data_evento || '',
-            turma_ids: event.turma_ids || (event.turma_id ? [event.turma_id] : []), // Handle migration from single to multi
+            turma_ids: event.turma_ids || (event.turma_id ? [event.turma_id] : []),
             todas_turmas: !!event.todas_turmas,
             ativo: event.ativo,
             capa_url: event.capa_url || '',
-            lojistas_convidados: [...(event.lojistas_convidados || [])]
+            lojistas_convidados: [...lojistasEmails],
+            lojistas_data: populatedData
         };
         this.imagePreview = event.capa_url || '';
         this.imageFile = null;
@@ -201,11 +222,13 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
             todas_turmas: false,
             ativo: true,
             capa_url: '',
-            lojistas_convidados: []
+            lojistas_convidados: [],
+            lojistas_data: []
         };
         this.imagePreview = '';
         this.imageFile = null;
         this.newLojistaEmail = '';
+        this.newLojistaProposito = '';
         this.selectedTurmaId = '';
     }
 
@@ -224,15 +247,20 @@ export class EscolaEventsComponent implements OnInit, OnDestroy {
     }
 
     addLojista() {
-        if (this.newLojistaEmail && this.newLojistaEmail.includes('@')) {
-            if (!this.form.lojistas_convidados.includes(this.newLojistaEmail)) {
-                this.form.lojistas_convidados.push(this.newLojistaEmail);
-            }
-            this.newLojistaEmail = '';
+        const email = this.newLojistaEmail.trim();
+        const proposito = this.newLojistaProposito;
+        if (!email || !email.includes('@') || !proposito) return;
+        const alreadyAdded = this.form.lojistas_data.some(l => l.email === email);
+        if (!alreadyAdded) {
+            this.form.lojistas_data.push({ email, proposito });
+            this.form.lojistas_convidados.push(email);
         }
+        this.newLojistaEmail = '';
+        this.newLojistaProposito = '';
     }
 
     removeLojista(email: string) {
+        this.form.lojistas_data = this.form.lojistas_data.filter(l => l.email !== email);
         this.form.lojistas_convidados = this.form.lojistas_convidados.filter(e => e !== email);
     }
 

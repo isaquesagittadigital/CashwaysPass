@@ -2,6 +2,11 @@ import { Injectable } from '@angular/core';
 import { supabase } from '../supabase';
 import { environment } from '../../../environments/environment';
 
+export interface LojistaConvidado {
+    email: string;
+    proposito: string;
+}
+
 export interface Evento {
     id: string;
     escola_id: string;
@@ -10,10 +15,11 @@ export interface Evento {
     data_evento: string;
     capa_url: string;
     ativo: boolean;
-    turma_id?: string; // Optional for backward compatibility
-    turma_ids?: string[]; // New field for multiple turmas
-    todas_turmas?: boolean; // New field for all turmas
+    turma_id?: string;
+    turma_ids?: string[];
+    todas_turmas?: boolean;
     lojistas_convidados: string[];
+    lojistas_data?: LojistaConvidado[];
     created_at?: string;
     updated_at?: string;
 }

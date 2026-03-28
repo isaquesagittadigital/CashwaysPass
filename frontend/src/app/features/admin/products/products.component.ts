@@ -18,7 +18,8 @@ import {
     Package,
     Calendar,
     Upload,
-    CheckCircle2
+    CheckCircle2,
+    ChevronDown
 } from 'lucide-angular';
 import { ProdutoService, Produto, ProdutoForm } from '../../../core/services/produto.service';
 import { DeleteConfirmModalComponent } from '../../../shared/components/delete-confirm-modal/delete-confirm-modal.component';
@@ -33,7 +34,7 @@ import { ImageCompressionService } from '../../../core/services/image-compressio
     templateUrl: './products.component.html',
 })
 export class ProductsComponent implements OnInit, OnDestroy {
-    icons = { ArrowLeft, Search, Plus, Eye, Pencil, Trash2, X, PlusCircle, Users, Image, Package, Calendar, Upload, CheckCircle2 };
+    icons = { ArrowLeft, Search, Plus, Eye, Pencil, Trash2, X, PlusCircle, Users, Image, Package, Calendar, Upload, CheckCircle2, ChevronDown };
 
     // Data
     products: Produto[] = [];
@@ -96,6 +97,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
             preco: 0,
             url_imagem: '',
             categoria: '',
+            proposito: '',
             data_vigencia_inicio: '',
             data_vigencia_final: '',
             limite_por_aluno: 2,
@@ -204,6 +206,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
             preco: product.preco,
             url_imagem: product.url_imagem,
             categoria: product.categoria || '',
+            proposito: product.proposito || '',
             data_vigencia_inicio: product.data_vigencia_inicio,
             data_vigencia_final: product.data_vigencia_final,
             limite_por_aluno: product.limite_por_aluno,
