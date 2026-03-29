@@ -249,7 +249,7 @@ export class SchoolManagementService {
     getStudentsBySchool(schoolId: string, turmaId?: string): Observable<any[]> {
         let query = supabase
             .from('aluno')
-            .select('*, numeroCarteira:ra, turma:turma_id(nome, serie), user:usuario_id(id, email, ultimo_login, telefone)')
+            .select('*, numeroCarteira:ra, saldo_carteira, turma:turma_id(nome, serie), user:usuario_id(id, email, ultimo_login, telefone, saldo_carteira)')
             .eq('escola_id', schoolId);
 
         if (turmaId) {
@@ -259,10 +259,15 @@ export class SchoolManagementService {
         return from(query.order('nome', { ascending: true })).pipe(
             map(resp => {
                 if (resp.error) throw resp.error;
-                return resp.data || [];
+                // Normaliza o saldo_carteira: prioridade para o saldo da tabela usuarios (user.saldo_carteira)
+                return (resp.data || []).map((aluno: any) => ({
+                    ...aluno,
+                    saldo_carteira: Number(aluno.user?.saldo_carteira ?? aluno.saldo_carteira ?? 0)
+                }));
             })
         );
     }
+
 
     async createStudent(data: any): Promise<{ success: boolean; error?: any }> {
         try {

@@ -266,23 +266,50 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.turmaSearchTerm = '';
 
         const currentSchool = this.schoolService.getSelectedSchool();
-        if (!currentSchool) {
-            // Se o admin não selecionou uma escola, não temos como carregar os alunos diretamente pela turma sem saber a escola
+
+        if (!currentSchool && !turma.id) {
             this.isLoadingTurmaStudents = false;
             return;
         }
 
-        this.schoolManagementService.getStudentsBySchool(currentSchool.id, turma.id).subscribe({
-            next: (students) => {
-                this.turmaStudents = students;
-                this.isLoadingTurmaStudents = false;
-            },
-            error: (err) => {
-                console.error('Error loading turma students:', err);
-                this.isLoadingTurmaStudents = false;
-            }
-        });
+        // Se temos escola selecionada, usa o método que filtra por escola + turma
+        // Se não temos escola (admin visualizando tudo), busca direto pelo turma_id
+        const schoolId = currentSchool?.id;
+
+        if (schoolId) {
+            this.schoolManagementService.getStudentsBySchool(schoolId, turma.id).subscribe({
+                next: (students) => {
+                    this.turmaStudents = students;
+                    this.isLoadingTurmaStudents = false;
+                },
+                error: (err) => {
+                    console.error('Error loading turma students:', err);
+                    this.isLoadingTurmaStudents = false;
+                }
+            });
+        } else {
+            // Busca direta por turma_id sem filtro de escola (admin sem escola selecionada)
+            import('../../../core/supabase').then(({ supabase }) => {
+                supabase
+                    .from('aluno')
+                    .select('*, saldo_carteira, turma:turma_id(nome, serie), user:usuario_id(id, email, saldo_carteira)')
+                    .eq('turma_id', turma.id)
+                    .order('nome', { ascending: true })
+                    .then(({ data, error }) => {
+                        if (error) {
+                            console.error('Error loading turma students:', error);
+                        } else {
+                            this.turmaStudents = (data || []).map((aluno: any) => ({
+                                ...aluno,
+                                saldo_carteira: Number(aluno.user?.saldo_carteira ?? aluno.saldo_carteira ?? 0)
+                            }));
+                        }
+                        this.isLoadingTurmaStudents = false;
+                    });
+            });
+        }
     }
+
 
     get filteredTurmaStudents() {
         if (!this.turmaSearchTerm) return this.turmaStudents;
