@@ -123,31 +123,42 @@ export class UsuarioService {
 
     async createUsuario(usuario: Partial<Usuario>): Promise<{ success: boolean; data?: Usuario; error?: any }> {
         try {
-            const accessPass = Math.random().toString(36).slice(-8);
-            const { data, error } = await supabase
+            const tempPass = Math.random().toString(36).slice(-10);
+            
+            // Chama Edge Function para Criar ou Recuperar Usuário (Upsert Inteligente)
+            const { data: resData, error: fnError } = await supabase.functions.invoke('send-access-email', {
+                body: { 
+                    email: usuario.email,
+                    nome: usuario.nome_completo || usuario.nome,
+                    temp_password: tempPass,
+                    tipo_acesso: usuario.tipo_acesso,
+                    escola_id: usuario.escola_id,
+                    cpf: usuario.cpf,
+                    telefone: usuario.telefone,
+                    turmaID: usuario.turmaID
+                }
+            });
+
+            if (fnError) throw fnError;
+            if (resData && !resData.success) throw new Error(resData.error || 'Erro ao processar usuário');
+
+            // 1. Buscar o registro atualizado na tabela usuarios para retorno
+            const { data: finalUser, error: fetchError } = await supabase
                 .from(this.TABLE)
-                .insert([{ ...usuario, temp_pass: accessPass, senha: accessPass, excluido: 'no' }])
-                .select()
+                .select('*')
+                .eq('email', usuario.email)
                 .single();
 
-            if (error) throw error;
-            
-            // Sincronizar com tabelas relacionadas se for Aluno
-            if (usuario.tipo_acesso === 'Aluno' && data) {
-                await this.syncWithAlunoTable(data.id, usuario);
+            if (fetchError) throw fetchError;
+
+            // 2. Sincronizar com tabelas relacionadas se for Aluno
+            if (usuario.tipo_acesso === 'Aluno' && finalUser) {
+                await this.syncWithAlunoTable(finalUser.id, usuario);
             }
 
-            // Trigger Access Email
-            if (data && data.email) {
-                this.emailService.sendAccessEmail(data.email, accessPass, data.nome_completo || data.nome || '').subscribe({
-                    next: (res) => console.log('Access email sent for user:', data.email),
-                    error: (err) => console.error('Error sending user email:', err)
-                });
-            }
-
-            return { success: true, data: data as Usuario };
+            return { success: true, data: finalUser as Usuario };
         } catch (error) {
-            console.error('Error creating user:', error);
+            console.error('Error creating/recovering user:', error);
             return { success: false, error };
         }
     }

@@ -26,9 +26,9 @@ Deno.serve(async (req) => {
             throw new Error("Informe 'user_ids' (UUIDs do Auth) ou 'db_ids' (IDs da tabela usuarios).")
         }
 
-        const results = [];
+        const results: any[] = [];
 
-        // Resolução: se db_ids fornecidos, busca os UserIDs correspondentes
+        // Resolucao: se db_ids fornecidos, busca os UserIDs correspondentes
         let authUuids: string[] = user_ids || [];
 
         if (db_ids && db_ids.length > 0) {
@@ -40,17 +40,35 @@ Deno.serve(async (req) => {
             if (fetchError) throw new Error(`Erro ao buscar usuarios: ${fetchError.message}`);
 
             for (const u of (usuarios || [])) {
-                // Soft delete na tabela usuarios
-                await supabaseAdmin
+                // HARD DELETE GLOBAL para o email do usuario
+                const userEmail = u.email;
+
+                // 1. Limpar por ID (FKs)
+                await Promise.all([
+                    supabaseAdmin.from('aluno').delete().eq('usuario_id', u.id),
+                    supabaseAdmin.from('carteira').delete().eq('Usuario', u.id),
+                    supabaseAdmin.from('turma').update({ professor_id: null }).eq('professor_id', u.id)
+                ]);
+
+                // 2. Limpar por Email em tabelas que possam ter vinculo isolado
+                if (userEmail) {
+                    await supabaseAdmin.from('aluno').delete().eq('email', userEmail);
+                }
+
+                // 3. Deletar da tabela usuarios
+                const { error: dbDelError } = await supabaseAdmin
                     .from('usuarios')
-                    .update({ excluido: 'sim', deleted: true, status: 'inactive' })
+                    .delete()
                     .eq('id', u.id);
 
-                // Delete real no Auth se tiver UserID
+                if (dbDelError) {
+                    console.warn(`Erro ao deletar ${u.id} da tabela usuarios: ${dbDelError.message}`);
+                }
+
+                // 4. Coletar UUID do Auth
                 if (u.UserID) {
                     authUuids.push(u.UserID);
                 } else if (u.email) {
-                    // Tenta encontrar pelo email no Auth
                     try {
                         const { data: listData } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
                         const authUser = listData?.users?.find((au: any) => au.email === u.email);
@@ -64,10 +82,22 @@ Deno.serve(async (req) => {
             }
         }
 
-        // Deletar do Auth todos os UUIDs coletados
+        // Deletar do Auth todos os UUIDs coletados e garantir limpeza por UUID na DB
         const uniqueAuthUuids = [...new Set(authUuids)];
         for (const authUuid of uniqueAuthUuids) {
             try {
+                // Limpeza final por UUID em todas as tabelas possiveis (aluno, usuarios, etc)
+                // Isso cobre casos onde o db_id nao foi passado mas o UUID do Auth foi
+                const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(authUuid);
+                const authEmail = authUser?.user?.email;
+
+                await Promise.all([
+                    supabaseAdmin.from('aluno').delete().eq('user_id', authUuid), 
+                    supabaseAdmin.from('aluno').delete().eq('email', authEmail),
+                    supabaseAdmin.from('usuarios').delete().eq('UserID', authUuid),
+                    supabaseAdmin.from('usuarios').delete().eq('email', authEmail)
+                ]);
+
                 const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(authUuid);
 
                 if (deleteAuthError) {
@@ -75,17 +105,10 @@ Deno.serve(async (req) => {
                     results.push({ auth_id: authUuid, status: 'AUTH_DELETE_FAILED', error: deleteAuthError.message });
                 } else {
                     console.log(`[AUTH] Usuario ${authUuid} deletado do Auth com sucesso.`);
-                    // Atualizar ou marcar registro existente por UserID
-                    const existing = results.find(r => r.auth_id === authUuid || r.db_id);
+                    const existing = results.find(r => (r as any).auth_id === authUuid || (r as any).db_id);
                     if (existing) {
-                        existing.status = 'DELETED_FULLY';
+                        (existing as any).status = 'DELETED_FULLY';
                     } else {
-                        // Se só veio user_ids (sem db_ids), atualizar a tabela usuarios também
-                        await supabaseAdmin
-                            .from('usuarios')
-                            .update({ excluido: 'sim', deleted: true, status: 'inactive' })
-                            .eq('UserID', authUuid);
-
                         results.push({ auth_id: authUuid, status: 'DELETED_FULLY' });
                     }
                 }

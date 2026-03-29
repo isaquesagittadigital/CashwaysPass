@@ -7,8 +7,10 @@ const corsHeaders = {
 
 // Configurações lendo de Environment Variables
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
-const SENDER_EMAIL = Deno.env.get('SENDER_EMAIL') || "no-reply@cashways.app"; 
+const SENDER_EMAIL = Deno.env.get('SENDER_EMAIL') || "cashways.br@outlook.com"; 
 const SENDER_NAME = Deno.env.get('SENDER_NAME') || "Cashways Pass";
+
+const VERCEL_URL = "https://cashways-pass-frontend.vercel.app";
 const BUBBLE_URL = "https://cashways-pass.bubbleapps.io";
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
@@ -21,18 +23,19 @@ Deno.serve(async (req) => {
 
     try {
         const body = await req.json()
-        const { email, temp_password: access_password, nome } = body;
+        const { email, temp_password, nome, tipo_acesso, escola_id } = body;
+        const access_password = temp_password || Math.random().toString(36).slice(-10);
 
-        if (!email || !access_password) {
-            throw new Error("Email e Senha de Acesso são obrigatórios.");
+        if (!email) {
+            throw new Error("Email é obrigatório.");
         }
 
         const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-        // 1. Garantir que o usuário exista no Supabase Auth
-        console.log(`[AUTH] Tentando criar ou atualizar usuário: ${email}`);
+        // 1. Identificar ou Criar Usuário no Supabase Auth
+        console.log(`[AUTH] Processando usuário: ${email}`);
         
-        let finalUserId: string;
+        let finalUserId: string | null = null;
 
         // Tenta criar primeiro
         const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -43,33 +46,26 @@ Deno.serve(async (req) => {
         });
 
         if (createError) {
-            // Se o erro for de usuário já existente, tentamos atualizar
+            // Se o usuário já existe no Auth
             if (createError.message.includes('already registered') || createError.status === 422) {
-                console.log(`[AUTH] Usuário já existe. Buscando ID por e-mail no DB para atualizar.`);
+                console.log(`[AUTH] Usuário ${email} já existe. Recuperando ID para reset de senha.`);
                 
-                // Buscamos o ID na nossa tabela pública pra garantir o vínculo ou tentamos buscar no auth se tivermos permissão de busca por e-mail
-                const { data: existingUser } = await supabaseAdmin
-                    .from('usuarios')
-                    .select('UserID')
-                    .eq('email', email)
-                    .single();
+                // Busca o usuário via listUsers (admin) para pegar o ID
+                const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+                if (listError) throw listError;
                 
-                if (existingUser?.UserID) {
-                    finalUserId = existingUser.UserID;
-                    console.log(`[AUTH] Atualizando senha do usuário: ${finalUserId}`);
+                const existingAuthUser = users.find(u => u.email === email);
+                
+                if (existingAuthUser) {
+                    finalUserId = existingAuthUser.id;
+                    console.log(`[AUTH] Resetando senha do usuário existente: ${finalUserId}`);
                     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
                         finalUserId,
                         { password: access_password }
                     );
-                    if (updateError) console.warn(`[AUTH_WARN] Falha ao atualizar senha: ${updateError.message}`);
+                    if (updateError) throw updateError;
                 } else {
-                    // Se não tivermos o ID no banco, e o createUser falhou, 
-                    // temos um impasse na listagem administrativa.
-                    // Vamos tentar buscar o usuário pelo email de forma administrativa.
-                    const { data: { user }, error: getError } = await supabaseAdmin.auth.admin.listUsers();
-                    // Como listUsers() está falhando com "Database error finding users", 
-                    // vamos tentar uma alternativa se disponível ou retornar erro amigável.
-                    throw new Error("Erro administrativo ao verificar existência do usuário. Verifique as configurações do Auth.");
+                    throw new Error("Usuário consta como registrado mas não foi encontrado na listagem administrativa.");
                 }
             } else {
                 throw createError;
@@ -78,92 +74,94 @@ Deno.serve(async (req) => {
             finalUserId = newUser.user.id;
         }
 
-        // 2. Vincular o UserID na tabela public.usuarios
-        console.log(`[DB] Vinculando UserID ${finalUserId} ao email ${email}`);
+        if (!finalUserId) throw new Error("Falha ao resolver ID do usuário.");
+
+        // 2. Upsert na tabela public.usuarios
+        console.log(`[DB] Sincronizando tabela usuarios para ${email}`);
         
-        const { data: existingUserCheck } = await supabaseAdmin
-            .from('usuarios')
-            .select('id')
-            .eq('email', email)
-            .maybeSingle();
+        const insertPayload: any = {
+            email: email,
+            nome_completo: nome || 'Usuário',
+            nome: nome || 'Usuário',
+            UserID: finalUserId,
+            senha: access_password,
+            temp_pass: access_password,
+            primeiro_acesso: false,
+            tipo_acesso: tipo_acesso || 'Lojista',
+            status: 'active',
+            excluido: 'no'
+        };
 
-        let dbError = null;
+        if (escola_id) insertPayload.escola_id = escola_id;
+        if (body.cpf) insertPayload.cpf = body.cpf;
+        if (body.telefone) insertPayload.telefone = body.telefone;
+        if (body.turmaID) insertPayload.turmaID = body.turmaID;
 
-        if (existingUserCheck && existingUserCheck.id) {
-            const { error: updateError } = await supabaseAdmin
-                .from('usuarios')
-                .update({ 
-                    UserID: finalUserId,
-                    senha: access_password,
-                    primeiro_acesso: false 
-                })
-                .eq('email', email);
+        // Tenta encontrar por email primeiro para evitar erro de vinculo multiple
+        const { data: existingDbUser } = await supabaseAdmin.from('usuarios').select('id').eq('email', email).maybeSingle();
+
+        let dbError;
+        if (existingDbUser) {
+            const { error: updateError } = await supabaseAdmin.from('usuarios').update(insertPayload).eq('id', existingDbUser.id);
             dbError = updateError;
         } else {
-            console.log(`[DB] Usuário NÃO encontrado na tabela public.usuarios. Criando registro (fallback)...`);
-            const tipoAcesso = body.tipo_acesso || body.tipo_user || 'Lojista'; // Default to Lojista if not informed
-            
-            const insertPayload: any = {
-                email: email,
-                nome_completo: nome || 'Usuário',
-                nome: nome || 'Usuário',
-                UserID: finalUserId,
-                senha: access_password,
-                primeiro_acesso: false,
-                tipo_acesso: tipoAcesso
-            };
-            
-            // Repassando campos adicionais que possam ter vindo do frontend
-            if (body.escola_id) insertPayload.escola_id = body.escola_id;
-            if (body.telefone) insertPayload.telefone = body.telefone;
-            if (body.cpf) insertPayload.cpf = body.cpf;
-
-            const { error: insertError } = await supabaseAdmin
-                .from('usuarios')
-                .insert(insertPayload);
-                
+            const { error: insertError } = await supabaseAdmin.from('usuarios').insert(insertPayload);
             dbError = insertError;
         }
 
         if (dbError) {
-            console.warn(`[DB_WARNING] Falha ao atualizar/inserir tabela Usuarios: ${dbError.message}`);
+            console.error(`[DB_ERROR] Falha no upsert: ${dbError.message}`);
+            // Nao retornamos erro fatal aqui se o Auth ja funcionou, mas registramos
         }
 
-        // 3. Enviar E-mail via Brevo
-        console.log(`[ACCESS_EMAIL] Enviando para: ${email}. Destino: ${BUBBLE_URL}`);
+        // 3. Determinar Link de Redirecionamento Correto
+        const isInternalType = tipo_acesso === 'Administrador' || tipo_acesso === 'Escola' || tipo_acesso === 'Admin';
+        const redirect_url = isInternalType ? VERCEL_URL : BUBBLE_URL;
+
+        // 4. Enviar E-mail via Brevo
+        console.log(`[ACCESS_EMAIL] Enviando para: ${email}. Redirect: ${redirect_url}`);
         
         const brevoPayload = {
             sender: { name: SENDER_NAME, email: SENDER_EMAIL },
-            to: [{ email: email, name: nome || "Novo Usuário" }],
-            subject: "🔐 Seu Acesso - Cashways Pass",
+            to: [{ email: email, name: nome || "Usuário" }],
+            subject: "🔐 Seus Dados de Acesso - Cashways Pass",
             htmlContent: `
-                <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
-                    <div style="background: linear-gradient(135deg, #003d7a 0%, #1a73e8 100%); padding: 30px; text-align: center;">
-                        <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Bem-vindo ao Cashways Pass!</h1>
+                <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                    <div style="background: linear-gradient(135deg, #001f3f 0%, #0044cc 100%); padding: 40px 20px; text-align: center;">
+                        <h1 style="color: #ffffff; margin: 0; font-size: 26px; letter-spacing: 0.5px;">Cashways Pass</h1>
+                        <p style="color: #e0e0e0; margin-top: 10px; font-size: 16px;">Sua plataforma de gestão escolar e pagamentos</p>
                     </div>
-                    <div style="padding: 30px; background-color: #ffffff;">
-                        <p style="font-size: 16px; line-height: 1.6;">Olá, <strong>${nome || 'Usuário'}</strong>!</p>
-                        <p style="font-size: 16px; line-height: 1.6;">Sua conta foi criada com sucesso. Utilize os dados abaixo para acessar a plataforma:</p>
+                    <div style="padding: 40px 30px; background-color: #ffffff;">
+                        <p style="font-size: 18px; color: #1a202c;">Olá, <strong>${nome || 'Usuário'}</strong>!</p>
+                        <p style="font-size: 16px; line-height: 1.6; color: #4a5568;">
+                            ${existingDbUser ? 'Sua conta foi atualizada com novos dados de acesso.' : 'Sua conta foi criada com sucesso!'} 
+                            Abaixo estão suas credenciais exclusivas para acessar o sistema:
+                        </p>
                         
-                        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #1a73e8; margin: 25px 0;">
-                            <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">Link de acesso:</p>
-                            <p style="margin: 0 0 20px 0; font-size: 16px; font-weight: bold; color: #1a73e8;">${BUBBLE_URL}</p>
-                            <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">E-mail:</p>
-                            <p style="margin: 0 0 20px 0; font-size: 18px; font-weight: bold; color: #333;">${email}</p>
-                            <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">Senha de acesso:</p>
-                            <p style="margin: 0; font-size: 20px; font-weight: bold; color: #1a73e8; letter-spacing: 1px;">${access_password}</p>
+                        <div style="background-color: #f7fafc; padding: 25px; border-radius: 12px; border: 1px solid #edf2f7; margin: 30px 0;">
+                            <div style="margin-bottom: 20px;">
+                                <p style="margin: 0; font-size: 13px; color: #718096; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">E-mail</p>
+                                <p style="margin: 5px 0 0 0; font-size: 18px; font-weight: 601; color: #2d3748;">${email}</p>
+                            </div>
+                            <div>
+                                <p style="margin: 0; font-size: 13px; color: #718096; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">Senha Temporária</p>
+                                <p style="margin: 5px 0 0 0; font-size: 22px; font-weight: bold; color: #1a73e8; letter-spacing: 2px;">${access_password}</p>
+                            </div>
                         </div>
                         
-                        <div style="text-align: center; margin: 35px 0; text-decoration: none;">
-                            <a href="${BUBBLE_URL}" style="background-color: #1a73e8; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">Ir para o Sistema</a>
+                        <div style="text-align: center; margin: 40px 0;">
+                            <a href="${redirect_url}" style="background-color: #1a73e8; color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 16px; display: inline-block; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(26, 115, 232, 0.2);">Acessar Plataforma</a>
                         </div>
                         
-                        <p style="color: #1a73e8; font-size: 14px; background-color: #e8f0fe; padding: 12px; border-radius: 6px; text-align: center;">
-                            Guarde sua senha em um local seguro. Você pode alterá-la no painel de perfil a qualquer momento.
+                        <p style="margin: 0; font-size: 14px; color: #718096; line-height: 1.5; background-color: #fff9f0; padding: 15px; border-radius: 8px; border-left: 4px solid #ffb020;">
+                            <strong>Atenção:</strong> Por segurança, recomendamos que você altere sua senha no primeiro acesso através do painel de configurações da sua conta.
                         </p>
                     </div>
-                    <div style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                        <p style="margin: 0; font-size: 12px; color: #999;">© 2024 Cashways Pass. Todos os direitos reservados.</p>
+                    <div style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #edf2f7;">
+                        <p style="margin: 0; font-size: 13px; color: #a0aec0;">
+                            Dúvidas? Entre em contato com o suporte da sua escola ou responda a este e-mail.<br>
+                            © 2024 Cashways Pass. Todos os direitos reservados.
+                        </p>
                     </div>
                 </div>
             `
@@ -179,11 +177,12 @@ Deno.serve(async (req) => {
             body: JSON.stringify(brevoPayload)
         });
 
-        const data = await response.json();
+        const resData = await response.json();
 
         return new Response(JSON.stringify({ 
             success: true, 
-            message_id: data.messageId,
+            message_id: resData.messageId,
+            action: existingDbUser ? 'updated' : 'created',
             auth_user_id: finalUserId
         }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -198,4 +197,3 @@ Deno.serve(async (req) => {
         })
     }
 })
-
