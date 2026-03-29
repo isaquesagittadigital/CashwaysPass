@@ -1,4 +1,4 @@
-﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -6,65 +6,98 @@ const corsHeaders = {
 }
 
 Deno.serve(async (req) => {
-    // 1. CORS Preflight
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
 
     try {
-        const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-
-        // Cria Cliente com Service Role (Admin)
-        const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-            auth: {
-                autoRefreshToken: false,
-                persistSession: false
-            }
-        })
+        const supabaseAdmin = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+            { auth: { autoRefreshToken: false, persistSession: false } }
+        )
 
         const body = await req.json()
-        const { user_ids } = body; // Espera array de UUIDs: ["uuid1", "uuid2"]
 
-        if (!user_ids || !Array.isArray(user_ids) || user_ids.length === 0) {
-            throw new Error("O campo 'user_ids' deve ser um array de UUIDs nÃ£o vazio.")
+        // Aceita: user_ids (array de auth UUIDs) OU db_ids (array de IDs da tabela usuarios)
+        const { user_ids, db_ids } = body;
+
+        if ((!user_ids || user_ids.length === 0) && (!db_ids || db_ids.length === 0)) {
+            throw new Error("Informe 'user_ids' (UUIDs do Auth) ou 'db_ids' (IDs da tabela usuarios).")
         }
-
-        console.log(`[ADMIN SOFT-DELETE] Iniciando inativaÃ§Ã£o de ${user_ids.length} usuÃ¡rios...`);
 
         const results = [];
 
-        for (const userId of user_ids) {
-            try {
-                // ESTÃGIO 1: Marcar como deletado na tabela pÃºblica (Soft Delete)
-                const { error: dbError } = await supabaseAdmin
+        // Resolução: se db_ids fornecidos, busca os UserIDs correspondentes
+        let authUuids: string[] = user_ids || [];
+
+        if (db_ids && db_ids.length > 0) {
+            const { data: usuarios, error: fetchError } = await supabaseAdmin
+                .from('usuarios')
+                .select('id, UserID, email')
+                .in('id', db_ids);
+
+            if (fetchError) throw new Error(`Erro ao buscar usuarios: ${fetchError.message}`);
+
+            for (const u of (usuarios || [])) {
+                // Soft delete na tabela usuarios
+                await supabaseAdmin
                     .from('usuarios')
-                    .update({ deleted: true })
-                    .eq('UserID', userId)
+                    .update({ excluido: 'sim', deleted: true, status: 'inactive' })
+                    .eq('id', u.id);
 
-                if (dbError) throw new Error(`Erro ao atualizar tabela usuarios: ${dbError.message}`)
-
-                // ESTÃGIO 2: Banir o usuÃ¡rio no Auth (Impede login)
-                const { error: banError } = await supabaseAdmin.auth.admin.updateUserById(
-                    userId,
-                    { ban_duration: '876000h' } // ~100 anos de banimento
-                )
-
-                if (banError) {
-                    console.warn(`Aviso: Falha ao banir usuÃ¡rio ${userId} no Auth (mas foi marcado como deleted no DB):`, banError);
+                // Delete real no Auth se tiver UserID
+                if (u.UserID) {
+                    authUuids.push(u.UserID);
+                } else if (u.email) {
+                    // Tenta encontrar pelo email no Auth
+                    try {
+                        const { data: listData } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+                        const authUser = listData?.users?.find((au: any) => au.email === u.email);
+                        if (authUser) authUuids.push(authUser.id);
+                    } catch (e) {
+                        console.warn(`Nao foi possivel buscar auth user por email ${u.email}:`, e);
+                    }
                 }
 
-                results.push({ id: userId, status: 'SOFT_DELETED', message: 'UsuÃ¡rio marcado como deletado e banido.' });
+                results.push({ db_id: u.id, email: u.email, status: 'DELETED_FROM_DB' });
+            }
+        }
 
-            } catch (err: any) {
-                console.error(`Falha ao processar ${userId}:`, err);
-                results.push({ id: userId, status: 'ERROR', message: err.message });
+        // Deletar do Auth todos os UUIDs coletados
+        const uniqueAuthUuids = [...new Set(authUuids)];
+        for (const authUuid of uniqueAuthUuids) {
+            try {
+                const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(authUuid);
+
+                if (deleteAuthError) {
+                    console.warn(`Aviso: Falha ao deletar ${authUuid} do Auth:`, deleteAuthError.message);
+                    results.push({ auth_id: authUuid, status: 'AUTH_DELETE_FAILED', error: deleteAuthError.message });
+                } else {
+                    console.log(`[AUTH] Usuario ${authUuid} deletado do Auth com sucesso.`);
+                    // Atualizar ou marcar registro existente por UserID
+                    const existing = results.find(r => r.auth_id === authUuid || r.db_id);
+                    if (existing) {
+                        existing.status = 'DELETED_FULLY';
+                    } else {
+                        // Se só veio user_ids (sem db_ids), atualizar a tabela usuarios também
+                        await supabaseAdmin
+                            .from('usuarios')
+                            .update({ excluido: 'sim', deleted: true, status: 'inactive' })
+                            .eq('UserID', authUuid);
+
+                        results.push({ auth_id: authUuid, status: 'DELETED_FULLY' });
+                    }
+                }
+            } catch (e: any) {
+                console.error(`Erro ao deletar ${authUuid} do Auth:`, e);
+                results.push({ auth_id: authUuid, status: 'ERROR', error: e.message });
             }
         }
 
         return new Response(JSON.stringify({
             success: true,
-            total_requested: user_ids.length,
+            total_requested: (db_ids?.length || 0) + (user_ids?.length || 0),
             results
         }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -82,4 +115,3 @@ Deno.serve(async (req) => {
         })
     }
 })
-

@@ -89,12 +89,14 @@ export class UsuarioService {
 
     async deleteUsuario(id: number): Promise<{ success: boolean; error?: any }> {
         try {
-            const { error } = await supabase
-                .from(this.TABLE)
-                .update({ excluido: 'yes' })
-                .eq('id', id);
+            // Chama Edge Function que deleta da tabela usuarios + Supabase Auth
+            const { data, error } = await supabase.functions.invoke('admin-delete-users', {
+                body: { db_ids: [id] }
+            });
 
             if (error) throw error;
+            if (data && !data.success) throw new Error(data.error || 'Erro ao excluir usuário');
+
             return { success: true };
         } catch (error) {
             console.error('Error deleting user:', error);
@@ -104,12 +106,14 @@ export class UsuarioService {
 
     async deleteBulkUsuarios(ids: number[]): Promise<{ success: boolean; error?: any }> {
         try {
-            const { error } = await supabase
-                .from(this.TABLE)
-                .update({ excluido: 'yes' })
-                .in('id', ids);
+            // Chama Edge Function que deleta da tabela usuarios + Supabase Auth em lote
+            const { data, error } = await supabase.functions.invoke('admin-delete-users', {
+                body: { db_ids: ids }
+            });
 
             if (error) throw error;
+            if (data && !data.success) throw new Error(data.error || 'Erro ao excluir usuários');
+
             return { success: true };
         } catch (error) {
             console.error('Error deleting multiple users:', error);
