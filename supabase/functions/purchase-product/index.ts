@@ -5,7 +5,6 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Helper funcs
 function normalizeString(str: string) {
     if (!str) return "";
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
@@ -16,7 +15,6 @@ function isUUID(str: string) {
 }
 
 Deno.serve(async (req) => {
-    // 1. CORS Preflight
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
@@ -29,19 +27,16 @@ Deno.serve(async (req) => {
 
         const rawBody = await req.text();
         let body;
-
         try {
             body = JSON.parse(rawBody);
         } catch (e: any) {
-            throw new Error(`O JSON enviado estÃ¡ invÃ¡lido. Erro: ${e.message}`);
+            throw new Error(`JSON invalido. Erro: ${e.message}`);
         }
 
-        // lojista_id agora Ã© opcional
         const { aluno_id, lojista_id, produto_id, quantidade } = body;
 
-        // ValidaÃ§Ãµes bÃ¡sicas
         if (!aluno_id || !produto_id) {
-            throw new Error("ParÃ¢metros invÃ¡lidos. NecessÃ¡rio: aluno_id e produto_id.")
+            throw new Error("Parametros invalidos. Necessario: aluno_id e produto_id.")
         }
 
         const qtd = Number(quantidade || 1);
@@ -49,123 +44,157 @@ Deno.serve(async (req) => {
             throw new Error("A quantidade de produtos deve ser maior que zero.");
         }
 
-        console.log(`[DEBUG] Iniciando Compra Individual. Aluno: ${aluno_id}, Lojista: ${lojista_id || 'N/A'}, Produto: ${produto_id}, Qtd: ${qtd}`);
+        console.log(`[DEBUG] Compra Individual. Aluno: ${aluno_id}, Lojista: ${lojista_id || 'N/A'}, Produto: ${produto_id}, Qtd: ${qtd}`);
 
         // --- PASSO 1: Obter Dados do Lojista (se fornecido) ---
         let lojistaNome = "Sistema";
         let totalVendasAtual = 0;
 
         if (lojista_id) {
-            const { data: lojista, error: lojistaError } = await supabaseClient
+            const { data: lojista } = await supabaseClient
                 .from('usuarios')
                 .select('nome, total_vendas')
                 .eq('UserID', lojista_id)
                 .single()
-
-            if (!lojistaError && lojista) {
+            if (lojista) {
                 lojistaNome = lojista.nome || "Lojista Desconhecido";
                 totalVendasAtual = Number(lojista.total_vendas || 0);
             }
         }
 
-        // --- PASSO 2: Validar Produto e Calcular Valor Total ---
+        // --- PASSO 2: Validar Produto e buscar seu PROPOSITO ---
         const { data: dbProd, error: prodError } = await supabaseClient
             .from('produto')
-            .select('id, nome, preco, url_imagem, descricao, limete_por_aluno, quantidade')
+            .select('id, nome, preco, url_imagem, descricao, limete_por_aluno, quantidade, proposito')
             .eq('id', produto_id)
             .single();
 
         if (prodError || !dbProd) {
-            throw new Error(`Produto nÃ£o encontrado (ID: ${produto_id}).`);
+            throw new Error(`Produto nao encontrado (ID: ${produto_id}).`);
         }
 
-        // --- PASSO 2.1: Validar Quantidade em Estoque ---
+        // Proposito do produto — define qual saldo sera debitado
+        const propositoProduto = (dbProd.proposito || 'Mercado').trim();
+        console.log(`[DEBUG] Proposito do produto: "${propositoProduto}"`);
+
+        // --- PASSO 2.1: Validar Estoque ---
         const estoqueAtual = dbProd.quantidade;
         if (estoqueAtual !== null && estoqueAtual !== undefined) {
-             if (qtd > estoqueAtual) {
-                 throw new Error(`Estoque insuficiente. Este produto possui apenas ${estoqueAtual} unidades disponíveis.`);
-             }
+            if (qtd > estoqueAtual) {
+                throw new Error(`Estoque insuficiente. Este produto possui apenas ${estoqueAtual} unidades disponiveis.`);
+            }
         }
 
         const precoUnitario = Number(dbProd.preco || 0);
         const valorTotalNum = precoUnitario * qtd;
 
-        console.log(`[DEBUG] Valor total calculado: ${valorTotalNum} (${qtd}x ${precoUnitario})`);
+        console.log(`[DEBUG] Valor total: ${valorTotalNum} (${qtd}x R$${precoUnitario})`);
 
         if (valorTotalNum <= 0) {
             throw new Error("O valor da compra deve ser maior que zero.");
         }
 
-        // --- PASSO 2.5: Identificar Aluno e Validar Limite de Compras ---
-        let queryAluno = supabaseClient.from('aluno').select('id, nome, turma_id, user_id, usuario_id');
-        if (isUUID(aluno_id)) {
-            queryAluno = queryAluno.or(`id.eq.${aluno_id},user_id.eq.${aluno_id}`);
+        // --- PASSO 2.5: Identificar Aluno ---
+        // Busca por: id direto, user_id (auth UUID na tabela aluno), ou usuario_id (numérico)
+        // Também tenta pelo UserID da tabela usuarios (que o Bubble pode enviar)
+        let alunoData: any = null;
+
+        if (isUUID(String(aluno_id))) {
+            // Tenta id ou user_id na tabela aluno
+            const { data: alunoByUUID } = await supabaseClient
+                .from('aluno')
+                .select('id, nome, turma_id, user_id, usuario_id')
+                .or(`id.eq.${aluno_id},user_id.eq.${aluno_id}`)
+                .maybeSingle();
+
+            if (alunoByUUID) {
+                alunoData = alunoByUUID;
+            } else {
+                // Fallback: busca na tabela usuarios pelo UserID e então acha o aluno pelo email/usuario_id
+                const { data: usuarioRef } = await supabaseClient
+                    .from('usuarios')
+                    .select('id, email, UserID')
+                    .eq('UserID', aluno_id)
+                    .maybeSingle();
+
+                if (usuarioRef) {
+                    // Tenta achar o aluno por usuario_id usando o id da tabela usuarios
+                    const { data: alunoByUsuario } = await supabaseClient
+                        .from('aluno')
+                        .select('id, nome, turma_id, user_id, usuario_id')
+                        .or(`user_id.eq.${aluno_id},usuario_id.eq.${usuarioRef.id}`)
+                        .maybeSingle();
+                    if (alunoByUsuario) alunoData = alunoByUsuario;
+                }
+            }
         } else {
-            queryAluno = queryAluno.eq('usuario_id', aluno_id);
+            // ID numérico: busca por usuario_id
+            const { data: alunoByNumId } = await supabaseClient
+                .from('aluno')
+                .select('id, nome, turma_id, user_id, usuario_id')
+                .eq('usuario_id', aluno_id)
+                .maybeSingle();
+            if (alunoByNumId) alunoData = alunoByNumId;
         }
 
-        const { data: alunoData, error: alunoError } = await queryAluno.maybeSingle();
-
-        if (alunoError || !alunoData) {
-            throw new Error(`Aluno nÃ£o encontrado no sistema (buscado por ID ou User_ID).`);
+        if (!alunoData) {
+            throw new Error(`Aluno nao encontrado no sistema (buscado por ID: ${aluno_id}).`);
         }
 
         const realAlunoId = alunoData.id;
-        const authUserId = alunoData.user_id; // Este é o Auth UUID (usuario_id na tabela propositos)
+        const authUserId = alunoData.user_id;
 
-        // Sempre busca a quantidade que o aluno já comprou deste produto
-        const { data: pastPurchases, error: pastError } = await supabaseClient
+        console.log(`[DEBUG] Aluno encontrado: ${alunoData.nome} (id: ${realAlunoId}, user_id: ${authUserId})`);
+
+        // --- Validar Limite de Compras ---
+        const { data: pastPurchases } = await supabaseClient
             .from('produtos_aluno')
             .select('id, quantidade')
             .eq('aluno_id', realAlunoId)
             .eq('produto_id', produto_id);
 
         let qtdJaComprada = 0;
-        let existingRecordId = null;
-
-        if (!pastError && pastPurchases && pastPurchases.length > 0) {
+        if (pastPurchases && pastPurchases.length > 0) {
             qtdJaComprada = pastPurchases.reduce((acc, curr) => acc + (curr.quantidade || 1), 0);
-            existingRecordId = pastPurchases[0].id;
         }
 
         const maxLimit = dbProd.limete_por_aluno;
         if (maxLimit !== null && maxLimit !== undefined && typeof maxLimit === 'number') {
             if ((qtdJaComprada + qtd) > maxLimit) {
-                throw new Error(`Limite de compra excedido. O limite para este produto é de ${maxLimit} itens. Você já garantiu ${qtdJaComprada} e tentou comprar mais ${qtd}.`);
+                throw new Error(`Limite de compra excedido. O limite e de ${maxLimit} itens. Voce ja comprou ${qtdJaComprada}.`);
             }
         }
 
-        // --- PASSO 3: Validar Saldo "Mercado" ---
+        // --- PASSO 3: Validar Saldo do PROPOSITO do produto ---
         const { data: todosPropositos, error: propError } = await supabaseClient
             .from('propositos')
             .select('id, saldo, nome')
-            .eq('usuario_id', authUserId) 
+            .eq('usuario_id', authUserId)
 
         if (propError || !todosPropositos || todosPropositos.length === 0) {
-            throw new Error(`Você não possui o propósito 'Mercado' ou ele não foi encontrado na sua conta. (User: ${authUserId})`);
+            throw new Error(`Nenhum proposito encontrado para este aluno. (User: ${authUserId})`);
         }
 
-        const targetNameNormalized = normalizeString('Mercado');
+        const targetNameNormalized = normalizeString(propositoProduto);
         const propositoAluno = todosPropositos?.find(p => {
             const dbNameNormalized = normalizeString(p.nome || '');
             return dbNameNormalized === targetNameNormalized;
         });
 
         if (!propositoAluno) {
-            throw new Error(`Você não possui o propósito 'Mercado' ou ele não foi encontrado na sua conta.`);
+            throw new Error(`Voce nao possui o proposito '${propositoProduto}' ou ele nao foi encontrado na sua conta.`);
         }
 
         const saldoRaw = String(propositoAluno.saldo || '0').trim();
-        const saldoNormalizado = saldoRaw.replace(',', '.');
-        const saldoAtual = parseFloat(saldoNormalizado);
+        const saldoAtual = parseFloat(saldoRaw.replace(',', '.'));
 
-        console.log(`[DEBUG] Saldo do propósito "Mercado": R$ ${saldoAtual}`);
+        console.log(`[DEBUG] Saldo do proposito "${propositoProduto}": R$ ${saldoAtual}`);
 
         if (saldoAtual < valorTotalNum) {
-            throw new Error(`Saldo insuficiente no Mercado. Você tem R$ ${saldoAtual.toFixed(2)} e tentou gastar R$ ${valorTotalNum.toFixed(2)}.`);
+            throw new Error(`Saldo insuficiente em ${propositoProduto}. Voce tem R$ ${saldoAtual.toFixed(2)} e tentou gastar R$ ${valorTotalNum.toFixed(2)}.`);
         }
 
-        // --- PASSO 4: Criar Registro individual na tabela "produtos_aluno" ---
+        // --- PASSO 4: Registrar compra em produtos_aluno ---
         const { error: insertError } = await supabaseClient
             .from('produtos_aluno')
             .insert({
@@ -175,7 +204,7 @@ Deno.serve(async (req) => {
                 descricao: dbProd.descricao,
                 imagem_url: dbProd.url_imagem,
                 valor_compra: precoUnitario,
-                quantidade: qtd, // Mantém a quantidade enviada na compra individual
+                quantidade: qtd,
                 lojista_id: lojista_id || null,
                 status_item: 'Comprado',
                 data_acao: new Date().toISOString(),
@@ -184,23 +213,18 @@ Deno.serve(async (req) => {
 
         if (insertError) {
             console.error("Erro ao salvar em produtos_aluno:", insertError);
-            throw new Error(`Falha ao registrar o produto no histórico do aluno. A compra não pôde ser completada.`);
+            throw new Error(`Falha ao registrar o produto no historico do aluno.`);
         }
 
-        // --- PASSO 4.1: Atualizar Estoque do Produto ---
+        // --- PASSO 4.1: Atualizar Estoque ---
         if (dbProd.quantidade !== null && dbProd.quantidade !== undefined) {
-            const { error: stockUpdateError } = await supabaseClient
+            await supabaseClient
                 .from('produto')
                 .update({ quantidade: dbProd.quantidade - qtd })
                 .eq('id', produto_id);
-            
-            if (stockUpdateError) {
-                console.error("Erro ao atualizar estoque:", stockUpdateError);
-                // Não bloqueamos a compra se o estoque falhar ao atualizar, mas logamos
-            }
         }
 
-        // --- PASSO 5: Executar DeduÃ§Ã£o do Saldo ---
+        // --- PASSO 5: Debitar Saldo do Proposito correto ---
         const novoSaldoAluno = saldoAtual - valorTotalNum;
 
         const { error: updateAlunoError } = await supabaseClient
@@ -209,10 +233,10 @@ Deno.serve(async (req) => {
             .eq('id', propositoAluno.id)
 
         if (updateAlunoError) {
-            throw new Error("Erro ao atualizar saldo de Mercado: " + updateAlunoError.message);
+            throw new Error("Erro ao atualizar saldo de " + propositoProduto + ": " + updateAlunoError.message);
         }
 
-        // --- PASSO 6: Atualizar Lojista (se fornecido) ---
+        // --- PASSO 6: Atualizar Lojista ---
         let novoTotalVendas = totalVendasAtual;
         if (lojista_id) {
             novoTotalVendas = totalVendasAtual + valorTotalNum;
@@ -222,30 +246,28 @@ Deno.serve(async (req) => {
                 .eq('UserID', lojista_id)
         }
 
-        // --- PASSO 7: Historico e Log ---
-        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+        // --- PASSO 7: Logs ---
+        const monthNames = ["Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho",
             "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         const currentMonth = monthNames[new Date().getMonth()];
 
-        // 7a. Log in 'movimentacao_financeira'
         await supabaseClient.from('movimentacao_financeira').insert({
-            aluno_id: realAlunoId, 
-            tipo_operacao: 'COMPRA_PRODUTO_INDIVIDUAL',
-            categoria: 'Mercado',
-            nome_operacao: `Compra Mercado: ${dbProd.nome}`,
+            aluno_id: realAlunoId,
+            tipo_operacao: `COMPRA_PRODUTO_${normalizeString(propositoProduto).toUpperCase()}`,
+            categoria: propositoProduto,
+            nome_operacao: `Compra ${propositoProduto}: ${dbProd.nome}`,
             valor: valorTotalNum,
             mes_operacao: currentMonth,
             status: 'SUCESSO',
-            request_payload: { aluno_id, lojista_id, produto_id, quantidade: qtd, valor: valorTotalNum, proposito: 'Mercado' },
+            request_payload: { aluno_id, lojista_id, produto_id, quantidade: qtd, valor: valorTotalNum, proposito: propositoProduto },
             response_payload: {
-                mensagem: `Compra Mercado: ${dbProd.nome} realizada em ${lojistaNome}`,
+                mensagem: `Compra ${propositoProduto}: ${dbProd.nome} em ${lojistaNome}`,
                 novo_saldo_aluno: novoSaldoAluno,
                 novo_total_vendas_lojista: novoTotalVendas
             },
             http_status: 200
         });
 
-        // 7b. Log in 'investimento_aluno' (Visual Extrato do Aluno)
         await supabaseClient.from('investimento_aluno').insert({
             aluno_id: realAlunoId,
             titulo: 'COMPRA_PRODUTO',
@@ -257,7 +279,6 @@ Deno.serve(async (req) => {
             data_inicio: new Date().toISOString().split('T')[0]
         });
 
-        // HistÃ³rico Lojista (apenas se lojista_id existir)
         if (lojista_id) {
             try {
                 let nomeTurma = "Sem Turma";
@@ -271,22 +292,18 @@ Deno.serve(async (req) => {
                 }
 
                 const nomeAluno = alunoData?.nome || "Aluno Desconhecido";
-                const descricaoHistorico = `Venda: ${qtd}x ${dbProd.nome} - Aluno: ${nomeAluno} - ${nomeTurma}`;
-
-                await supabaseClient
-                    .from('lojista_historico')
-                    .insert({
-                        lojista_id: lojista_id,
-                        aluno_id: realAlunoId,
-                        aluno_nome: nomeAluno,
-                        aluno_turma: nomeTurma,
-                        valor: valorTotalNum,
-                        tipo_operacao: 'VENDA',
-                        saldo_vendas_pos: novoTotalVendas,
-                        descricao: descricaoHistorico
-                    });
+                await supabaseClient.from('lojista_historico').insert({
+                    lojista_id: lojista_id,
+                    aluno_id: realAlunoId,
+                    aluno_nome: nomeAluno,
+                    aluno_turma: nomeTurma,
+                    valor: valorTotalNum,
+                    tipo_operacao: 'VENDA',
+                    saldo_vendas_pos: novoTotalVendas,
+                    descricao: `Venda: ${qtd}x ${dbProd.nome} - Aluno: ${nomeAluno} - ${nomeTurma}`
+                });
             } catch (e) {
-                console.error("Erro nÃ£o-bloqueante ao gerar histÃ³rico:", e);
+                console.error("Erro nao-bloqueante ao gerar historico lojista:", e);
             }
         }
 
@@ -294,7 +311,7 @@ Deno.serve(async (req) => {
             success: true,
             message: "Compra adquirida com sucesso!",
             data: {
-                proposito_nome: "Mercado",
+                proposito_nome: propositoProduto,
                 lojista_nome: lojistaNome,
                 valor_total: valorTotalNum,
                 novo_saldo_aluno: novoSaldoAluno,
@@ -319,4 +336,3 @@ Deno.serve(async (req) => {
         })
     }
 })
-

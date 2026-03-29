@@ -1,0 +1,19 @@
+RELATÓRIO DE TAREFAS REALIZADAS - 28/03/2026
+
+1. Envio de e-mail para convidado - FEITO
+2. Alteração do cadastro de usuário (Lojista):
+   - Campo CPF alterado para CNPJ com máscara de entrada.
+3. Inserção do campo 'Propósito' no cadastro de usuários (Lojistas).
+4. Inserção do dropdown de 'Propósito' no cadastro de Produtos:
+   - Implementado para módulos Admin e Escola.
+   - Opções: Alimentação, Entretenimento e Mercado.
+5. Cadastro de lojista em Eventos:
+   - Adicionado dropdown para selecionar o propósito ao convidar lojista.
+   - Implementada funcionalidade de edição do propósito diretamente no card/badge do lojista (edição em tempo real sem precisar remover).
+   - Ajuste de layout vertical para evitar quebra do modal/drawer.
+6. Alterações no Banco de Dados:
+   - Adicionada coluna 'lojistas_data' (jsonb) na tabela 'eventos' para armazenar [{email, proposito}].
+   - Garantida a compatibilidade com o campo legado 'lojistas_convidados'.
+   - Verificação de esquemas e tipos (Propositos).
+
+Status: PUSH REALIZADO - git@github.com:isaquesagittadigital/CashwaysPass.git

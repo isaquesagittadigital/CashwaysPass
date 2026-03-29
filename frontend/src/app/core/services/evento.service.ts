@@ -119,7 +119,8 @@ export class EventoService {
                         body: {
                             eventId: data.id,
                             escolaId: evento.escola_id,
-                            lojistasEmails: evento.lojistas_convidados
+                            lojistasEmails: evento.lojistas_convidados,
+                            lojistasData: evento.lojistas_data || []
                         }
                     });
                 } catch (fnError) {
@@ -151,7 +152,8 @@ export class EventoService {
                         body: {
                             eventId: id,
                             escolaId: updates.escola_id || data?.escola_id,
-                            lojistasEmails: updates.lojistas_convidados
+                            lojistasEmails: updates.lojistas_convidados,
+                            lojistasData: updates.lojistas_data || []
                         }
                     });
                 } catch (fnErr) {

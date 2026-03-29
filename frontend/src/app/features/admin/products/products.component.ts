@@ -141,7 +141,10 @@ export class ProductsComponent implements OnInit, OnDestroy {
     }
 
     addTurma() {
-        if (this.selectedTurmaId && !this.form.turma_ids.includes(this.selectedTurmaId)) {
+        if (this.selectedTurmaId === 'all') {
+            // "Todas as turmas" — limpa a lista (turma_ids vazio = disponível para todos)
+            this.form.turma_ids = [];
+        } else if (this.selectedTurmaId && !this.form.turma_ids.includes(this.selectedTurmaId)) {
             this.form.turma_ids.push(this.selectedTurmaId);
         }
         this.selectedTurmaId = '';

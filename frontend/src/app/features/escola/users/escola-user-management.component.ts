@@ -406,10 +406,16 @@ export class EscolaUserManagementComponent implements OnInit, OnDestroy {
         try {
             // Sanitize data before sending to Supabase
             const dataToSave = { ...this.form };
-            
+
+            // Remove campos exclusivos de Lojista se tipo não for Lojista
+            if (dataToSave.tipo_acesso !== 'Lojista') {
+                delete (dataToSave as any).cnpj;
+                delete (dataToSave as any).Proposito_Lojista;
+            }
+
             // Convert empty strings to null for UUID fields or fields that should be nullable
             if (!dataToSave.turmaID || dataToSave.turmaID === '') {
-                delete dataToSave.turmaID; // Or set to null
+                delete dataToSave.turmaID;
                 (dataToSave as any).turmaID = null;
             }
 
