@@ -39,6 +39,8 @@
                         [type]="donutChartType" 
                         [data]="donutChartData" 
                         [options]="donutChartOptions"
+                        [dynamicResize]="true"
+                        style="width: 100%; height: 100%;"
                         class="w-full h-full">
                     </google-chart>
                 </div>
@@ -80,6 +82,7 @@
                     [data]="barChartData" 
                     [options]="barChartOptions"
                     [dynamicResize]="true"
+                    style="width: 100%; height: 100%;"
                     class="w-full h-full absolute inset-0">
                 </google-chart>
             </div>

@@ -88,7 +88,7 @@ export class EscolaDashboardComponent implements OnInit, OnDestroy {
         colors: ['#00609b', '#Bdec24'],
         legend: 'none',
         pieSliceText: 'none',
-        chartArea: { width: '90%', height: '90%' },
+        chartArea: { left: 10, right: 10, top: 10, bottom: 10 },
         backgroundColor: 'transparent',
         animation: { startup: true, duration: 1000, easing: 'out' },
         tooltip: { 
@@ -107,7 +107,7 @@ export class EscolaDashboardComponent implements OnInit, OnDestroy {
         colors: ['#00609b', '#Bdec24'],
         legend: { position: 'top', alignment: 'end', textStyle: { color: '#6fb0d2', fontName: 'Inter', fontSize: 13, bold: true } },
         backgroundColor: 'transparent',
-        chartArea: { width: '85%', height: '70%', top: 35, left: 60 },
+        chartArea: { width: '85%', height: '70%', top: 35, bottom: 40 },
         vAxis: {
             title: 'Valor',
             titleTextStyle: { color: '#64748b', fontName: 'Inter', fontSize: 11, bold: true, italic: false },
