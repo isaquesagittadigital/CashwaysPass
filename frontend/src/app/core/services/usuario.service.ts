@@ -151,10 +151,45 @@ export class UsuarioService {
                 await this.syncWithAlunoTable(finalUser.id, usuario);
             }
 
+            if ((usuario.tipo_acesso === 'Convidado' || usuario.tipo_acesso === 'Lojista') && finalUser) {
+                await this.createRandomWallet(finalUser.id, usuario.escola_id!);
+            }
+
             return { success: true, data: finalUser as Usuario };
         } catch (error) {
             console.error('Error creating/recovering user:', error);
             return { success: false, error };
+        }
+    }
+
+    private async createRandomWallet(usuarioId: number, escolaId: string) {
+        try {
+            // Sequência numérica de 8 dígitos
+            const carteiraCode = Math.floor(10000000 + Math.random() * 90000000).toString();
+            
+            const carteiraPayload = {
+                Usuario: usuarioId,
+                carteira_code: carteiraCode,
+                escola_id: escolaId
+            };
+
+            const { data: existingCarteira } = await supabase
+                .from('carteira')
+                .select('id')
+                .eq('Usuario', usuarioId)
+                .maybeSingle();
+
+            if (!existingCarteira) {
+                const { error } = await supabase
+                    .from('carteira')
+                    .insert(carteiraPayload);
+
+                if (error) {
+                    console.error('Erro ao inserir carteira de convidado no DB:', error);
+                }
+            }
+        } catch (err) {
+            console.error('Falha ao criar carteira para convidado:', err);
         }
     }
 
