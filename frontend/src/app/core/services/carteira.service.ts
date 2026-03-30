@@ -391,7 +391,8 @@ export class CarteiraService {
                     else if (tituloStr.includes('mercado') || descStr.includes('mercado')) categoria = 'Mercado';
                     else if (tituloStr.includes('alimenta') || descStr.includes('alimenta')) categoria = 'Alimentação';
                     else if (tituloStr.includes('entretenimento') || descStr.includes('entretenimento')) categoria = 'Entretenimento';
-                    else if (tituloStr.includes('venda') || descStr.includes('venda') || tituloStr.includes('compra') || descStr.includes('compra')) categoria = 'Venda';
+                    else if (tituloStr.includes('compra') || descStr.includes('compra')) categoria = 'Compra';
+                    else if (tituloStr.includes('venda') || descStr.includes('venda')) categoria = 'Venda';
                     else if (isCredit) categoria = 'Entrada';
                     else categoria = 'Venda';
                 }
