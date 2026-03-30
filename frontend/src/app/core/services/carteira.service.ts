@@ -355,7 +355,7 @@ export class CarteiraService {
 
             let query = supabase
                 .from('investimento_aluno')
-                .select('id, titulo, descricao, valor, valor_investido, created_date, categoria_enum', { count: 'exact' })
+                .select('id, titulo, descricao, valor, valor_investido, created_date, enutayp', { count: 'exact' })
                 .eq('aluno_id', alunoId)
                 .order('created_date', { ascending: false })
                 .range(from, to);
@@ -381,7 +381,7 @@ export class CarteiraService {
                 const isDebit = tituloStr.includes('compra') || tituloStr.includes('venda') || descStr.includes('compra') || descStr.includes('venda') || (valor < 0);
                 const isCredit = !isDebit;
 
-                let categoria = t.categoria_enum && t.categoria_enum !== 'Log' ? t.categoria_enum : 'Log';
+                let categoria = t.enutayp && t.enutayp !== 'Log' ? t.enutayp : 'Log';
                 
                 // Fallback analysis for historical records missing an accurate Enum type
                 if (categoria === 'Log') {
@@ -515,7 +515,7 @@ export class CarteiraService {
                 descricao: 'Adição manual de saldo',
                 valor: amount,
                 status_investimento: 'Ativo',
-                categoria_enum: 'Entrada',
+                enutayp: 'Entrada',
                 created_date: new Date().toISOString(),
                 data_inicio: new Date().toISOString().split('T')[0]
             };
