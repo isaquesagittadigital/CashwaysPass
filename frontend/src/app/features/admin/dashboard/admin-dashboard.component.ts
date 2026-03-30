@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, interval } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import {
     LucideAngularModule,
@@ -43,10 +43,12 @@ interface ChartSegment {
     dashOffset: number;
 }
 
+import { GoogleChartsModule } from 'angular-google-charts';
+
 @Component({
     selector: 'app-admin-dashboard',
     standalone: true,
-    imports: [CommonModule, LucideAngularModule, RouterModule, FormsModule],
+    imports: [CommonModule, LucideAngularModule, RouterModule, FormsModule, GoogleChartsModule],
     templateUrl: './admin-dashboard.component.html',
     styleUrls: ['./admin-dashboard.component.css']
 })
@@ -71,8 +73,59 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     hasDonutData = false;
     hasBarData = false;
+    hoveredDonutIndex: number | null = null;
+    hoveredBarIndex: number | null = null;
 
-    // Dynamic Donut Data
+    // Google Chart - Donut Config
+    donutChartType: any = 'PieChart';
+    donutChartData: any[] = [];
+    donutChartColumns: string[] = ['Categoria', 'Valor'];
+    donutChartOptions = {
+        pieHole: 0.6,
+        colors: ['#00a8e8', '#ffb088', '#7a5af8', '#Bdec24'],
+        legend: 'none',
+        pieSliceText: 'none',
+        chartArea: { width: '90%', height: '90%' },
+        backgroundColor: 'transparent',
+        animation: { startup: true, duration: 1000, easing: 'out' },
+        tooltip: {
+            text: 'value',
+            showColorCode: true,
+            textStyle: { color: '#000', fontName: 'Inter', fontSize: 13, bold: true }
+        }
+    };
+
+    // Google Chart - Bar Chart Config
+    barChartType: any = 'ColumnChart';
+    barChartData: any[] = [];
+    barChartColumns: string[] = ['Dia da semana', 'Transferido', 'Transacionado'];
+    barChartOptions = {
+        isStacked: true,
+        colors: ['#00609b', '#Bdec24'],
+        legend: { position: 'top', alignment: 'end', textStyle: { color: '#6fb0d2', fontName: 'Inter', fontSize: 13, bold: true } },
+        backgroundColor: 'transparent',
+        chartArea: { width: '85%', height: '70%', top: 35, left: 60 },
+        vAxis: {
+            title: 'Valor',
+            titleTextStyle: { color: '#64748b', fontName: 'Inter', fontSize: 11, bold: true, italic: false },
+            minValue: 0,
+            gridlines: { color: '#f1f5f9', count: 5 },
+            baselineColor: '#e2e8f0',
+            textStyle: { color: '#94a3b8', fontName: 'Inter', fontSize: 10, bold: true },
+            format: 'decimal'
+        },
+        hAxis: {
+            title: 'Dia da semana',
+            titleTextStyle: { color: '#64748b', fontName: 'Inter', fontSize: 11, bold: true, italic: false },
+            textStyle: { color: '#94a3b8', fontName: 'Inter', fontSize: 10, bold: true },
+            gridlines: { color: 'transparent' }
+        },
+        animation: { startup: true, duration: 800, easing: 'out' },
+        tooltip: { isHtml: false, textStyle: { fontName: 'Inter', fontSize: 12 } },
+        bar: { groupWidth: '35%' }
+    };
+
+    // Distribution Legend
     distributionData: ChartSegment[] = [
         { label: 'Total investido', value: 0, percentage: 0, color: '#00a8e8', dashArray: '0 100', dashOffset: 0 },
         { label: 'Total gasto', value: 0, percentage: 0, color: '#ffb088', dashArray: '0 100', dashOffset: 0 },
@@ -82,8 +135,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     // Bar chart data
     transactionsData: TransactionDay[] = [];
-    maxTransactionValue = 16000;
-    scaleValues = [16000, 12800, 8000, 4000, 0];
+    maxTransactionValue = 100;
+    scaleValues = [100, 75, 50, 25, 0];
 
     // Turma Details Modal
     showTurmaModal = false;
@@ -95,6 +148,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     isExporting = false;
 
     private selectionSub?: Subscription;
+    private refreshSubscription?: Subscription;
 
     constructor(
         private dashboardService: AdminDashboardService,
@@ -108,10 +162,16 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
             this.schoolId = school?.id;
             this.loadDashboardData(school?.id);
         });
+
+        // Configura atualização automática a cada 30 segundos
+        this.refreshSubscription = interval(30000).subscribe(() => {
+            this.loadDashboardData(this.schoolId);
+        });
     }
 
     ngOnDestroy() {
         this.selectionSub?.unsubscribe();
+        this.refreshSubscription?.unsubscribe();
     }
 
     async loadDashboardData(schoolId?: string) {
@@ -184,17 +244,29 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
         this.distributionData.forEach((segment, i) => {
             const val = values[i];
-            const percentage = (val / total) * 100;
             segment.value = val;
-            segment.percentage = Math.round(percentage);
-            segment.dashArray = `${percentage} ${100 - percentage}`;
-            segment.dashOffset = -currentOffset;
-            currentOffset += percentage;
+            segment.percentage = total > 0 ? Math.round((val / total) * 100) : 0;
         });
+
+        // Update Google Chart Data
+        this.donutChartData = [
+            ['Total investido', data.totalInvested],
+            ['Total gasto', data.totalSpent],
+            ['Saldo livre', data.freeBalance],
+            ['Saldo em propósitos', data.purposeBalance]
+        ];
     }
 
     formatCurrency(value: number): string {
         return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+    }
+
+    setDonutHover(index: number | null) {
+        this.hoveredDonutIndex = index;
+    }
+
+    setBarHover(index: number | null) {
+        this.hoveredBarIndex = index;
     }
 
     setFilter(filter: string) {
@@ -214,13 +286,14 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
             this.hasBarData = false;
 
             this.transactionsData.forEach(d => {
-                const dayMax = Math.max(d.transacted || 0, d.transferred || 0);
+                const dayMax = d.total || 0;
                 if (dayMax > 0) this.hasBarData = true;
                 if (dayMax > maxVal) maxVal = dayMax;
             });
 
-            // Give some padding at the top of the chart (e.g. 20% extra) and ensure it's at least > 0
-            this.maxTransactionValue = maxVal > 0 ? (maxVal * 1.2) : 1000;
+            // Escala em centena
+            const baseMax = maxVal > 0 ? maxVal : 100;
+            this.maxTransactionValue = Math.ceil(baseMax / 100) * 100;
 
             // Generate 5 points on the scale
             this.scaleValues = [
@@ -230,6 +303,22 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
                 this.maxTransactionValue * 0.25,
                 0
             ];
+
+            // Mapping to Google Charts format combining into Transacionado vs Transferido
+            this.barChartData = this.transactionsData.map(d => [
+                d.label,
+                d.transfer || 0, // Transferido (bottom blue)
+                (d.pix || 0) + (d.manual || 0) + (d.market || 0) // Transacionado (top green)
+            ]);
+
+            // Updating options max value
+            this.barChartOptions = {
+                ...this.barChartOptions,
+                vAxis: {
+                    ...(this.barChartOptions.vAxis as any),
+                    viewWindow: { min: 0, max: this.maxTransactionValue }
+                }
+            } as any;
 
         } catch (error) {
             console.error('Error loading transactions data:', error);
@@ -314,7 +403,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     get filteredTurmaStudents() {
         if (!this.turmaSearchTerm) return this.turmaStudents;
         const term = this.turmaSearchTerm.toLowerCase();
-        return this.turmaStudents.filter(s => 
+        return this.turmaStudents.filter(s =>
             (s.nome || s.nome_completo || '').toLowerCase().includes(term) ||
             (s.email || '').toLowerCase().includes(term)
         );

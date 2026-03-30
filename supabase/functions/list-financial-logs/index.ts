@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
             .from('movimentacao_financeira')
             .select('id, created_date, tipo_operacao, status, response_payload, categoria, nome_operacao, mes_operacao, valor')
             .eq('aluno_id', realAlunoId)
-            .in('categoria', ['Mercado', 'Alimentação', 'Entretenimento', 'Saldo', 'Saúde', 'Extra', 'Pix', 'Transferência', 'Reposição', 'Educação', 'Crédito', 'Devolução', 'Venda', 'Minha Reserva'])
+            .in('categoria', ['Mercado', 'Alimentação', 'Entretenimento', 'Saldo', 'Saúde', 'Extra', 'Pix', 'Transferência', 'Reposição', 'Educação', 'Crédito', 'credito', 'Devolução', 'Venda', 'Minha Reserva', 'Entrada'])
             .order('created_date', { ascending: false })
             .limit(200); // Limitamos aos 200 mais recentes para performance
 

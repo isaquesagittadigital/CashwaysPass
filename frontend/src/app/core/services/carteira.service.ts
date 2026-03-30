@@ -509,13 +509,22 @@ export class CarteiraService {
             const movimentacaoData = {
                 aluno_id: targetUuid,
                 tipo_operacao: 'ADICAO_MANUAL',
-                categoria: 'Entrada',
-                nome_operacao: 'Entrada Adição manual de saldo',
+                categoria: 'credito',
+                nome_operacao: 'Saldo Adicionado Manualmente',
                 mes_operacao: currentMonth,
                 valor: amount,
                 status: 'CONCLUIDO',
-                request_payload: { aluno_id: targetUuid, amount, type: 'MANUAL_ADMIN' },
-                response_payload: { mensagem: 'Crédito manual realizado via painel administrativo' },
+                request_payload: { 
+                    aluno_id: targetUuid, 
+                    amount, 
+                    type: 'MANUAL_ADMIN',
+                    aluno_nome: alunoNome
+                },
+                response_payload: { 
+                    mensagem: 'Crédito manual realizado via painel administrativo',
+                    aluno: alunoNome,
+                    escola_id: targetEscolaId
+                },
                 http_status: 200
             };
             updatePromises.push(supabase.from('movimentacao_financeira').insert(movimentacaoData));

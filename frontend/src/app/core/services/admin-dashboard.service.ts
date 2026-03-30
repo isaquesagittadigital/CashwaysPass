@@ -21,9 +21,13 @@ export interface TurmaSummary {
 }
 
 export interface TransactionDay {
-    day: string;
-    transferred: number;
-    transacted: number;
+    label: string;
+    pix: number;
+    manual: number;
+    transfer: number;
+    market: number;
+    total: number;
+    day?: string; // Compatibilidade
 }
 
 export type TimeFilter = '12 meses' | '30 dias' | '7 dias' | '24 horas';
@@ -32,343 +36,102 @@ export type TimeFilter = '12 meses' | '30 dias' | '7 dias' | '24 horas';
     providedIn: 'root'
 })
 export class AdminDashboardService {
-    private getStartDate(filter: TimeFilter): string {
-        const now = new Date();
-        switch (filter) {
-            case '12 meses':
-                now.setFullYear(now.getFullYear() - 1);
-                break;
-            case '30 dias':
-                now.setDate(now.getDate() - 30);
-                break;
-            case '7 dias':
-                now.setDate(now.getDate() - 7);
-                break;
-            case '24 horas':
-                now.setHours(now.getHours() - 24);
-                break;
+    private cachedTurmas: TurmaSummary[] = [];
+    private cachedChart: TransactionDay[] = [];
+
+    async getConsolidatedStats(escolaId?: string, filter: TimeFilter = '7 dias'): Promise<{metrics: DashboardStats, turmas: TurmaSummary[], chart: TransactionDay[]}> {
+        try {
+            const { data, error } = await supabase.functions.invoke('get-school-dashboard-report', {
+                body: { 
+                    id: escolaId,
+                    period: filter 
+                }
+            });
+
+            if (error) throw error;
+
+            const metrics = data.metrics;
+            const stats: DashboardStats = {
+                totalInvested: metrics.total_invested,
+                totalSpent: metrics.total_spent,
+                freeBalance: metrics.free_balance,
+                purposeBalance: metrics.purpose_balance,
+                totalStudents: 0 
+            };
+
+            const turmas: TurmaSummary[] = (data.turmas || []).map((t: any) => ({
+                id: t.id,
+                name: t.name,
+                students: t.students,
+                invested: t.invested,
+                spent: t.spent,
+                balance: t.balance
+            }));
+
+            const chart: TransactionDay[] = (data.chart_data || []).map((c: any) => ({
+                label: c.label,
+                pix: c.pix,
+                manual: c.manual,
+                transfer: c.transfer,
+                market: c.market,
+                total: c.total,
+                day: c.label
+            }));
+
+            this.cachedTurmas = turmas;
+            this.cachedChart = chart;
+
+            return { metrics: stats, turmas, chart };
+        } catch (error) {
+            console.error('Error calling get-school-dashboard-report:', error);
+            throw error;
         }
-        return now.toISOString();
     }
 
     async getDashboardStats(escolaId?: string, filter: TimeFilter = '7 dias'): Promise<DashboardStats> {
         try {
-            const startDate = this.getStartDate(filter);
+            const { metrics, turmas } = await this.getConsolidatedStats(escolaId, filter);
+            const totalStudents = turmas.reduce((acc, t) => acc + t.students, 0);
 
-            // 1. Total Investido (Volume in period)
-            let investedQuery = supabase
-                .from('investimento_aluno')
-                .select('valor_investido')
-                .eq('status_investimento', 'Ativo')
-                .gte('created_date', startDate);
-
-            if (escolaId) investedQuery = investedQuery.eq('escola_id', escolaId);
-            const { data: investedData } = await investedQuery;
-            const totalInvested = investedData?.reduce((acc, curr) => acc + (Number(curr.valor_investido) || 0), 0) || 0;
-
-            // 2. Total Gasto (Volume in period)
-            // Fix: Fetch student IDs for the school first if needed, as join might be broken or missing FK
-            let totalSpent = 0;
-            let totalStudents = 0;
-
-            if (escolaId) {
-                const { data: students } = await supabase.from('aluno').select('id').eq('escola_id', escolaId);
-                const studentIds = (students || []).map(a => a.id);
-                totalStudents = studentIds.length;
-
-                if (studentIds.length > 0) {
-                    const { data: spentData } = await supabase
-                        .from('lojista_historico')
-                        .select('valor')
-                        .eq('tipo_operacao', 'VENDA')
-                        .in('aluno_id', studentIds)
-                        .gte('data_hora', startDate);
-                    totalSpent = spentData?.reduce((acc, curr) => acc + (Number(curr.valor) || 0), 0) || 0;
-                }
-            } else {
-                const { data: spentData } = await supabase
-                    .from('lojista_historico')
-                    .select('valor')
-                    .eq('tipo_operacao', 'VENDA')
-                    .gte('data_hora', startDate);
-                totalSpent = spentData?.reduce((acc, curr) => acc + (Number(curr.valor) || 0), 0) || 0;
-
-                const { count } = await supabase.from('aluno').select('*', { count: 'exact', head: true });
-                totalStudents = count || 0;
-            }
-
-            // 3. Saldo Livre (Current snapshot)
-            let freeBalanceQuery = supabase
-                .from('usuarios')
-                .select('saldo_carteira');
-
-            if (escolaId) freeBalanceQuery = freeBalanceQuery.eq('escola_id', escolaId);
-            const { data: freeBalanceData } = await freeBalanceQuery;
-            const freeBalance = freeBalanceData?.reduce((acc, curr) => acc + (Number(curr.saldo_carteira) || 0), 0) || 0;
-
-            // 4. Saldo em Propósitos (Current snapshot)
-            let finalPurposeBalance = 0;
-            if (escolaId) {
-                // 4.1 Carregar saldo dos propósitos dos USUÁRIOS vinculados à escola
-                const { data: users } = await supabase.from('usuarios').select('UserID').eq('escola_id', escolaId);
-                const userIds = (users || []).map(u => u.UserID).filter(id => !!id);
-
-                let usersPurposeSum = 0;
-                if (userIds.length > 0) {
-                    const { data: userPurposes } = await supabase
-                        .from('propositos')
-                        .select('saldo')
-                        .in('usuario_id', userIds);
-                    usersPurposeSum = userPurposes?.reduce((acc, curr) => acc + (Number(curr.saldo) || 0), 0) || 0;
-                }
-                
-                finalPurposeBalance = usersPurposeSum;
-            } else {
-                // Sum all for global view
-                const { data: purposeDataRaw } = await supabase.from('propositos').select('saldo');
-                finalPurposeBalance = purposeDataRaw?.reduce((acc, curr) => acc + (Number(curr.saldo) || 0), 0) || 0;
-            }
-
-            // Returning snapshots (Raw values are preferred for accurate accounting)
             return {
-                totalInvested,
-                totalSpent,
-                freeBalance,
-                purposeBalance: finalPurposeBalance,
+                ...metrics,
                 totalStudents,
-                saldo_livre: freeBalance,
-                saldo_propositos: finalPurposeBalance
+                saldo_livre: metrics.freeBalance,
+                saldo_propositos: metrics.purposeBalance
             };
         } catch (error) {
             console.error('Error fetching dashboard stats:', error);
-            return { totalInvested: 0, totalSpent: 0, freeBalance: 0, purposeBalance: 0, totalStudents: 0 };
+            return {
+                totalInvested: 0,
+                totalSpent: 0,
+                freeBalance: 0,
+                purposeBalance: 0,
+                totalStudents: 0
+            };
         }
     }
 
     async getTransactionsSummary(escolaId?: string, filter: TimeFilter = '7 dias'): Promise<TransactionDay[]> {
+        if (this.cachedChart && this.cachedChart.length > 0) {
+            return this.cachedChart;
+        }
         try {
-            const startDate = this.getStartDate(filter);
-
-            // Adjust resolution based on filter
-            if (filter === '12 meses') {
-                return this.getMonthlyTransactions(escolaId, startDate);
-            }
-
-            const numDays = filter === '30 dias' ? 30 : (filter === '24 horas' ? 1 : 7);
-            const today = new Date();
-            const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-
-            const periods = Array.from({ length: numDays }, (_, i) => {
-                const d = new Date();
-                d.setDate(today.getDate() - (numDays - 1 - i));
-                return {
-                    date: d.toISOString().split('T')[0],
-                    label: filter === '24 horas' ? `${d.getHours()}h` : days[d.getDay()],
-                    transferred: 0,
-                    transacted: 0
-                };
-            });
-
-            let salesData: any[] = [];
-            if (escolaId) {
-                const { data: students } = await supabase.from('aluno').select('id').eq('escola_id', escolaId);
-                const studentIds = (students || []).map(a => a.id);
-                
-                if (studentIds.length > 0) {
-                    const { data } = await supabase
-                        .from('lojista_historico')
-                        .select('valor, data_hora')
-                        .eq('tipo_operacao', 'VENDA')
-                        .in('aluno_id', studentIds)
-                        .gte('data_hora', startDate);
-                    salesData = data || [];
-                }
-            } else {
-                const { data } = await supabase
-                    .from('lojista_historico')
-                    .select('valor, data_hora')
-                    .eq('tipo_operacao', 'VENDA')
-                    .gte('data_hora', startDate);
-                salesData = data || [];
-            }
-            const sales = salesData;
-
-            // Fetch transferred
-            let investmentsQuery = supabase
-                .from('investimento_aluno')
-                .select('valor_investido, created_date')
-                .gte('created_date', startDate);
-
-            if (escolaId) investmentsQuery = investmentsQuery.eq('escola_id', escolaId);
-            const { data: investments } = await investmentsQuery;
-
-            return periods.map(p => {
-                const daySales = (sales || [])
-                    .filter(s => s.data_hora.startsWith(p.date))
-                    .reduce((acc, s) => acc + Number(s.valor), 0);
-
-                const dayInvestments = (investments || [])
-                    .filter(i => (i.created_date as string).startsWith(p.date))
-                    .reduce((acc, i) => acc + Number(i.valor_investido), 0);
-
-                return {
-                    day: p.label,
-                    transferred: dayInvestments,
-                    transacted: daySales
-                };
-            });
+            const { chart } = await this.getConsolidatedStats(escolaId, filter);
+            return chart;
         } catch (error) {
             console.error('Error fetching transactions summary:', error);
             return [];
         }
     }
 
-    private async getMonthlyTransactions(escolaId: string | undefined, startDate: string): Promise<TransactionDay[]> {
-        const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-        const months = [];
-        const now = new Date();
-
-        for (let i = 11; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            months.push({
-                year: d.getFullYear(),
-                month: d.getMonth(),
-                label: monthNames[d.getMonth()],
-                transferred: 0,
-                transacted: 0
-            });
-        }
-
-        let salesData: any[] = [];
-        if (escolaId) {
-            const { data: students } = await supabase.from('aluno').select('id').eq('escola_id', escolaId);
-            const studentIds = (students || []).map(a => a.id);
-            
-            if (studentIds.length > 0) {
-                const { data } = await supabase
-                    .from('lojista_historico')
-                    .select('valor, data_hora')
-                    .eq('tipo_operacao', 'VENDA')
-                    .in('aluno_id', studentIds)
-                    .gte('data_hora', startDate);
-                salesData = data || [];
-            }
-        } else {
-            const { data } = await supabase
-                .from('lojista_historico')
-                .select('valor, data_hora')
-                .eq('tipo_operacao', 'VENDA')
-                .gte('data_hora', startDate);
-            salesData = data || [];
-        }
-        const sales = salesData;
-
-        let investmentsQuery = supabase
-            .from('investimento_aluno')
-            .select('valor_investido, created_date')
-            .gte('created_date', startDate);
-        if (escolaId) investmentsQuery = investmentsQuery.eq('escola_id', escolaId);
-        const { data: investments } = await investmentsQuery;
-
-        return months.map(m => {
-            const monthSales = (sales || [])
-                .filter(s => {
-                    const sd = new Date(s.data_hora);
-                    return sd.getFullYear() === m.year && sd.getMonth() === m.month;
-                })
-                .reduce((acc, s) => acc + Number(s.valor), 0);
-
-            const monthInvestments = (investments || [])
-                .filter(i => {
-                    const id = new Date(i.created_date as string);
-                    return id.getFullYear() === m.year && id.getMonth() === m.month;
-                })
-                .reduce((acc, i) => acc + Number(i.valor_investido), 0);
-
-            return {
-                day: m.label,
-                transferred: monthInvestments,
-                transacted: monthSales
-            };
-        });
-    }
-
     async getTurmaSummary(escolaId?: string, filter: TimeFilter = '7 dias'): Promise<TurmaSummary[]> {
+        if (this.cachedTurmas && this.cachedTurmas.length > 0) {
+            return this.cachedTurmas;
+        }
+
         try {
-            const startDate = this.getStartDate(filter);
-
-            let turmasQuery = supabase
-                .from('turma')
-                .select(`
-          id,
-          nome,
-          quantidade_alunos,
-          aluno (
-            id,
-            saldo_carteira,
-            saldo_investido
-          )
-        `);
-
-            if (escolaId) turmasQuery = turmasQuery.eq('escola_id', escolaId);
-            const { data: turmas, error } = await turmasQuery;
-            if (error) throw error;
-
-            // Fetch spent and invested data filtered by school if applicable
-            let spentQuery = supabase
-                .from('lojista_historico')
-                .select('aluno_id, valor')
-                .eq('tipo_operacao', 'VENDA')
-                .gte('data_hora', startDate);
-
-            let investedQuery = supabase
-                .from('investimento_aluno')
-                .select('aluno_id, valor_investido')
-                .gte('created_date', startDate);
-
-            if (escolaId) {
-                const { data: schoolStudents } = await supabase.from('aluno').select('id').eq('escola_id', escolaId);
-                const ids = (schoolStudents || []).map(s => s.id);
-                if (ids.length > 0) {
-                    spentQuery = spentQuery.in('aluno_id', ids);
-                    investedQuery = investedQuery.in('aluno_id', ids);
-                } else {
-                    // No students, return empty
-                    return [];
-                }
-            }
-
-            const { data: spentData } = await spentQuery;
-            const spentMap = (spentData || []).reduce((acc: any, curr) => {
-                if (!curr.aluno_id) return acc;
-                acc[curr.aluno_id] = (acc[curr.aluno_id] || 0) + Number(curr.valor);
-                return acc;
-            }, {});
-
-            const { data: investedData } = await investedQuery;
-            const investedPeriodMap = (investedData || []).reduce((acc: any, curr) => {
-                if (!curr.aluno_id) return acc;
-                acc[curr.aluno_id] = (acc[curr.aluno_id] || 0) + Number(curr.valor_investido);
-                return acc;
-            }, {});
-
-            return (turmas || []).map(t => {
-                const alumnos = (t.aluno as any[]) || [];
-                // "invested" in table usually means volume in period if filtered, or current total? 
-                // Let's use volume in period to match the cards.
-                const investedVolume = alumnos.reduce((acc, a) => acc + (investedPeriodMap[a.id] || 0), 0);
-                const balance = alumnos.reduce((acc, a) => acc + (Number(a.saldo_carteira) || 0), 0);
-                const spent = alumnos.reduce((acc, a) => acc + (spentMap[a.id] || 0), 0);
-
-                return {
-                    id: t.id,
-                    name: t.nome || 'Sem nome',
-                    students: t.quantidade_alunos || alumnos.length,
-                    invested: investedVolume,
-                    spent,
-                    balance
-                };
-            });
+            const { turmas } = await this.getConsolidatedStats(escolaId, filter);
+            return turmas;
         } catch (error) {
             console.error('Error fetching turma summary:', error);
             return [];

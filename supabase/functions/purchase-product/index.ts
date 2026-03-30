@@ -247,18 +247,18 @@ Deno.serve(async (req) => {
         }
 
         // --- PASSO 7: Logs ---
-        const monthNames = ["Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho",
+        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
             "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         const currentMonth = monthNames[new Date().getMonth()];
 
-        await supabaseClient.from('movimentacao_financeira').insert({
+        const { error: logError } = await supabaseClient.from('movimentacao_financeira').insert({
             aluno_id: realAlunoId,
             tipo_operacao: `COMPRA_PRODUTO_${normalizeString(propositoProduto).toUpperCase()}`,
             categoria: propositoProduto,
             nome_operacao: `Compra ${propositoProduto}: ${dbProd.nome}`,
-            valor: valorTotalNum,
+            valor: valorTotalNum.toString(),
             mes_operacao: currentMonth,
-            status: 'SUCESSO',
+            status: 'CONCLUIDO',
             request_payload: { aluno_id, lojista_id, produto_id, quantidade: qtd, valor: valorTotalNum, proposito: propositoProduto },
             response_payload: {
                 mensagem: `Compra ${propositoProduto}: ${dbProd.nome} em ${lojistaNome}`,
@@ -267,6 +267,12 @@ Deno.serve(async (req) => {
             },
             http_status: 200
         });
+
+        if (logError) {
+            console.error("Erro ao salvar log em movimentacao_financeira:", logError);
+            // Poderíamos ignorar ou lançar erro. Dado o fluxo financeiro, é melhor lançar para manter integridade.
+            throw new Error(`Falha ao registrar log financeiro: ${logError.message}`);
+        }
 
         await supabaseClient.from('investimento_aluno').insert({
             aluno_id: realAlunoId,
