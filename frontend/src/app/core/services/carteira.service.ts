@@ -375,14 +375,16 @@ export class CarteiraService {
             const transactions: Transaction[] = (data || []).map((t: any) => {
                 const valor = Number(t.valor || t.valor_investido) || 0;
                 // Determine if it's a credit or debit. Aportes are usually credits (+)
-                // For now, let's treat everything in this table as credit unless it's a withdrawal
-                const isCredit = true; 
+                const tituloStr = String(t.titulo || '').toLowerCase();
+                const descStr = String(t.descricao || '').toLowerCase();
+                const isDebit = tituloStr.includes('compra') || tituloStr.includes('venda') || descStr.includes('compra') || descStr.includes('venda') || (valor < 0);
+                const isCredit = !isDebit;
 
                 return {
                     id: t.id,
                     tipo: isCredit ? 'REPOSICAO' : 'VENDA',
                     descricao: t.descricao || t.titulo || 'Movimentação',
-                    valor: valor,
+                    valor: Math.abs(valor),
                     data: t.created_date ? new Date(t.created_date).toLocaleDateString('pt-BR') : ''
                 };
             });
