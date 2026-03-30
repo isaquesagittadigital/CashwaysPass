@@ -261,6 +261,8 @@ export class WalletComponent implements OnInit, OnDestroy {
     getTxBadgeClass(categoria: string): string {
         switch (categoria) {
             case 'Entrada': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+            case 'Crédito': return 'bg-teal-100 text-teal-800 border-teal-200';
+            case 'Movimentação': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
             case 'Log': return 'bg-gray-100 text-gray-700 border-gray-200';
             case 'Minha Reserva': return 'bg-blue-100 text-blue-800 border-blue-200';
             case 'Devolução': return 'bg-purple-100 text-purple-800 border-purple-200';

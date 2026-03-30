@@ -386,6 +386,7 @@ export class CarteiraService {
                 // Fallback analysis for historical records missing an accurate Enum type
                 if (categoria === 'Log') {
                     if (tituloStr.includes('entrada') || descStr.includes('dição') || descStr.includes('depósito') || descStr.includes('pix')) categoria = 'Entrada';
+                    else if (tituloStr.includes('crédito') || descStr.includes('credito') || tituloStr.includes('saldo') || descStr.includes('saldo')) categoria = 'Crédito';
                     else if (tituloStr.includes('reserva') || descStr.includes('reserva')) categoria = 'Minha Reserva';
                     else if (tituloStr.includes('devolu') || descStr.includes('devolu')) categoria = 'Devolução';
                     else if (tituloStr.includes('mercado') || descStr.includes('mercado')) categoria = 'Mercado';
@@ -393,6 +394,7 @@ export class CarteiraService {
                     else if (tituloStr.includes('entretenimento') || descStr.includes('entretenimento')) categoria = 'Entretenimento';
                     else if (tituloStr.includes('compra') || descStr.includes('compra')) categoria = 'Compra';
                     else if (tituloStr.includes('venda') || descStr.includes('venda')) categoria = 'Venda';
+                    else if (tituloStr.includes('movimenta') || descStr.includes('movimenta')) categoria = 'Movimentação';
                     else if (isCredit) categoria = 'Entrada';
                     else categoria = 'Venda';
                 }
@@ -428,6 +430,7 @@ export class CarteiraService {
             return { success: false, error };
         }
     }
+
     async updateStudentWalletBalance(
         alunoId: string, 
         amount: number, 
