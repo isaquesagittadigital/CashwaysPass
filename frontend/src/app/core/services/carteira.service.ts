@@ -394,12 +394,15 @@ export class CarteiraService {
                     else if (tituloStr.includes('entretenimento') || descStr.includes('entretenimento')) categoria = 'Entretenimento';
                     else if (tituloStr.includes('compra') || descStr.includes('compra')) categoria = 'Compra';
                     else if (tituloStr.includes('venda') || descStr.includes('venda')) categoria = 'Venda';
-                    else if (tituloStr.includes('movimenta') || descStr.includes('movimenta')) categoria = 'Movimentação';
+                    else if (tituloStr.includes('oper') || descStr.includes('oper') || tituloStr.includes('transfer') || descStr.includes('transfer') || tituloStr.includes('propósito') || descStr.includes('proposito') || tituloStr.includes('movimenta') || descStr.includes('movimenta')) categoria = 'Operação';
                     else if (isCredit) categoria = 'Entrada';
                     else categoria = 'Venda';
                 }
 
-                let inferredTipo = isCredit ? 'Entrada' : 'Saida';
+                let inferredTipo = 'Entrada';
+                if (['Compra', 'Venda', 'Mercado', 'Alimentação', 'Entretenimento'].includes(categoria)) inferredTipo = 'Saida';
+                else if (['Devolução', 'Entrada', 'Crédito'].includes(categoria)) inferredTipo = 'Entrada';
+                else if (['Operação', 'Minha Reserva'].includes(categoria)) inferredTipo = 'Operação';
                 
                 return {
                     id: t.id,
