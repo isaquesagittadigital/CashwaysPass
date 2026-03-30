@@ -157,7 +157,8 @@ export class WalletComponent implements OnInit, OnDestroy {
             this.currentPage,
             this.pageSize,
             this.turmaFilter || undefined,
-            tipoAcesso
+            tipoAcesso,
+            this.alunoFilter || undefined
         );
         
         this.students = students;
@@ -191,7 +192,7 @@ export class WalletComponent implements OnInit, OnDestroy {
 
     get hasFilters(): boolean {
         const isDefaultSchool = this.schoolFilter === this.selectedSchoolId;
-        return !!this.searchTerm || !!this.turmaFilter || this.statusFilter !== 'Todos' || (!!this.schoolFilter && !isDefaultSchool) || this.walletTypeFilter !== 'Alunos';
+        return !!this.searchTerm || !!this.turmaFilter || !!this.alunoFilter || this.statusFilter !== 'Todos' || (!!this.schoolFilter && !isDefaultSchool) || this.walletTypeFilter !== 'Alunos';
     }
 
     onAlunoChange() {

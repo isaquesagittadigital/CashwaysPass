@@ -13,6 +13,7 @@ export interface WalletStudent {
     saldo_carteira: number;
     status: string;
     user_id: string;
+    proposito?: string;
 }
 
 export interface StudentFinancialProfile {
@@ -59,14 +60,19 @@ export class CarteiraService {
         page: number = 1,
         pageSize: number = 8,
         turmaId?: string,
-        tipoAcesso: string = 'Aluno'
+        tipoAcesso: string = 'Aluno',
+        userId?: string
     ): Promise<{ students: WalletStudent[]; total: number }> {
         try {
             // 1. Query usuarios (Alunos) — no FK joins
             let query = supabase
                 .from('usuarios')
-                .select('id, nome_completo, status, escola_id, turmaID, saldo_carteira', { count: 'exact' })
+                .select('id, nome_completo, status, escola_id, turmaID, saldo_carteira, Proposito_Lojista', { count: 'exact' })
                 .eq('tipo_acesso', tipoAcesso);
+
+            if (userId) {
+                query = query.eq('id', userId);
+            }
 
             if (escolaId) {
                 query = query.eq('escola_id', escolaId);
@@ -189,7 +195,8 @@ export class CarteiraService {
                     escola_id: u.escola_id,
                     saldo_carteira: balance,
                     status: u.status || 'active',
-                    user_id: String(u.id)
+                    user_id: String(u.id),
+                    proposito: u.Proposito_Lojista
                 };
             });
 
