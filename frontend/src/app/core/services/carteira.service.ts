@@ -41,6 +41,7 @@ export interface InventoryItem {
 export interface Transaction {
     id: string;
     tipo: string;
+    categoria: string;
     descricao: string;
     valor: number;
     data: string;
@@ -380,9 +381,21 @@ export class CarteiraService {
                 const isDebit = tituloStr.includes('compra') || tituloStr.includes('venda') || descStr.includes('compra') || descStr.includes('venda') || (valor < 0);
                 const isCredit = !isDebit;
 
+                let categoria = 'Log';
+                if (tituloStr.includes('entrada') || descStr.includes('dição') || descStr.includes('depósito') || descStr.includes('pix')) categoria = 'Entrada';
+                else if (tituloStr.includes('reserva') || descStr.includes('reserva')) categoria = 'Minha Reserva';
+                else if (tituloStr.includes('devolu') || descStr.includes('devolu')) categoria = 'Devolução';
+                else if (tituloStr.includes('mercado') || descStr.includes('mercado')) categoria = 'Mercado';
+                else if (tituloStr.includes('alimenta') || descStr.includes('alimenta')) categoria = 'Alimentação';
+                else if (tituloStr.includes('entretenimento') || descStr.includes('entretenimento')) categoria = 'Entretenimento';
+                else if (tituloStr.includes('venda') || descStr.includes('venda') || tituloStr.includes('compra') || descStr.includes('compra')) categoria = 'Venda';
+                else if (isCredit) categoria = 'Entrada';
+                else categoria = 'Venda';
+
                 return {
                     id: t.id,
                     tipo: isCredit ? 'REPOSICAO' : 'VENDA',
+                    categoria: categoria,
                     descricao: t.descricao || t.titulo || 'Movimentação',
                     valor: Math.abs(valor),
                     data: t.created_date ? new Date(t.created_date).toLocaleDateString('pt-BR') : ''

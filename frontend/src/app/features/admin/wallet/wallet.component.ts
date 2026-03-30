@@ -258,6 +258,20 @@ export class WalletComponent implements OnInit, OnDestroy {
         return status === 'active' ? 'Ativo' : 'Inativo';
     }
 
+    getTxBadgeClass(categoria: string): string {
+        switch (categoria) {
+            case 'Entrada': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+            case 'Log': return 'bg-gray-100 text-gray-700 border-gray-200';
+            case 'Minha Reserva': return 'bg-blue-100 text-blue-800 border-blue-200';
+            case 'Devolução': return 'bg-purple-100 text-purple-800 border-purple-200';
+            case 'Venda': return 'bg-red-100 text-red-800 border-red-200';
+            case 'Mercado': return 'bg-orange-100 text-orange-800 border-orange-200';
+            case 'Alimentação': return 'bg-amber-100 text-amber-800 border-amber-200';
+            case 'Entretenimento': return 'bg-pink-100 text-pink-800 border-pink-200';
+            default: return 'bg-gray-100 text-gray-700 border-gray-200';
+        }
+    }
+
     // --- Financial Profile Modal ---
     async openProfileModal(student: WalletStudent) {
         this.showProfileModal = true;

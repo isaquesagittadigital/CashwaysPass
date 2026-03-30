@@ -379,11 +379,17 @@
                     <div *ngIf="transactions.length > 0" class="space-y-3">
                         <div *ngFor="let tx of transactions"
                             class="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
-                            <div>
-                                <p class="text-sm font-medium text-gray-700">{{ tx.descricao }}</p>
-                                <p class="text-xs text-gray-400">{{ tx.data }}</p>
+                            <div class="flex-1 pr-3">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider" 
+                                          [ngClass]="getTxBadgeClass(tx.categoria)">
+                                        {{ tx.categoria }}
+                                    </span>
+                                    <p class="text-xs text-gray-400 font-medium">{{ tx.data }}</p>
+                                </div>
+                                <p class="text-[13px] font-medium text-gray-700 leading-tight">{{ tx.descricao }}</p>
                             </div>
-                            <span class="text-sm font-semibold"
+                            <span class="text-sm font-semibold whitespace-nowrap flex-shrink-0"
                                 [ngClass]="tx.tipo === 'VENDA' ? 'text-red-500' : 'text-green-600'">
                                 {{ tx.tipo === 'VENDA' ? '-' : '+' }}{{ formatCurrency(tx.valor) }}
                             </span>
