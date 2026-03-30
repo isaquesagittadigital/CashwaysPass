@@ -14,7 +14,10 @@ import {
     RefreshCw,
     CreditCard,
     Filter,
-    Plus
+    Plus,
+    QrCode,
+    Copy,
+    Check
 } from 'lucide-angular';
 import { CarteiraService, WalletStudent, Purpose, InventoryItem, Transaction, StudentFinancialProfile } from '../../../core/services/carteira.service';
 import { SchoolService, School } from '../../../core/services/school.service';
@@ -30,7 +33,7 @@ import { ActionSuccessModalComponent } from '../../../shared/components/success-
     templateUrl: './wallet.component.html',
 })
 export class WalletComponent implements OnInit, OnDestroy {
-    public icons: any = { ArrowLeft, Search, Download, Eye, ChevronDown, X: XIcon, RefreshCw, CreditCard, Filter, Plus };
+    public icons: any = { ArrowLeft, Search, Download, Eye, ChevronDown, X: XIcon, RefreshCw, CreditCard, Filter, Plus, QrCode, Copy, Check };
 
     // Student list
     students: WalletStudent[] = [];
@@ -69,14 +72,23 @@ export class WalletComponent implements OnInit, OnDestroy {
     transactionsTotal = 0;
     transactionMonth = '';
     
-    // Manual Balance
+    // Manual Balance & Pix
     showAddBalanceForm = false;
+    addBalanceMode: 'manual' | 'pix' = 'manual';
     showSuccessModal = false;
     successModalTitle = '';
     successModalMessage = '';
     addBalanceAmountFormatted: string = '';
     addBalanceLoading = false;
     lastAddedAmount = 0;
+
+    // Pix Modal
+    showPixModal = false;
+    pixAmount = 0;
+    pixCodeParams = {
+        code: '00020126400014br.gov.bcb.pix0118user@cashways.com.br520400005303986540510.005802BR5915CASHWAYS6009SAO PAULO62070503***6304',
+        copied: false
+    };
 
     // Redeem Modal
     showRedeemModal = false;
@@ -320,10 +332,17 @@ export class WalletComponent implements OnInit, OnDestroy {
         this.selectedProfile = null;
         this.showAddBalanceForm = false;
         this.addBalanceAmountFormatted = '';
+        this.showPixModal = false;
     }
 
-    toggleAddBalanceForm() {
-        this.showAddBalanceForm = !this.showAddBalanceForm;
+    toggleAddBalanceForm(mode: 'manual' | 'pix' = 'manual') {
+        if (this.showAddBalanceForm && this.addBalanceMode === mode) {
+            this.showAddBalanceForm = false;
+        } else {
+            this.showAddBalanceForm = true;
+            this.addBalanceMode = mode;
+        }
+        
         if (!this.showAddBalanceForm) {
             this.addBalanceAmountFormatted = '';
         }
@@ -397,6 +416,48 @@ export class WalletComponent implements OnInit, OnDestroy {
 
     closeSuccessModal() {
         this.showSuccessModal = false;
+    }
+
+    generatePix() {
+        if (!this.selectedProfile || !this.addBalanceAmountFormatted) return;
+        
+        let numericValue: number;
+        if (typeof this.addBalanceAmountFormatted === 'number') {
+            numericValue = this.addBalanceAmountFormatted;
+        } else {
+            const valueStr = String(this.addBalanceAmountFormatted || '0');
+            numericValue = Number(valueStr.replace(/\./g, '').replace(',', '.'));
+        }
+        
+        if (isNaN(numericValue) || numericValue <= 0) {
+            alert('Por favor, insira um valor válido para gerar o Pix.');
+            return;
+        }
+
+        this.addBalanceLoading = true;
+        
+        setTimeout(() => {
+            // Mock backend call delay
+            this.pixAmount = numericValue;
+            this.addBalanceLoading = false;
+            this.showAddBalanceForm = false;
+            this.showPixModal = true;
+        }, 1000);
+    }
+
+    closePixModal() {
+        this.showPixModal = false;
+        this.pixAmount = 0;
+        this.addBalanceAmountFormatted = '';
+    }
+
+    copyPixCode() {
+        navigator.clipboard.writeText(this.pixCodeParams.code).then(() => {
+            this.pixCodeParams.copied = true;
+            setTimeout(() => {
+                this.pixCodeParams.copied = false;
+            }, 3000);
+        });
     }
 
     async loadInventory(alunoId?: string) {
