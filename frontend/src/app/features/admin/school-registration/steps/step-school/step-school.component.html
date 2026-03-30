@@ -78,19 +78,10 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6" *ngIf="schoolForm.get('possuiEquipamentos')?.value">
-            <div class="form-group">
+            <div class="form-group flex-1">
                 <label>Quantidade *</label>
                 <input type="number" formControlName="quantidadeEquipamentos" min="0" class="form-input" [class.input-error]="schoolForm.get('quantidadeEquipamentos')?.invalid && schoolForm.get('quantidadeEquipamentos')?.touched"
                     (keydown)="onCurrencyKeydown($event)" placeholder="0">
-            </div>
-            <div class="form-group">
-                <label>Valor unitário *</label>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">R$</span>
-                    <input type="text" formControlName="valorUnitarioEquipamento"
-                        (input)="applyCurrencyMask('valorUnitarioEquipamento', $event)"
-                        (keydown)="onCurrencyKeydown($event)" class="form-input currency-input" [class.input-error]="schoolForm.get('valorUnitarioEquipamento')?.invalid && schoolForm.get('valorUnitarioEquipamento')?.touched" placeholder="0,00">
-                </div>
             </div>
         </div>
 
@@ -111,13 +102,34 @@
                     </label>
                 </div>
             </div>
-            <div class="form-group" *ngIf="schoolForm.get('cobraTransacoes')?.value">
-                <label>Valor unitário *</label>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">R$</span>
-                    <input type="text" formControlName="valorUnitarioTransacao"
-                        (input)="applyCurrencyMask('valorUnitarioTransacao', $event)"
-                        (keydown)="onCurrencyKeydown($event)" class="form-input currency-input" [class.input-error]="schoolForm.get('valorUnitarioTransacao')?.invalid && schoolForm.get('valorUnitarioTransacao')?.touched" placeholder="0,00">
+            <div class="flex items-center gap-6" *ngIf="schoolForm.get('cobraTransacoes')?.value">
+                <div class="form-group flex-1">
+                    <label>Valor unitário *</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">R$</span>
+                        <input type="text" formControlName="valorUnitarioTransacao"
+                            (input)="applyCurrencyMask('valorUnitarioTransacao', $event)"
+                            (keydown)="onCurrencyKeydown($event)" class="form-input currency-input" [class.input-error]="schoolForm.get('valorUnitarioTransacao')?.invalid && schoolForm.get('valorUnitarioTransacao')?.touched" placeholder="0,00">
+                    </div>
+                </div>
+
+                <div class="form-group flex-1">
+                    <label>Valor da carteira *</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">R$</span>
+                        <input type="text" formControlName="valorCarteira" (input)="applyCurrencyMask('valorCarteira', $event)"
+                            (keydown)="onCurrencyKeydown($event)" class="form-input currency-input" [class.input-error]="schoolForm.get('valorCarteira')?.invalid && schoolForm.get('valorCarteira')?.touched" placeholder="0,00">
+                    </div>
+                </div>
+
+                <div class="form-group flex-1">
+                    <label>Valor por transferência *</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">R$</span>
+                        <input type="text" formControlName="valorTransferencia"
+                            (input)="applyCurrencyMask('valorTransferencia', $event)" (keydown)="onCurrencyKeydown($event)"
+                            class="form-input currency-input" [class.input-error]="schoolForm.get('valorTransferencia')?.invalid && schoolForm.get('valorTransferencia')?.touched" placeholder="0,00">
+                    </div>
                 </div>
             </div>
         </div>
@@ -183,36 +195,15 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="form-group">
             <label>Complemento (opcional)</label>
             <input type="text" formControlName="complemento" class="form-input" [class.input-error]="schoolForm.get('complemento')?.invalid && schoolForm.get('complemento')?.touched" placeholder="Sala, andar e etc.">
         </div>
-        <div class="form-group md:col-span-1">
+        <div class="form-group">
             <label>Endereço completo *</label>
             <input type="text" formControlName="enderecoCompleto" class="form-input" [class.input-error]="schoolForm.get('enderecoCompleto')?.invalid && schoolForm.get('enderecoCompleto')?.touched" placeholder="Rua...">
             <p *ngIf="schoolForm.get('enderecoCompleto')?.touched && schoolForm.get('enderecoCompleto')?.hasError('required')"
-                class="error-text">Campo obrigatório</p>
-        </div>
-        <div class="form-group">
-            <label>Valor da carteira *</label>
-            <div class="relative">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">R$</span>
-                <input type="text" formControlName="valorCarteira" (input)="applyCurrencyMask('valorCarteira', $event)"
-                    (keydown)="onCurrencyKeydown($event)" class="form-input currency-input" [class.input-error]="schoolForm.get('valorCarteira')?.invalid && schoolForm.get('valorCarteira')?.touched" placeholder="0,00">
-            </div>
-            <p *ngIf="schoolForm.get('valorCarteira')?.touched && schoolForm.get('valorCarteira')?.hasError('required')"
-                class="error-text">Campo obrigatório</p>
-        </div>
-        <div class="form-group">
-            <label>Valor por transferência *</label>
-            <div class="relative">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">R$</span>
-                <input type="text" formControlName="valorTransferencia"
-                    (input)="applyCurrencyMask('valorTransferencia', $event)" (keydown)="onCurrencyKeydown($event)"
-                    class="form-input currency-input" [class.input-error]="schoolForm.get('valorTransferencia')?.invalid && schoolForm.get('valorTransferencia')?.touched" placeholder="0,00">
-            </div>
-            <p *ngIf="schoolForm.get('valorTransferencia')?.touched && schoolForm.get('valorTransferencia')?.hasError('required')"
                 class="error-text">Campo obrigatório</p>
         </div>
     </div>

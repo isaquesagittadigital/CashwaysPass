@@ -96,7 +96,7 @@ export class EscolaUserManagementComponent implements OnInit, OnDestroy {
     isEditing = false;
     formLoading = false;
     form: Partial<Usuario> = {
-        tipo_acesso: 'Responsavel',
+        tipo_acesso: 'Aluno',
         nome_completo: '',
         cpf: '',
         cnpj: '',
@@ -383,7 +383,7 @@ export class EscolaUserManagementComponent implements OnInit, OnDestroy {
         this.schoolSearchTerm = '';
         this.showSchoolList = false;
         this.form = {
-            tipo_acesso: 'Responsavel',
+            tipo_acesso: 'Aluno',
             nome_completo: '',
             cpf: '',
             cnpj: '',

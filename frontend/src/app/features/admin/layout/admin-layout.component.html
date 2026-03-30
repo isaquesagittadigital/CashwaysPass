@@ -40,15 +40,12 @@
         </nav>
 
         <!-- Sidebar footer -->
-        <div class="p-4 border-t border-gray-100 flex flex-col justify-between">
+        <div class="p-4 pb-8 border-t border-gray-100">
             <button (click)="logout()"
                 class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all duration-200">
                 <lucide-icon [img]="icons.LogOut" class="w-5 h-5 flex-shrink-0"></lucide-icon>
                 <span *ngIf="sidebarOpen">Sair</span>
             </button>
-            <div class="w-full text-center mt-6">
-                <span class="text-[10px] font-extrabold text-gray-400">{{ appVersion }}</span>
-            </div>
         </div>
     </aside>
 

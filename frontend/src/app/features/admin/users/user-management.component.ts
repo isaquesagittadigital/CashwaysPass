@@ -98,7 +98,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     isEditing = false;
     formLoading = false;
     form: Partial<Usuario> = {
-        tipo_acesso: 'Responsavel',
+        tipo_acesso: 'Aluno',
         nome_completo: '',
         cpf: '',
         cnpj: '',
@@ -118,6 +118,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
     selectedUser: Usuario | null = null;
     resetLoading = false;
+    resendLoading = false;
 
     // Searchable School Selection
     schoolSearchTerm = '';
@@ -452,7 +453,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         this.schoolSearchTerm = '';
         this.showSchoolList = false;
         this.form = {
-            tipo_acesso: 'Responsavel',
+            tipo_acesso: 'Aluno',
             nome_completo: '',
             cpf: '',
             cnpj: '',
@@ -580,8 +581,29 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         if (result.success) {
             this.showEmailToast = true;
             this.showDetailModal = false;
+        } else {
+            alert('Erro ao solicitar reset de senha: ' + (result.error?.message || 'Erro desconhecido'));
         }
         this.resetLoading = false;
+    }
+
+    async resendWelcomeEmail() {
+        if (!this.selectedUser) return;
+        this.resendLoading = true;
+        
+        try {
+            const result = await this.usuarioService.resendWelcomeEmail(this.selectedUser);
+            if (result.success) {
+                this.showEmailToast = true;
+                this.showDetailModal = false;
+            } else {
+                alert('Erro ao reenviar e-mail de acesso: ' + (result.error?.message || 'Erro desconhecido'));
+            }
+        } catch (error: any) {
+            alert('Erro inesperado: ' + error.message);
+        } finally {
+            this.resendLoading = false;
+        }
     }
 
     // --- Utils ---

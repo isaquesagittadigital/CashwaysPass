@@ -9,51 +9,50 @@
             </button>
         </div>
 
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-100 px-6 pt-2 flex-shrink-0">
+            <button (click)="activeTab = 'dados'" type="button"
+                [class]="activeTab === 'dados' ? 'px-4 py-3 text-sm font-bold text-[#00609b] border-b-2 border-[#00609b]' : 'px-4 py-3 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600'">
+                Dados da escola
+            </button>
+            <button (click)="activeTab = 'contratacao'" type="button"
+                [class]="activeTab === 'contratacao' ? 'px-4 py-3 text-sm font-bold text-[#00609b] border-b-2 border-[#00609b]' : 'px-4 py-3 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600'">
+                Contratação
+            </button>
+        </div>
+
         <!-- Form content -->
-        <div class="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+        <div class="p-6 space-y-5 overflow-y-auto custom-scrollbar flex-1">
             <form [formGroup]="schoolForm" class="space-y-4">
                 
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Nome da escola -->
-                    <div>
-                        <label class="block text-xs font-bold text-gray-600 mb-1.5">Nome da escola <span class="text-[#005bb5]">*</span></label>
-                        <input type="text" formControlName="nome_fantasia" placeholder="Escola Caritas"
-                            class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('nome_fantasia')?.invalid && schoolForm.get('nome_fantasia')?.touched">
-                        <p *ngIf="schoolForm.get('nome_fantasia')?.invalid && schoolForm.get('nome_fantasia')?.touched" class="error-text">Campo obrigatório</p>
-                    </div>
-                    <!-- CNPJ -->
-                    <div>
-                        <label class="block text-xs font-bold text-gray-600 mb-1.5">CNPJ <span class="text-[#005bb5]">*</span></label>
-                        <input type="text" formControlName="cnpj" mask="00.000.000/0000-00" placeholder="12.345.678/0001-90"
-                            class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('cnpj')?.invalid && schoolForm.get('cnpj')?.touched">
-                        <p *ngIf="schoolForm.get('cnpj')?.invalid && schoolForm.get('cnpj')?.touched" class="error-text">Campo obrigatório</p>
-                    </div>
-                </div>
-
-                <!-- Razão Social -->
-                <div>
-                    <label class="block text-xs font-bold text-gray-600 mb-1.5">Razão Social <span class="text-[#005bb5]">*</span></label>
-                    <input type="text" formControlName="razao_social" placeholder="Escola Caritas LTDA"
-                        class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('razao_social')?.invalid && schoolForm.get('razao_social')?.touched">
-                        <p *ngIf="schoolForm.get('razao_social')?.invalid && schoolForm.get('razao_social')?.touched" class="error-text">Campo obrigatório</p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Modelo de contratação -->
-                    <div>
-                        <label class="block text-xs font-bold text-gray-600 mb-1.5">Modelo de contratação <span class="text-[#005bb5]">*</span></label>
-                        <div class="relative">
-                            <select formControlName="modelo_contratacao"
-                                class="w-full appearance-none px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] cursor-pointer" [class.input-error]="schoolForm.get('modelo_contratacao')?.invalid && schoolForm.get('modelo_contratacao')?.touched">
-                                <option value="Full">Full</option>
-                                <option value="Light">Light</option>
-                            </select>
-                            <lucide-icon [img]="icons.ChevronDown"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
+                <!-- ABA: DADOS DA ESCOLA -->
+                <div *ngIf="activeTab === 'dados'" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Nome da escola -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5">Nome da escola <span class="text-[#005bb5]">*</span></label>
+                            <input type="text" formControlName="nome_fantasia" placeholder="Escola Caritas"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('nome_fantasia')?.invalid && schoolForm.get('nome_fantasia')?.touched">
+                            <p *ngIf="schoolForm.get('nome_fantasia')?.invalid && schoolForm.get('nome_fantasia')?.touched" class="error-text">Campo obrigatório</p>
                         </div>
-                        <p *ngIf="schoolForm.get('modelo_contratacao')?.invalid && schoolForm.get('modelo_contratacao')?.touched" class="error-text mt-1">Campo obrigatório</p>
+                        <!-- CNPJ -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5">CNPJ <span class="text-[#005bb5]">*</span></label>
+                            <input type="text" formControlName="cnpj" mask="00.000.000/0000-00" placeholder="12.345.678/0001-90"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('cnpj')?.invalid && schoolForm.get('cnpj')?.touched">
+                            <p *ngIf="schoolForm.get('cnpj')?.invalid && schoolForm.get('cnpj')?.touched" class="error-text">Campo obrigatório</p>
+                        </div>
                     </div>
-                    <!-- Série -->
+
+                    <!-- Razão Social -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1.5">Razão Social <span class="text-[#005bb5]">*</span></label>
+                        <input type="text" formControlName="razao_social" placeholder="Escola Caritas LTDA"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('razao_social')?.invalid && schoolForm.get('razao_social')?.touched">
+                            <p *ngIf="schoolForm.get('razao_social')?.invalid && schoolForm.get('razao_social')?.touched" class="error-text">Campo obrigatório</p>
+                    </div>
+
+                    <!-- Série (Mudamos para ocupar a grid completa ou meia grid) -->
                     <div>
                         <label class="block text-xs font-bold text-gray-600 mb-1.5">Série <span class="text-[#005bb5]">*</span></label>
                         <div class="relative">
@@ -68,96 +67,205 @@
                         </div>
                         <p *ngIf="schoolForm.get('tipo_escola')?.invalid && schoolForm.get('tipo_escola')?.touched" class="error-text mt-1">Campo obrigatório</p>
                     </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Nome da direção -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5">Nome da direção <span class="text-[#005bb5]">*</span></label>
+                            <input type="text" formControlName="responsavel_direcao" placeholder="João Silva"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('responsavel_direcao')?.invalid && schoolForm.get('responsavel_direcao')?.touched">
+                            <p *ngIf="schoolForm.get('responsavel_direcao')?.invalid && schoolForm.get('responsavel_direcao')?.touched" class="error-text">Campo obrigatório</p>
+                        </div>
+                        <!-- Nome do secretariado -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5">Nome do secretariado <span class="text-[#005bb5]">*</span></label>
+                            <input type="text" formControlName="nome_secretariado" placeholder="Maria Santos"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('nome_secretariado')?.invalid && schoolForm.get('nome_secretariado')?.touched">
+                            <p *ngIf="schoolForm.get('nome_secretariado')?.invalid && schoolForm.get('nome_secretariado')?.touched" class="error-text">Campo obrigatório</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Email da escola -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5">Email da escola <span class="text-[#005bb5]">*</span></label>
+                            <input type="email" formControlName="email_contato" placeholder="email@exemplo.com"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('email_contato')?.invalid && schoolForm.get('email_contato')?.touched">
+                            <p *ngIf="schoolForm.get('email_contato')?.invalid && schoolForm.get('email_contato')?.touched" class="error-text">Campo obrigatório</p>
+                        </div>
+                        <!-- Email da secretaria (admin) -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5">Email da secretaria (admin) <span class="text-[#005bb5]">*</span></label>
+                            <input type="email" formControlName="email_secretaria_admin" placeholder="email02@exemplo.com"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('email_secretaria_admin')?.invalid && schoolForm.get('email_secretaria_admin')?.touched">
+                            <p *ngIf="schoolForm.get('email_secretaria_admin')?.invalid && schoolForm.get('email_secretaria_admin')?.touched" class="error-text">Campo obrigatório</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Telefone -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5">Telefone</label>
+                            <input type="text" formControlName="telefone_contato" mask="(00) 0000-0000" placeholder="(11) 3333-4444"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('telefone_contato')?.invalid && schoolForm.get('telefone_contato')?.touched">
+                        </div>
+                        <!-- Whatsapp -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5">Whatsapp</label>
+                            <input type="text" formControlName="whatsapp" mask="(00) 00000-0000" placeholder="(11) 93333-4444"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('whatsapp')?.invalid && schoolForm.get('whatsapp')?.touched">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- CEP -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5">CEP <span class="text-[#005bb5]">*</span></label>
+                            <input type="text" formControlName="cep" mask="00000-000" placeholder="01234-567"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('cep')?.invalid && schoolForm.get('cep')?.touched">
+                            <p *ngIf="schoolForm.get('cep')?.invalid && schoolForm.get('cep')?.touched" class="error-text">Campo obrigatório</p>
+                        </div>
+                        <!-- Complemento -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5">Complemento</label>
+                            <input type="text" formControlName="complemento" placeholder="Sala, andar e etc."
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('complemento')?.invalid && schoolForm.get('complemento')?.touched">
+                        </div>
+                    </div>
+
+                    <!-- Endereço completo -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1.5">Endereço completo <span class="text-[#005bb5]">*</span></label>
+                        <input type="text" formControlName="endereco" placeholder="Rua Exemplo, 123"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('endereco')?.invalid && schoolForm.get('endereco')?.touched">
+                            <p *ngIf="schoolForm.get('endereco')?.invalid && schoolForm.get('endereco')?.touched" class="error-text">Campo obrigatório</p>
+                    </div>
+
+                    <!-- Status Toggle -->
+                    <div class="flex items-center justify-end gap-3 pt-2">
+                        <span class="text-xs font-bold text-gray-600">Status <span class="text-[#005bb5]">*</span></span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-400">Inativo</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" [checked]="schoolForm.get('status')?.value === 'active'"
+                                    (change)="schoolForm.patchValue({ status: schoolForm.get('status')?.value === 'active' ? 'inactive' : 'active' })"
+                                    class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-[#005bb5] after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all">
+                                </div>
+                            </label>
+                            <span class="text-xs text-[#005bb5] font-bold">Ativo</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Nome da direção -->
+                <!-- ABA: CONTRATAÇÃO -->
+                <div *ngIf="activeTab === 'contratacao'" class="space-y-6">
+                    <!-- Modelo de contratação -->
                     <div>
-                        <label class="block text-xs font-bold text-gray-600 mb-1.5">Nome da direção <span class="text-[#005bb5]">*</span></label>
-                        <input type="text" formControlName="responsavel_direcao" placeholder="João Silva"
-                            class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('responsavel_direcao')?.invalid && schoolForm.get('responsavel_direcao')?.touched">
-                        <p *ngIf="schoolForm.get('responsavel_direcao')?.invalid && schoolForm.get('responsavel_direcao')?.touched" class="error-text">Campo obrigatório</p>
+                        <label class="block text-xs font-bold text-gray-600 mb-1.5">Modelo de contratação <span class="text-[#005bb5]">*</span></label>
+                        <div class="relative">
+                            <select formControlName="modelo_contratacao"
+                                class="w-full appearance-none px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] cursor-pointer" [class.input-error]="schoolForm.get('modelo_contratacao')?.invalid && schoolForm.get('modelo_contratacao')?.touched">
+                                <option value="Full">Full</option>
+                                <option value="Light">Light</option>
+                            </select>
+                            <lucide-icon [img]="icons.ChevronDown"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></lucide-icon>
+                        </div>
+                        <p *ngIf="schoolForm.get('modelo_contratacao')?.invalid && schoolForm.get('modelo_contratacao')?.touched" class="error-text mt-1">Campo obrigatório</p>
                     </div>
-                    <!-- Nome do secretariado -->
-                    <div>
-                        <label class="block text-xs font-bold text-gray-600 mb-1.5">Nome do secretariado <span class="text-[#005bb5]">*</span></label>
-                        <input type="text" formControlName="nome_secretariado" placeholder="Maria Santos"
-                            class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('nome_secretariado')?.invalid && schoolForm.get('nome_secretariado')?.touched">
-                        <p *ngIf="schoolForm.get('nome_secretariado')?.invalid && schoolForm.get('nome_secretariado')?.touched" class="error-text">Campo obrigatório</p>
-                    </div>
-                </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Email da escola -->
-                    <div>
-                        <label class="block text-xs font-bold text-gray-600 mb-1.5">Email da escola <span class="text-[#005bb5]">*</span></label>
-                        <input type="email" formControlName="email_contato" placeholder="email@exemplo.com"
-                            class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('email_contato')?.invalid && schoolForm.get('email_contato')?.touched">
-                        <p *ngIf="schoolForm.get('email_contato')?.invalid && schoolForm.get('email_contato')?.touched" class="error-text">Campo obrigatório</p>
-                    </div>
-                    <!-- Email da secretaria (admin) -->
-                    <div>
-                        <label class="block text-xs font-bold text-gray-600 mb-1.5">Email da secretaria (admin) <span class="text-[#005bb5]">*</span></label>
-                        <input type="email" formControlName="email_secretaria_admin" placeholder="email02@exemplo.com"
-                            class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('email_secretaria_admin')?.invalid && schoolForm.get('email_secretaria_admin')?.touched">
-                        <p *ngIf="schoolForm.get('email_secretaria_admin')?.invalid && schoolForm.get('email_secretaria_admin')?.touched" class="error-text">Campo obrigatório</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Telefone -->
-                    <div>
-                        <label class="block text-xs font-bold text-gray-600 mb-1.5">Telefone</label>
-                        <input type="text" formControlName="telefone_contato" mask="(00) 0000-0000" placeholder="(11) 3333-4444"
-                            class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('telefone_contato')?.invalid && schoolForm.get('telefone_contato')?.touched">
-                    </div>
-                    <!-- Whatsapp -->
-                    <div>
-                        <label class="block text-xs font-bold text-gray-600 mb-1.5">Whatsapp</label>
-                        <input type="text" formControlName="whatsapp" mask="(00) 00000-0000" placeholder="(11) 93333-4444"
-                            class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('whatsapp')?.invalid && schoolForm.get('whatsapp')?.touched">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- CEP -->
-                    <div>
-                        <label class="block text-xs font-bold text-gray-600 mb-1.5">CEP <span class="text-[#005bb5]">*</span></label>
-                        <input type="text" formControlName="cep" mask="00000-000" placeholder="01234-567"
-                            class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('cep')?.invalid && schoolForm.get('cep')?.touched">
-                        <p *ngIf="schoolForm.get('cep')?.invalid && schoolForm.get('cep')?.touched" class="error-text">Campo obrigatório</p>
-                    </div>
-                    <!-- Complemento -->
-                    <div>
-                        <label class="block text-xs font-bold text-gray-600 mb-1.5">Complemento</label>
-                        <input type="text" formControlName="complemento" placeholder="Sala, andar e etc."
-                            class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('complemento')?.invalid && schoolForm.get('complemento')?.touched">
-                    </div>
-                </div>
-
-                <!-- Endereço completo -->
-                <div>
-                    <label class="block text-xs font-bold text-gray-600 mb-1.5">Endereço completo <span class="text-[#005bb5]">*</span></label>
-                    <input type="text" formControlName="endereco" placeholder="Rua Exemplo, 123"
-                        class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all" [class.input-error]="schoolForm.get('endereco')?.invalid && schoolForm.get('endereco')?.touched">
-                        <p *ngIf="schoolForm.get('endereco')?.invalid && schoolForm.get('endereco')?.touched" class="error-text">Campo obrigatório</p>
-                </div>
-
-                <!-- Status Toggle -->
-                <div class="flex items-center justify-end gap-3 pt-2">
-                    <span class="text-xs font-bold text-gray-600">Status <span class="text-[#005bb5]">*</span></span>
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs text-gray-400">Inativo</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" [checked]="schoolForm.get('status')?.value === 'active'"
-                                (change)="schoolForm.patchValue({ status: schoolForm.get('status')?.value === 'active' ? 'inactive' : 'active' })"
-                                class="sr-only peer">
-                            <div
-                                class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-[#005bb5] after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all">
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Dias de repasse -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-2">Dias de início para repasse <span class="text-[#005bb5]">*</span></label>
+                            <div class="flex items-center gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" formControlName="dias_repasse" [value]="3" class="text-[#00609b] focus:ring-[#00609b]">
+                                    <span class="text-sm text-gray-700">3 dias</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" formControlName="dias_repasse" [value]="5" class="text-[#00609b] focus:ring-[#00609b]">
+                                    <span class="text-sm text-gray-700">5 dias</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" formControlName="dias_repasse" [value]="10" class="text-[#00609b] focus:ring-[#00609b]">
+                                    <span class="text-sm text-gray-700">10 dias</span>
+                                </label>
                             </div>
-                        </label>
-                        <span class="text-xs text-[#005bb5] font-bold">Ativo</span>
+                        </div>
+
+                        <!-- Equipamentos -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-2">Equipamentos <span class="text-[#005bb5]">*</span></label>
+                            <div class="flex items-center gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" formControlName="possui_equipamentos" [value]="true" class="text-[#00609b] focus:ring-[#00609b]">
+                                    <span class="text-sm text-gray-700">Sim</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" formControlName="possui_equipamentos" [value]="false" class="text-[#00609b] focus:ring-[#00609b]">
+                                    <span class="text-sm text-gray-700">Não</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Quantidade e Transações -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="w-full">
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5" [class.opacity-50]="!schoolForm.get('possui_equipamentos')?.value">Quantidade <span class="text-[#005bb5]">*</span></label>
+                            <input type="number" formControlName="quantidade_equipamentos" placeholder="0"
+                                [class.bg-gray-50]="!schoolForm.get('possui_equipamentos')?.value"
+                                [class.cursor-not-allowed]="!schoolForm.get('possui_equipamentos')?.value"
+                                [class.opacity-50]="!schoolForm.get('possui_equipamentos')?.value"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-2">Transações <span class="text-[#005bb5]">*</span></label>
+                            <div class="flex items-center gap-4 mt-2">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" formControlName="cobra_transacoes" [value]="true" class="text-[#00609b] focus:ring-[#00609b]">
+                                    <span class="text-sm text-gray-700">Sim</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" formControlName="cobra_transacoes" [value]="false" class="text-[#00609b] focus:ring-[#00609b]">
+                                    <span class="text-sm text-gray-700">Não</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Group of currency inputs (Max 2 per row) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5" [class.opacity-50]="!schoolForm.get('cobra_transacoes')?.value">Valor unitário <span class="text-[#005bb5]">*</span></label>
+                            <input type="text" formControlName="valor_unitario_transacao" mask="separator.2" prefix="R$ " thousandSeparator="." decimalMarker="," placeholder="R$ 0,00"
+                                [class.bg-gray-50]="!schoolForm.get('cobra_transacoes')?.value"
+                                [class.cursor-not-allowed]="!schoolForm.get('cobra_transacoes')?.value"
+                                [class.opacity-50]="!schoolForm.get('cobra_transacoes')?.value"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5" [class.opacity-50]="!schoolForm.get('cobra_transacoes')?.value">Valor da carteira <span class="text-[#005bb5]">*</span></label>
+                            <input type="text" formControlName="valor_carteira" mask="separator.2" prefix="R$ " thousandSeparator="." decimalMarker="," placeholder="R$ 0,00"
+                                [class.bg-gray-50]="!schoolForm.get('cobra_transacoes')?.value"
+                                [class.cursor-not-allowed]="!schoolForm.get('cobra_transacoes')?.value"
+                                [class.opacity-50]="!schoolForm.get('cobra_transacoes')?.value"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1.5" [class.opacity-50]="!schoolForm.get('cobra_transacoes')?.value">Valor por transferência <span class="text-[#005bb5]">*</span></label>
+                            <input type="text" formControlName="valor_transferencia" mask="separator.2" prefix="R$ " thousandSeparator="." decimalMarker="," placeholder="R$ 0,00"
+                                [class.bg-gray-50]="!schoolForm.get('cobra_transacoes')?.value"
+                                [class.cursor-not-allowed]="!schoolForm.get('cobra_transacoes')?.value"
+                                [class.opacity-50]="!schoolForm.get('cobra_transacoes')?.value"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#005bb5]/10 focus:border-[#005bb5] transition-all">
+                        </div>
+                    </div>
+
                 </div>
             </form>
         </div>

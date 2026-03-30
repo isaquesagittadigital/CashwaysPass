@@ -23,6 +23,7 @@ export class EditSchoolModalComponent implements OnChanges {
 
     schoolForm: FormGroup;
     isSubmitting = false;
+    activeTab: 'dados' | 'contratacao' = 'dados';
 
     constructor(
         private fb: FormBuilder,
@@ -53,6 +54,47 @@ export class EditSchoolModalComponent implements OnChanges {
             valor_transferencia: [0],
             status: ['active', Validators.required]
         });
+
+        // Toggle quantidade input based on possui_equipamentos
+        this.schoolForm.get('possui_equipamentos')?.valueChanges.subscribe(value => {
+            this.handleEquipamentosState(value);
+        });
+
+        // Toggle transaction inputs based on cobra_transacoes
+        this.schoolForm.get('cobra_transacoes')?.valueChanges.subscribe(value => {
+            this.handleTransacoesState(value);
+        });
+    }
+
+    private handleEquipamentosState(value: boolean) {
+        const quantidadeControl = this.schoolForm.get('quantidade_equipamentos');
+        if (value) {
+            quantidadeControl?.enable();
+        } else {
+            quantidadeControl?.disable();
+            quantidadeControl?.setValue(0);
+        }
+    }
+
+    private handleTransacoesState(value: boolean) {
+        const unitario = this.schoolForm.get('valor_unitario_transacao');
+        const carteira = this.schoolForm.get('valor_carteira');
+        const transferencia = this.schoolForm.get('valor_transferencia');
+        
+        if (value) {
+            unitario?.enable();
+            carteira?.enable();
+            transferencia?.enable();
+        } else {
+            unitario?.disable();
+            unitario?.setValue(0);
+            
+            carteira?.disable();
+            carteira?.setValue(0);
+            
+            transferencia?.disable();
+            transferencia?.setValue(0);
+        }
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -66,6 +108,8 @@ export class EditSchoolModalComponent implements OnChanges {
                 valor_carteira: this.schoolData.valor_carteira ?? 0,
                 valor_transferencia: this.schoolData.valor_transferencia ?? 0
             });
+            this.handleEquipamentosState(this.schoolForm.get('possui_equipamentos')?.value);
+            this.handleTransacoesState(this.schoolForm.get('cobra_transacoes')?.value);
         }
     }
 

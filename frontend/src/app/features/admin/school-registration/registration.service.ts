@@ -206,7 +206,26 @@ export class SchoolRegistrationService {
                 throw new Error(data.error || 'Erro interno no cadastro.');
             }
 
-            console.log('Registration successful:', data);
+            console.log('Registration successful, processing users for emails:', data.created_users);
+
+            // Trigger access emails for all newly created users
+            if (data.created_users && Array.isArray(data.created_users)) {
+                const emailPromises = data.created_users.map((user: any) => {
+                    return supabase.functions.invoke('send-access-email', {
+                        body: {
+                            email: user.email,
+                            nome: user.nome,
+                            tipo_acesso: user.tipo_acesso,
+                            escola_id: user.escola_id,
+                            turmaID: user.turmaID
+                        }
+                    }).catch(err => console.error(`Failed to send email to ${user.email}:`, err));
+                });
+
+                // Wait for all email triggers (or fail silently for specific ones)
+                await Promise.all(emailPromises);
+            }
+
             return { success: true };
         } catch (error: any) {
             console.error('Registration failed:', error);

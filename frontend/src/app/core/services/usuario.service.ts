@@ -89,7 +89,6 @@ export class UsuarioService {
 
     async deleteUsuario(id: number): Promise<{ success: boolean; error?: any }> {
         try {
-            // Chama Edge Function que deleta da tabela usuarios + Supabase Auth
             const { data, error } = await supabase.functions.invoke('admin-delete-users', {
                 body: { db_ids: [id] }
             });
@@ -106,7 +105,6 @@ export class UsuarioService {
 
     async deleteBulkUsuarios(ids: number[]): Promise<{ success: boolean; error?: any }> {
         try {
-            // Chama Edge Function que deleta da tabela usuarios + Supabase Auth em lote
             const { data, error } = await supabase.functions.invoke('admin-delete-users', {
                 body: { db_ids: ids }
             });
@@ -125,7 +123,6 @@ export class UsuarioService {
         try {
             const tempPass = Math.random().toString(36).slice(-10);
             
-            // Chama Edge Function para Criar ou Recuperar Usuário (Upsert Inteligente)
             const { data: resData, error: fnError } = await supabase.functions.invoke('send-access-email', {
                 body: { 
                     email: usuario.email,
@@ -142,7 +139,6 @@ export class UsuarioService {
             if (fnError) throw fnError;
             if (resData && !resData.success) throw new Error(resData.error || 'Erro ao processar usuário');
 
-            // 1. Buscar o registro atualizado na tabela usuarios para retorno
             const { data: finalUser, error: fetchError } = await supabase
                 .from(this.TABLE)
                 .select('*')
@@ -151,7 +147,6 @@ export class UsuarioService {
 
             if (fetchError) throw fetchError;
 
-            // 2. Sincronizar com tabelas relacionadas se for Aluno
             if (usuario.tipo_acesso === 'Aluno' && finalUser) {
                 await this.syncWithAlunoTable(finalUser.id, usuario);
             }
@@ -165,14 +160,13 @@ export class UsuarioService {
 
     async updateUsuario(id: number, updates: Partial<Usuario>): Promise<{ success: boolean; error?: any }> {
         try {
-            // 1. Clean data to avoid Supabase errors (remove joined fields)
             const cleanedUpdates = { ...updates };
             delete (cleanedUpdates as any).turma;
             delete (cleanedUpdates as any).created_at;
             delete (cleanedUpdates as any).updated_at;
             delete (cleanedUpdates as any).ultimo_login;
             delete (cleanedUpdates as any).UserID;
-            delete (cleanedUpdates as any).id; // ID shouldn't be in updates
+            delete (cleanedUpdates as any).id;
 
             const { error } = await supabase
                 .from(this.TABLE)
@@ -181,7 +175,6 @@ export class UsuarioService {
 
             if (error) throw error;
 
-            // 2. Sync with 'aluno' table if it's a student
             if (updates.tipo_acesso === 'Aluno') {
                 await this.syncWithAlunoTable(id, updates);
             }
@@ -195,7 +188,6 @@ export class UsuarioService {
 
     private async syncWithAlunoTable(usuarioId: number, data: Partial<Usuario>) {
         try {
-            // Map common fields from usuarios to aluno
             const alunoUpdates: any = {};
             if (data.nome_completo) {
                 alunoUpdates.nome = data.nome_completo;
@@ -211,7 +203,6 @@ export class UsuarioService {
 
             if (Object.keys(alunoUpdates).length === 0) return;
 
-            // Usar upsert para garantir que o registro exista na tabela aluno
             const { error } = await supabase
                 .from('aluno')
                 .upsert({ 
@@ -224,7 +215,6 @@ export class UsuarioService {
                 console.warn('Erro ao sincronizar com tabela aluno:', error.message);
             }
 
-            // 3. Sync with 'carteira' table if RA is provided
             if (data.ra) {
                 const carteiraPayload = {
                     Usuario: usuarioId,
@@ -245,7 +235,6 @@ export class UsuarioService {
                         .update(carteiraPayload)
                         .eq('id', existingCarteira.id);
                 } else {
-                    // Only insert if we have all required fields
                     if (data.ra && data.escola_id) {
                         await supabase
                             .from('carteira')
@@ -271,15 +260,37 @@ export class UsuarioService {
         }
     }
 
-    // Helper to fetch schools for the dropdown
+    async resendWelcomeEmail(user: Usuario): Promise<{ success: boolean; error?: any }> {
+        try {
+            const tempPass = Math.random().toString(36).slice(-10);
+            
+            const { data, error } = await supabase.functions.invoke('send-access-email', {
+                body: { 
+                    email: user.email,
+                    nome: user.nome_completo || user.nome,
+                    temp_password: tempPass,
+                    tipo_acesso: user.tipo_acesso,
+                    escola_id: user.escola_id,
+                    turmaID: user.turmaID
+                }
+            });
+
+            if (error) throw error;
+            if (data && !data.success) throw new Error(data.error || 'Erro ao reenviar e-mail');
+
+            return { success: true };
+        } catch (error) {
+            console.error('Error resending welcome email:', error);
+            return { success: false, error };
+        }
+    }
+
     async getSchools(): Promise<any[]> {
         try {
             const { data, error } = await supabase
                 .from('escola')
                 .select('id, nome_fantasia');
             if (error) throw error;
-            
-            // Map nome_fantasia to nome for consistency in the UI dropdowns if needed
             return (data || []).map(s => ({
                 id: s.id,
                 nome: s.nome_fantasia || 'Sem Nome'
@@ -290,7 +301,6 @@ export class UsuarioService {
         }
     }
 
-    // Helper to fetch turmas/períodos
     async getTurmas(escolaId: string): Promise<any[]> {
         try {
             const { data, error } = await supabase

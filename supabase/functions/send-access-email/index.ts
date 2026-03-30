@@ -37,41 +37,53 @@ Deno.serve(async (req) => {
         
         let finalUserId: string | null = null;
 
-        // Tenta criar primeiro
-        const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-            email: email,
-            password: access_password,
-            email_confirm: true,
-            user_metadata: { nome: nome || 'Usuário' }
-        });
-
-        if (createError) {
-            // Se o usuário já existe no Auth
-            if (createError.message.includes('already registered') || createError.status === 422) {
-                console.log(`[AUTH] Usuário ${email} já existe. Recuperando ID para reset de senha.`);
+        // Verifica primeiro se já existe no banco
+        const { data: existingDbUser } = await supabaseAdmin.from('usuarios').select('id, UserID').eq('email', email).maybeSingle();
+        
+        if (existingDbUser && existingDbUser.UserID) {
+            console.log(`[AUTH] Usuário ${email} já existe no BD. Recuperando ID.`);
+            finalUserId = existingDbUser.UserID;
+            
+            // Tenta resetar a senha no Auth (atualizar)
+            console.log(`[AUTH] Resetando senha para: ${finalUserId}`);
+            const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+                finalUserId,
+                { password: access_password }
+            );
+            if (updateError) {
+                console.log(`[AUTH] Erro ao atualizar senha (o usuário pode não existir no Auth ainda):`, updateError.message);
+                // Talvez precise recriar no Auth
+                const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+                    email: email,
+                    password: access_password,
+                    email_confirm: true,
+                    user_metadata: { nome: nome || 'Usuário' }
+                });
                 
-                // Busca o usuário via listUsers (admin) para pegar o ID
-                const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-                if (listError) throw listError;
-                
-                const existingAuthUser = users.find(u => u.email === email);
-                
-                if (existingAuthUser) {
-                    finalUserId = existingAuthUser.id;
-                    console.log(`[AUTH] Resetando senha do usuário existente: ${finalUserId}`);
-                    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-                        finalUserId,
-                        { password: access_password }
-                    );
-                    if (updateError) throw updateError;
-                } else {
-                    throw new Error("Usuário consta como registrado mas não foi encontrado na listagem administrativa.");
+                if (createError && !createError.message.includes('already registered') && createError.status !== 422) {
+                    throw createError;
+                } else if (newUser && newUser.user) {
+                    finalUserId = newUser.user.id;
                 }
-            } else {
-                throw createError;
             }
         } else {
-            finalUserId = newUser.user.id;
+            console.log(`[AUTH] Criando novo usuário no Auth: ${email}`);
+            const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+                email: email,
+                password: access_password,
+                email_confirm: true,
+                user_metadata: { nome: nome || 'Usuário' }
+            });
+
+            if (createError) {
+                if (createError.message.includes('already registered') || createError.status === 422) {
+                    throw new Error("Usuário está registrado no Auth mas não no BD, erro fatal de sincronia.");
+                } else {
+                    throw createError;
+                }
+            } else {
+                finalUserId = newUser.user.id;
+            }
         }
 
         if (!finalUserId) throw new Error("Falha ao resolver ID do usuário.");
@@ -96,9 +108,6 @@ Deno.serve(async (req) => {
         if (body.cpf) insertPayload.cpf = body.cpf;
         if (body.telefone) insertPayload.telefone = body.telefone;
         if (body.turmaID) insertPayload.turmaID = body.turmaID;
-
-        // Tenta encontrar por email primeiro para evitar erro de vinculo multiple
-        const { data: existingDbUser } = await supabaseAdmin.from('usuarios').select('id').eq('email', email).maybeSingle();
 
         let dbError;
         if (existingDbUser) {
