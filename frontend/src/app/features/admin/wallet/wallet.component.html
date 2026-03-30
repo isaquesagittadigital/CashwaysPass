@@ -390,8 +390,8 @@
                                 <p class="text-[13px] font-medium text-gray-700 leading-tight">{{ tx.descricao }}</p>
                             </div>
                             <span class="text-sm font-semibold whitespace-nowrap flex-shrink-0"
-                                [ngClass]="tx.tipo === 'VENDA' ? 'text-red-500' : 'text-green-600'">
-                                {{ tx.tipo === 'VENDA' ? '-' : '+' }}{{ formatCurrency(tx.valor) }}
+                                [ngClass]="tx.tipo === 'Saida' ? 'text-red-500' : 'text-green-600'">
+                                {{ tx.tipo === 'Saida' ? '-' : '+' }}{{ formatCurrency(tx.valor) }}
                             </span>
                         </div>
                     </div>

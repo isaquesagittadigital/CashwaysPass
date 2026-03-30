@@ -355,7 +355,7 @@ export class CarteiraService {
 
             let query = supabase
                 .from('investimento_aluno')
-                .select('id, titulo, descricao, valor, valor_investido, created_date, categoria', { count: 'exact' })
+                .select('id, titulo, descricao, valor, valor_investido, created_date, categoria, tipo', { count: 'exact' })
                 .eq('aluno_id', alunoId)
                 .order('created_date', { ascending: false })
                 .range(from, to);
@@ -399,9 +399,11 @@ export class CarteiraService {
                     else categoria = 'Venda';
                 }
 
+                let inferredTipo = isCredit ? 'Entrada' : 'Saida';
+                
                 return {
                     id: t.id,
-                    tipo: isCredit ? 'REPOSICAO' : 'VENDA',
+                    tipo: t.tipo ? t.tipo : inferredTipo,
                     categoria: categoria,
                     descricao: t.descricao || t.titulo || 'Movimentação',
                     valor: Math.abs(valor),
@@ -520,6 +522,7 @@ export class CarteiraService {
                 valor: amount,
                 status_investimento: 'Ativo',
                 categoria: 'Entrada',
+                tipo: 'Entrada',
                 created_date: new Date().toISOString(),
                 data_inicio: new Date().toISOString().split('T')[0]
             };
