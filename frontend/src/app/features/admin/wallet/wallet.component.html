@@ -33,7 +33,7 @@
                 </div>
 
                 <!-- Turma Filter -->
-                <div class="relative group">
+                <div *ngIf="walletTypeFilter === 'Alunos'" class="relative group">
                     <select [(ngModel)]="turmaFilter" (ngModelChange)="onFilterChange()"
                         class="bg-white border border-gray-200 rounded-lg px-4 py-2 pr-9 text-sm text-gray-700 appearance-none cursor-pointer focus:outline-none focus:border-blue-400 hover:border-gray-300 transition-all font-medium min-w-[140px]">
                         <option value="">Todas as turmas</option>
@@ -93,7 +93,7 @@
                         Carteira</th>
                     <th class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
                         Nome do aluno</th>
-                    <th class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
+                    <th *ngIf="walletTypeFilter === 'Alunos'" class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
                         Turma</th>
                     <th class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
                         Escola</th>
@@ -131,7 +131,7 @@
                     class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                     <td class="px-6 py-4 text-sm text-gray-500 font-mono">{{ student.numero_carteira }}</td>
                     <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ student.nome }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-500">{{ student.turma_serie }} {{ student.turma_nome }}</td>
+                    <td *ngIf="walletTypeFilter === 'Alunos'" class="px-6 py-4 text-sm text-gray-500">{{ student.turma_serie }} {{ student.turma_nome }}</td>
                     <td class="px-6 py-4 text-sm text-gray-500">{{ student.escola_nome }}</td>
                     <td class="px-6 py-4 text-sm font-semibold"
                         [ngClass]="student.saldo_carteira >= 0 ? 'text-green-600' : 'text-red-500'">
