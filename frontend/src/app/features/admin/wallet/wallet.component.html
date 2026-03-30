@@ -16,7 +16,7 @@
     <div class="p-6 border-b border-gray-100">
         <div class="flex items-center justify-between flex-wrap gap-4">
             <h2 class="text-lg font-bold text-gray-900">
-                Alunos <span class="text-gray-400 font-normal">({{ totalStudents }})</span>
+                {{ walletTypeFilter === 'Logistas' ? 'Lojistas' : (walletTypeFilter === 'Convidados' ? 'Convidados' : 'Alunos') }} <span class="text-gray-400 font-normal">({{ totalStudents }})</span>
             </h2>
 
             <div class="flex items-center gap-3 flex-wrap">
@@ -92,7 +92,7 @@
                     <th class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
                         Carteira</th>
                     <th class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
-                        Nome do aluno</th>
+                        Nome do {{ walletTypeFilter === 'Logistas' ? 'lojista' : (walletTypeFilter === 'Convidados' ? 'convidado' : 'aluno') }}</th>
                     <th *ngIf="walletTypeFilter === 'Alunos'" class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
                         Turma</th>
                     <th class="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-6 py-4">
@@ -191,7 +191,7 @@
         </button>
 
         <div class="p-6">
-            <h2 class="text-lg font-bold text-gray-900 mb-6">Perfil financeiro do aluno</h2>
+            <h2 class="text-lg font-bold text-gray-900 mb-6">Perfil financeiro do {{ walletTypeFilter === 'Logistas' ? 'lojista' : (walletTypeFilter === 'Convidados' ? 'convidado' : 'aluno') }}</h2>
 
             <!-- Loading -->
             <div *ngIf="profileLoading" class="flex items-center justify-center py-20">
